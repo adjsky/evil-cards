@@ -11,9 +11,13 @@
   },
   "dependencies": {
     "@fastify/websocket": "^7.1.0",
-    "fastify": "^4.8.1"
+    "fastify": "^4.8.1",
+    "nanoid": "^4.0.0",
+    "ts-pattern": "^4.0.5",
+    "zod": "^3.19.1"
   },
   "devDependencies": {
+    "@types/nanoid": "^3.0.0",
     "@types/node": "^18.8.4",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
