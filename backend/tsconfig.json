@@ -9,8 +9,10 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
     "checkJs": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "baseUrl": "."
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules/**/*"],

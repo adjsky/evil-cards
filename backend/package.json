@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "build": "tsc -p .",
-    "dev": "nodemon --exec node --loader ts-node/esm src/app.ts"
+    "dev": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm ./src/app.ts"
   },
   "dependencies": {
     "@fastify/websocket": "^7.1.0",
