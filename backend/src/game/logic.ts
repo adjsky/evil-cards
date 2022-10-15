@@ -167,7 +167,11 @@ class Game {
     session.state = "voting"
 
     // decide who is master
-    session.users[session._masterIndex].master = true
+    const masterUser = session.users[session._masterIndex]
+    if (!masterUser) {
+      throw new Error("smth happened")
+    }
+    masterUser.master = true
     if (session._masterIndex + 1 > session.users.length) {
       session._masterIndex = 0
     } else {
@@ -176,7 +180,11 @@ class Game {
 
     // get red card
     const redCardIndex = getRandomInt(0, session._availableRedCards.length - 1)
-    session.redCard = session._availableRedCards[redCardIndex]
+    const redCard = session._availableRedCards[redCardIndex]
+    if (!redCard) {
+      throw new Error("smth happened")
+    }
+    session.redCard = redCard
     session._availableRedCards.splice(redCardIndex, 1)
 
     // get up to 10 white cards
@@ -189,7 +197,11 @@ class Game {
           0,
           session._availableWhiteCards.length - 1
         )
-        whiteCards.push(session._availableWhiteCards[whiteCardIndex])
+        const whiteCard = session._availableWhiteCards[whiteCardIndex]
+        if (!whiteCard) {
+          throw new Error(whiteCard)
+        }
+        whiteCards.push(whiteCard)
         session._availableWhiteCards.splice(whiteCardIndex, 1)
       }
 

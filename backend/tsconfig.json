@@ -11,7 +11,11 @@
     "isolatedModules": true,
     "checkJs": true,
     "outDir": "dist",
-    "baseUrl": "."
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules/**/*"],
