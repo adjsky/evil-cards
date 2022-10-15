@@ -501,6 +501,11 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
+emittery@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/emittery/-/emittery-1.0.0.tgz#7321364e493c8623088bb22483f2a035fd6c2673"
+  integrity sha512-TD/u5aAn5W2HI2OukSIReNYXf/cH7U0QZHPxM4aIVYy0CmtrLCvf+7E8MuV2BbO02l6wq4sAKuFA8H16l6AHMA==
+
 escape-string-regexp@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
@@ -1443,11 +1448,6 @@ ts-node@^10.9.1:
     make-error "^1.1.1"
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
-
-ts-pattern@^4.0.5:
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-4.0.5.tgz#8e87db265b890ddb0dfc10deda36568296ebd5c3"
-  integrity sha512-Bq44KCEt7JVaNLa148mBCJkcQf4l7jtLEBDuDdeuLynWDA+1a60P4D0rMkqSM9mOKLQbIWUddE9h3XKyKwBeqA==
 
 tslib@^1.8.1:
   version "1.14.1"

@@ -18,15 +18,15 @@ export type ChooseDetails = z.TypeOf<typeof chooseSchema>
 
 export const messageSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal("create-session"),
+    type: z.literal("createsession"),
     details: createSessionSchema
   }),
   z.object({
-    type: z.literal("join-session"),
+    type: z.literal("joinsession"),
     details: joinSessionSchema
   }),
   z.object({
-    type: z.literal("start-game")
+    type: z.literal("startgame")
   }),
   z.object({
     type: z.literal("vote"),
@@ -37,7 +37,8 @@ export const messageSchema = z.discriminatedUnion("type", [
     details: chooseSchema
   }),
   z.object({
-    type: z.literal("choose-best"),
+    type: z.literal("choosebest"),
     details: chooseSchema
   })
 ])
+export type MessageSchema = z.TypeOf<typeof messageSchema>
