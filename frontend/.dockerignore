@@ -1,0 +1,10 @@
+Dockerfile
+.dockerignore
+node_modules
+README.md
+.next
+.git
+.gitignore
+.prettier.config.cjs
+.eslintrc.json
+.env-example

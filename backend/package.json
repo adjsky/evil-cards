@@ -5,12 +5,13 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "node dist/app.js",
+    "start": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node dist/app.js",
     "build": "tsc -p .",
-    "dev": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm ./src/app.ts"
+    "dev": "cross-env NODE_ENV=development nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm ./src/app.ts"
   },
   "dependencies": {
     "@fastify/websocket": "^7.1.0",
+    "cross-env": "^7.0.3",
     "emittery": "^1.0.0",
     "fastify": "^4.8.1",
     "nanoid": "^4.0.0",
