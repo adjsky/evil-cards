@@ -1,17 +1,43 @@
 import z from "zod"
 
-export const createRoomSchema = z.object({ username: z.string() })
-export type CreateRoomDetails = z.TypeOf<typeof createRoomSchema>
-export const connectSchema = z.object({ username: z.string() })
-export type ConnectDetails = z.TypeOf<typeof connectSchema>
+export const createSessionSchema = z.object({ username: z.string() })
+export type CreateSessionDetails = z.TypeOf<typeof createSessionSchema>
+export const joinSessionSchema = z.object({
+  username: z.string(),
+  sessionId: z.string()
+})
+export type JoinSessionDetails = z.TypeOf<typeof joinSessionSchema>
+export const voteSchema = z.object({
+  text: z.string()
+})
+export type VoteDetails = z.TypeOf<typeof voteSchema>
+export const chooseSchema = z.object({
+  id: z.string()
+})
+export type ChooseDetails = z.TypeOf<typeof chooseSchema>
 
 export const messageSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal("create-room"),
-    details: createRoomSchema
+    type: z.literal("create-session"),
+    details: createSessionSchema
   }),
   z.object({
-    type: z.literal("connect"),
-    details: connectSchema
+    type: z.literal("join-session"),
+    details: joinSessionSchema
+  }),
+  z.object({
+    type: z.literal("start-game")
+  }),
+  z.object({
+    type: z.literal("vote"),
+    details: voteSchema
+  }),
+  z.object({
+    type: z.literal("choose"),
+    details: chooseSchema
+  }),
+  z.object({
+    type: z.literal("choose-best"),
+    details: chooseSchema
   })
 ])

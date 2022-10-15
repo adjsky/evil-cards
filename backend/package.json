@@ -13,6 +13,7 @@
     "@fastify/websocket": "^7.1.0",
     "fastify": "^4.8.1",
     "nanoid": "^4.0.0",
+    "serialize-error": "^11.0.0",
     "ts-pattern": "^4.0.5",
     "zod": "^3.19.1"
   },
