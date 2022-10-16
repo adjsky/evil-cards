@@ -1,0 +1,17 @@
+{
+  "name": "@kado/schemas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./server/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "zod": "^3.19.1"
+  },
+  "peerDependencies": {
+    "zod": "3.x"
+  }
+}
