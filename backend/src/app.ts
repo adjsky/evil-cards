@@ -9,5 +9,6 @@ await fastify.register(websocketPlugin)
 await fastify.register(websocketRoutes)
 
 await fastify.listen({
-  port: env.PORT
+  port: env.PORT,
+  host: "0.0.0.0"
 })
