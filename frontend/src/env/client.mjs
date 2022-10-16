@@ -10,7 +10,7 @@ import formatErrors from "./format-errors.mjs"
  */
 const clientEnv = {
   NODE_ENV: process.env.NODE_ENV,
-  NEXT_PUBLIC_API: process.env.NEXT_PUBLIC_API
+  NEXT_PUBLIC_WS_HOST: process.env.NEXT_PUBLIC_WS_HOST
 }
 
 const _clientEnv = clientSchema.safeParse(clientEnv)

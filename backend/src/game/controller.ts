@@ -36,6 +36,4 @@ class Controller {
   }
 }
 
-const gameController = new Controller()
-
-export default gameController
+export default Controller

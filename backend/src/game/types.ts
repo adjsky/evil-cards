@@ -27,12 +27,6 @@ export type Session = {
   _countdownTimer: NodeJS.Timeout | null
 }
 
-export type MessageDetails = {
-  socket: WebSocket
-  user: User
-  session: Session
-}
-
 export type WithWebsocket<T> = {
   [K in keyof T]: T[K] extends undefined
     ? { socket: WebSocket }

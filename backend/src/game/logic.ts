@@ -3,22 +3,24 @@ import { nanoid } from "nanoid"
 import stringify from "../functions/stringify"
 import getRandomInt from "../functions/get-random-int"
 import { whiteCards, redCards } from "./cards"
-import gameController from "./controller"
+import Controller from "./controller"
 
 import type { Session, Events } from "./types"
 
 class Game {
   private sessions: Map<string, Session>
+  public controller: Controller
 
   constructor() {
     this.sessions = new Map()
+    this.controller = new Controller()
 
-    gameController.emitter.on("createsession", this.createSession)
-    gameController.emitter.on("joinsession", this.joinSession)
-    gameController.emitter.on("choose", this.choose)
-    gameController.emitter.on("choosebest", this.chooseBest)
-    gameController.emitter.on("startgame", this.startGame)
-    gameController.emitter.on("vote", this.vote)
+    this.controller.emitter.on("createsession", this.createSession.bind(this))
+    this.controller.emitter.on("joinsession", this.joinSession.bind(this))
+    this.controller.emitter.on("choose", this.choose.bind(this))
+    this.controller.emitter.on("choosebest", this.chooseBest.bind(this))
+    this.controller.emitter.on("startgame", this.startGame.bind(this))
+    this.controller.emitter.on("vote", this.vote.bind(this))
   }
 
   private createSession({ socket, username }: Events["createsession"]) {
@@ -54,7 +56,7 @@ class Game {
     socket.send(
       stringify(
         {
-          type: "response",
+          type: "created",
           details: { session }
         },
         true
@@ -87,7 +89,7 @@ class Game {
     socket.send(
       stringify(
         {
-          type: "response",
+          type: "joined",
           details: {
             session
           }

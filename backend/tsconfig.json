@@ -19,5 +19,5 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules/**/*"],
-  "ts-node": { "esm": true }
+  "ts-node": { "esm": true, "files": true }
 }

@@ -1,9 +1,9 @@
-import gameController from "../game/controller"
+import game from "../game/logic"
 import type { FastifyPluginCallback } from "fastify"
 
 const websocketRoutes: FastifyPluginCallback = (fastify, _, done) => {
   fastify.get("/", { websocket: true }, ({ socket }) => {
-    gameController.handleConnection(socket)
+    game.controller.handleConnection(socket)
   })
 
   done()
