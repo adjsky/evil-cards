@@ -1,4 +1,6 @@
 import { useEffect } from "react"
+import stringify from "../functions/stringify"
+
 import type { NextPage } from "next"
 
 const Home: NextPage = () => {
@@ -7,7 +9,7 @@ const Home: NextPage = () => {
 
     ws.addEventListener("open", () => {
       ws.send(
-        JSON.stringify({
+        stringify({
           type: "createsession",
           details: {
             username: "Asdasd"

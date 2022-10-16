@@ -1,7 +1,6 @@
-function stringify<T extends Record<string, unknown>>(
-  record: T,
-  excludePrivate = false
-) {
+import type { Message } from "@kado/schemas/server/send"
+
+function stringify(record: Message, excludePrivate = false) {
   return JSON.stringify(record, (key, value) => {
     if (excludePrivate && key.startsWith("_")) {
       return undefined

@@ -1,11 +1,11 @@
 import { nanoid } from "nanoid"
 
-import stringify from "../functions/stringify"
+import stringify from "../ws/stringify"
 import getRandomInt from "../functions/get-random-int"
 import { whiteCards, redCards } from "./cards"
 import Controller from "./controller"
 
-import type { Session, Events } from "./types"
+import type { Session, EmitteryEvent } from "./types"
 
 class Game {
   private sessions: Map<string, Session>
@@ -23,7 +23,7 @@ class Game {
     this.controller.emitter.on("vote", this.vote.bind(this))
   }
 
-  private createSession({ socket, username }: Events["createsession"]) {
+  private createSession({ socket, username }: EmitteryEvent["createsession"]) {
     const sessionId = nanoid(5)
     const id = nanoid(5)
     const user = {
@@ -64,7 +64,11 @@ class Game {
     )
   }
 
-  private joinSession({ sessionId, socket, username }: Events["joinsession"]) {
+  private joinSession({
+    sessionId,
+    socket,
+    username
+  }: EmitteryEvent["joinsession"]) {
     const session = this.sessions.get(sessionId)
     if (!session) {
       throw new Error("session not found")
@@ -99,7 +103,7 @@ class Game {
     )
   }
 
-  private vote({ socket, text }: Events["vote"]) {
+  private vote({ socket, text }: EmitteryEvent["vote"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -112,11 +116,9 @@ class Game {
     if (user.master) {
       throw new Error("master can't vote")
     }
-
     if (session.state != "voting") {
       throw new Error("you can't vote now")
     }
-
     if (!user._whiteCards.includes(text)) {
       throw new Error("you have no such card")
     }
@@ -142,7 +144,7 @@ class Game {
     }
   }
 
-  private startGame({ socket }: Events["startgame"]) {
+  private startGame({ socket }: EmitteryEvent["startgame"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -210,7 +212,7 @@ class Game {
       user._socket.send(
         stringify(
           {
-            type: "voting-started",
+            type: "votingstarted",
             details: {
               session,
               whiteCards
@@ -233,12 +235,12 @@ class Game {
 
     session.users.forEach((user) =>
       user._socket.send(
-        stringify({ type: "choosing-started", details: { session } }, true)
+        stringify({ type: "choosingstarted", details: { session } }, true)
       )
     )
   }
 
-  private choose({ id, socket }: Events["choose"]) {
+  private choose({ id, socket }: EmitteryEvent["choose"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -266,7 +268,7 @@ class Game {
     )
   }
 
-  private chooseBest({ id, socket }: Events["choosebest"]) {
+  private chooseBest({ id, socket }: EmitteryEvent["choosebest"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -299,7 +301,7 @@ class Game {
   private endGame(session: Session) {
     session.state = "end"
     session.users.forEach((user) =>
-      user._socket.send(stringify({ type: "game-end" }, true))
+      user._socket.send(stringify({ type: "gameend" }, true))
     )
   }
 }

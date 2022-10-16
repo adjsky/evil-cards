@@ -1,6 +1,6 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
-import type { MessageSchema } from "@kado/schemas/server/message"
+import type { Message } from "@kado/schemas/server/receive"
 
 import type { MapDiscriminatedUnion, UnwrapField } from "../types/utility"
 
@@ -33,7 +33,7 @@ export type WithWebsocket<T> = {
     ? { socket: WebSocket }
     : T[K] & { socket: WebSocket }
 }
-export type Events = WithWebsocket<
-  UnwrapField<MapDiscriminatedUnion<MessageSchema, "type">, "details">
+export type EmitteryEvent = WithWebsocket<
+  UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
 >
-export type Emitter = Emittery<Events>
+export type Emitter = Emittery<EmitteryEvent>

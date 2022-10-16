@@ -28,7 +28,8 @@
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.13",
     "tailwindcss": "^3.1.6",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "@kado/schemas": "*"
   },
   "ct3aMetadata": {
     "initVersion": "6.3.0"

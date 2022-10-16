@@ -10,6 +10,7 @@ importers:
 
   apps/client:
     specifiers:
+      '@kado/schemas': '*'
       '@types/node': 18.0.0
       '@types/react': 18.0.14
       '@types/react-dom': 18.0.5
@@ -34,6 +35,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       zod: 3.19.1
     devDependencies:
+      '@kado/schemas': link:../../libs/schemas
       '@types/node': 18.0.0
       '@types/react': 18.0.14
       '@types/react-dom': 18.0.5

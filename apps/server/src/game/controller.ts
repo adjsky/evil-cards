@@ -1,8 +1,8 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
 
-import { messageSchema } from "@kado/schemas/server/message"
-import stringify from "../functions/stringify"
+import { messageSchema } from "@kado/schemas/server/receive"
+import stringify from "../ws/stringify"
 
 import type { WebSocket } from "ws"
 import type { Emitter } from "./types"
@@ -28,7 +28,7 @@ class Controller {
         socket.send(
           stringify({
             type: "error",
-            data: serializeError(error).message
+            details: serializeError(error).message
           })
         )
       }

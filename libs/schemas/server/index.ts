@@ -1,2 +1,2 @@
-export * as message from "./message";
-export * as response from "./response";
+export * as receive from "./receive";
+export * as send from "./send";

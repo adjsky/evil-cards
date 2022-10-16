@@ -2,6 +2,7 @@
   "name": "@kado/schemas",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "./server/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
