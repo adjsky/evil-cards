@@ -1,17 +1,7 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": ["es2022"],
-    "module": "es2022",
-    "target": "es2022",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "isolatedModules": true,
-    "checkJs": true,
     "outDir": "dist",
-    "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

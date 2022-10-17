@@ -1,9 +1,6 @@
-/** @type {import("prettier").Config} */
+const config = require("../../prettier.config.cjs")
+
 module.exports = {
-  tabWidth: 2,
-  useTabs: false,
-  semi: false,
-  trailingComma: "none",
-  singleQuote: false,
+  ...config,
   plugins: [require.resolve("prettier-plugin-tailwindcss")]
 }
