@@ -90,15 +90,17 @@ class Game {
 
     socket.session = session
     socket.user = user
-    socket.send(
-      stringify(
-        {
-          type: "joined",
-          details: {
-            session
-          }
-        },
-        true
+    session.users.forEach((user) =>
+      user._socket.send(
+        stringify(
+          {
+            type: "joined",
+            details: {
+              session
+            }
+          },
+          true
+        )
       )
     )
   }
@@ -215,7 +217,8 @@ class Game {
             type: "votingstarted",
             details: {
               session,
-              whiteCards
+              whiteCards,
+              timeLeft: 30000
             }
           },
           true

@@ -4,6 +4,6 @@
     "project": "./tsconfig.json"
   },
   "plugins": ["@typescript-eslint", "prettier"],
-  "rules": { "prettier/prettier": "warn" },
+  "rules": { "prettier/prettier": "warn", "@typescript-eslint/no-var-requires": "off" },
   "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"]
 }

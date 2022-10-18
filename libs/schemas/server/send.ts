@@ -29,7 +29,7 @@ export type Voted = {
 }
 export type VotingStarted = {
   type: "votingstarted"
-  details: { session: Session; whiteCards: string[] }
+  details: { session: Session; whiteCards: string[]; timeLeft: number }
 }
 export type ChoosingStarted = {
   type: "choosingstarted"

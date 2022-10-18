@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.scrollable {
+  overflow-y: auto;
+}
+.scrollable::-webkit-scrollbar {
+  width: 4px;
+}
+/* Track */
+.scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Handle */
+.scrollable::-webkit-scrollbar-thumb {
+  background: theme("colors.gray.200");
+  border-radius: 8px;
+}
+/* Handle on hover */
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background: theme("colors.gray.200");
+}
