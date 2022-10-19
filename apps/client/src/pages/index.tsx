@@ -1,8 +1,11 @@
+import dynamic from "next/dynamic"
+
 import Entry from "../screens/entry"
-import Waiting from "../screens/waiting"
-import Game from "../screens/game"
 
 import type { NextPage } from "next"
+
+const Game = dynamic(() => import("../screens/game"), { ssr: false })
+const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })
 
 const Home: NextPage = () => {
   return (

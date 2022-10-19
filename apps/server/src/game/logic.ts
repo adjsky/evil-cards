@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid"
+import dayjs from "dayjs"
 
 import stringify from "../ws/stringify"
 import getRandomInt from "../functions/get-random-int"
@@ -46,7 +47,7 @@ class Game {
       _availableWhiteCards: [...whiteCards],
       _availableRedCards: [...redCards],
       _masterIndex: 0,
-      _countdownTimer: null
+      _countdownInterval: null
     }
 
     this.sessions.set(sessionId, session)
@@ -57,7 +58,7 @@ class Game {
       stringify(
         {
           type: "created",
-          details: { session }
+          details: { session, userId: user.id }
         },
         true
       )
@@ -96,7 +97,8 @@ class Game {
           {
             type: "joined",
             details: {
-              session
+              session,
+              userId: user.id
             }
           },
           true
@@ -126,7 +128,7 @@ class Game {
     }
 
     user.voted = true
-    session.votes.push({ card: text, userId: user.id, visible: false })
+    session.votes.push({ text, userId: user.id, visible: false })
 
     session.users.forEach((user) =>
       user._socket.send(
@@ -141,7 +143,7 @@ class Game {
       }
     }
     if (allVoted) {
-      session._countdownTimer && clearTimeout(session._countdownTimer)
+      session._countdownInterval && clearInterval(session._countdownInterval)
       this.startChoosing(session)
     }
   }
@@ -172,13 +174,25 @@ class Game {
     session.votes = []
     session.state = "voting"
 
+    // unmaster previous user
+    const prevMasterUser =
+      session.users[
+        session._masterIndex == 0
+          ? session.users.length - 1
+          : session._masterIndex - 1
+      ]
+    if (!prevMasterUser) {
+      throw new Error("smth happened")
+    }
+    prevMasterUser.master = false
+
     // decide who is master
     const masterUser = session.users[session._masterIndex]
     if (!masterUser) {
       throw new Error("smth happened")
     }
     masterUser.master = true
-    if (session._masterIndex + 1 > session.users.length) {
+    if (session._masterIndex + 1 >= session.users.length) {
       session._masterIndex = 0
     } else {
       session._masterIndex += 1
@@ -217,8 +231,7 @@ class Game {
             type: "votingstarted",
             details: {
               session,
-              whiteCards,
-              timeLeft: 30000
+              whiteCards
             }
           },
           true
@@ -226,14 +239,37 @@ class Game {
       )
     }
 
+    const endDate = dayjs().add(30, "second")
+    const countdown = () => {
+      const diff = endDate.diff(dayjs(), "second", true)
+
+      session.users.forEach((user) =>
+        user._socket.send(
+          stringify({
+            type: "votingtimeleft",
+            details: {
+              secondsLeft: diff <= 0 ? 0 : diff
+            }
+          })
+        )
+      )
+
+      if (diff <= 0) {
+        session._countdownInterval && clearInterval(session._countdownInterval)
+        setTimeout(() => this.startChoosing(session), 1000)
+      }
+    }
     // start coundown
-    session._countdownTimer = setTimeout(() => {
-      session._countdownTimer = null
-      this.startChoosing(session)
-    }, 30000)
+    countdown()
+    session._countdownInterval = setInterval(countdown, 1000)
   }
 
   private startChoosing(session: Session) {
+    if (session.votes.length == 0) {
+      setTimeout(() => this.startVoting(session), 1000)
+      return
+    }
+
     session.state = "choosing"
 
     session.users.forEach((user) =>
@@ -243,7 +279,7 @@ class Game {
     )
   }
 
-  private choose({ id, socket }: EmitteryEvent["choose"]) {
+  private choose({ userId, socket }: EmitteryEvent["choose"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -260,23 +296,34 @@ class Game {
       throw new Error("only master can choose card to show")
     }
 
-    const card = session.votes.find((card) => card.userId == id)
+    const card = session.votes.find((card) => card.userId == userId)
     if (!card) {
       throw new Error("provided user did not vote")
     }
 
     card.visible = true
     session.users.forEach((user) =>
-      user._socket.send(stringify({ type: "choose", details: { session } }))
+      user._socket.send(
+        stringify({ type: "choose", details: { session } }, true)
+      )
     )
+
+    if (session.votes.every((vote) => vote.visible)) {
+      session.state = "choosingbest"
+      session.users.forEach((user) =>
+        user._socket.send(
+          stringify({ type: "choosingbeststarted", details: { session } }, true)
+        )
+      )
+    }
   }
 
-  private chooseBest({ id, socket }: EmitteryEvent["choosebest"]) {
+  private chooseBest({ userId, socket }: EmitteryEvent["choosebest"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
     }
-    if (session.state != "choosing") {
+    if (session.state != "choosingbest") {
       throw new Error("you can't choose")
     }
 
@@ -288,7 +335,7 @@ class Game {
       throw new Error("only master can choose card to show")
     }
 
-    const votedUser = session.users.find((user) => user.id == id)
+    const votedUser = session.users.find((user) => user.id == userId)
     if (!votedUser) {
       throw new Error("provided user did not vote")
     }
@@ -297,7 +344,7 @@ class Game {
     if (votedUser.score >= 10) {
       this.endGame(session)
     } else {
-      this.startVoting(session)
+      setTimeout(() => this.startVoting(session), 1000)
     }
   }
 

@@ -18,14 +18,14 @@ export type User = {
 
 export type Session = {
   id: string
-  state: "waiting" | "voting" | "choosing" | "end"
+  state: "waiting" | "voting" | "choosing" | "choosingbest" | "end"
   users: User[]
   redCard: string | null
-  votes: { card: string; userId: string; visible: boolean }[]
+  votes: { text: string; userId: string; visible: boolean }[]
   _availableWhiteCards: string[]
   _availableRedCards: string[]
   _masterIndex: number
-  _countdownTimer: NodeJS.Timeout | null
+  _countdownInterval: NodeJS.Timeout | null
 }
 
 export type WithWebsocket<T> = {

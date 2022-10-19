@@ -67,6 +67,7 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.40.0
       '@typescript-eslint/parser': ^5.40.0
       cross-env: ^7.0.3
+      dayjs: ^1.11.5
       emittery: ^1.0.0
       eslint: ^8.25.0
       eslint-plugin-prettier: ^4.2.1
@@ -82,6 +83,7 @@ importers:
       '@fastify/websocket': 7.1.0
       '@kado/schemas': link:../../libs/schemas
       cross-env: 7.0.3
+      dayjs: 1.11.5
       emittery: 1.0.0
       fastify: 4.8.1
       nanoid: 4.0.0
@@ -2608,6 +2610,10 @@ packages:
   /dateformat/3.0.3:
     resolution: {integrity: sha512-jyCETtSl3VMZMWeRo7iY1FL19ges1t55hMo5yaam4Jrsm5EPL89UQkoQRyiI+Yf4k8r2ZpdngkV8hr1lIdjb3Q==}
     dev: true
+
+  /dayjs/1.11.5:
+    resolution: {integrity: sha512-CAdX5Q3YW3Gclyo5Vpqkgpj8fSdLQcRuzfX6mC6Phy0nfJ0eGYOeS7m4mt2plDWLAtA4TqTakvbboHvUxfe4iA==}
+    dev: false
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}

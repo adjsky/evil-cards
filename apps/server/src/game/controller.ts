@@ -15,11 +15,11 @@ class Controller {
   }
 
   handleConnection(socket: WebSocket) {
-    socket.on("message", (rawData) => {
+    socket.on("message", async (rawData) => {
       try {
         const message = messageSchema.parse(JSON.parse(rawData.toString()))
 
-        this.emitter.emit(
+        await this.emitter.emit(
           message.type,
           "details" in message ? { ...message.details, socket } : { socket }
         )

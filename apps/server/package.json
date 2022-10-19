@@ -12,13 +12,14 @@
   },
   "dependencies": {
     "@fastify/websocket": "^7.1.0",
+    "@kado/schemas": "*",
     "cross-env": "^7.0.3",
+    "dayjs": "^1.11.5",
     "emittery": "^1.0.0",
     "fastify": "^4.8.1",
     "nanoid": "^4.0.0",
     "serialize-error": "^11.0.0",
-    "zod": "^3.19.1",
-    "@kado/schemas": "*"
+    "zod": "^3.19.1"
   },
   "devDependencies": {
     "@types/node": "^18.8.4",

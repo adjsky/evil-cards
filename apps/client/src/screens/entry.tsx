@@ -4,7 +4,7 @@ import Router from "next/router"
 import { useAtom } from "jotai"
 
 import { useSocket } from "../ws/hooks"
-import { sessionAtom } from "../atoms"
+import { gameStateAtom } from "../atoms"
 
 import UsernameInput from "../components/username-input"
 import { Plus, Logo } from "../components/icons"
@@ -20,19 +20,23 @@ const Entry: React.FC = () => {
   >({
     onJsonMessage(data) {
       if (data.type == "created" || data.type == "joined") {
-        setSession(data.details.session)
+        setGameState({
+          session: data.details.session,
+          userId: data.details.userId,
+          whiteCards: []
+        })
       }
     }
   })
-  const [session, setSession] = useAtom(sessionAtom)
+  const [gameState, setGameState] = useAtom(gameStateAtom)
   const [username, setUsername] = useState("Игрок")
 
-  if (session) {
+  if (gameState) {
     return null
   }
 
   return (
-    <main className="flex h-screen flex-col items-center justify-center gap-8">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 py-10">
       <Logo />
       <div className="flex aspect-[0.71942446043] w-[200px] flex-col items-center justify-center gap-5 rounded-lg bg-gray-100 pt-3">
         <div className="rounded-full border-[2px] border-gray-900 p-[2px]">
@@ -56,6 +60,8 @@ const Entry: React.FC = () => {
                 sessionId
               }
             })
+
+            Router.replace(Router.pathname, undefined, { shallow: true })
 
             return
           }

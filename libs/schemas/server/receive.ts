@@ -12,7 +12,7 @@ export const voteSchema = z.object({
 })
 export type Vote = z.TypeOf<typeof voteSchema>
 export const chooseSchema = z.object({
-  id: z.string()
+  userId: z.string()
 })
 export type Choose = z.TypeOf<typeof chooseSchema>
 

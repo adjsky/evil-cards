@@ -1,4 +1,10 @@
 import { atom } from "jotai"
-import type { Session } from "@kado/schemas/server/send"
+import type { Session } from "@kado/schemas/client/receive"
 
-export const sessionAtom = atom<Session | null>(null)
+type GameState = {
+  session: Session
+  userId: string
+  whiteCards: string[]
+}
+
+export const gameStateAtom = atom<GameState | null>(null)

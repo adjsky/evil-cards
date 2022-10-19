@@ -9,19 +9,19 @@ export type User = {
 }
 export type Session = {
   id: string
-  state: "waiting" | "voting" | "choosing" | "end"
+  state: "waiting" | "voting" | "choosing" | "end" | "choosingbest"
   users: User[]
   redCard: string | null
-  votes: { card: string; userId: string; visible: boolean }[]
+  votes: { text: string; userId: string; visible: boolean }[]
 }
 
 export type Created = {
   type: "created"
-  details: { session: Session }
+  details: { session: Session; userId: string }
 }
 export type Joined = {
   type: "joined"
-  details: { session: Session }
+  details: { session: Session; userId: string }
 }
 export type Voted = {
   type: "voted"
@@ -29,7 +29,13 @@ export type Voted = {
 }
 export type VotingStarted = {
   type: "votingstarted"
-  details: { session: Session; whiteCards: string[]; timeLeft: number }
+  details: { session: Session; whiteCards: string[] }
+}
+export type VotingTimeLeft = {
+  type: "votingtimeleft"
+  details: {
+    secondsLeft: number
+  }
 }
 export type ChoosingStarted = {
   type: "choosingstarted"
@@ -37,6 +43,10 @@ export type ChoosingStarted = {
 }
 export type Choose = {
   type: "choose"
+  details: { session: Session }
+}
+export type ChoosingBestStarted = {
+  type: "choosingbeststarted"
   details: { session: Session }
 }
 export type GameEnd = {
@@ -51,7 +61,9 @@ export type Message =
   | Joined
   | Voted
   | VotingStarted
+  | VotingTimeLeft
   | ChoosingStarted
   | Choose
+  | ChoosingBestStarted
   | GameEnd
   | Error
