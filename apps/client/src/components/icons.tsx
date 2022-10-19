@@ -1,3 +1,7 @@
+import React from "react"
+import Image from "next/future/image"
+import catEyes from "../assets/cat-eyes.svg"
+
 export const Plus = () => (
   <svg
     width="23"
@@ -41,10 +45,13 @@ export const Pencil = () => (
   </svg>
 )
 
-export const Crown = () => (
+export const Crown: React.FC<{ width?: number; height?: number }> = ({
+  width = 16,
+  height = 13
+}) => (
   <svg
-    width="16"
-    height="13"
+    width={width}
+    height={height}
     viewBox="0 0 16 13"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -63,4 +70,15 @@ export const Crown = () => (
       strokeLinecap="round"
     />
   </svg>
+)
+
+export const Logo = () => (
+  <div className="flex flex-col items-center justify-center">
+    <Image src={catEyes} alt="" />
+    <h1 className="text-center text-2xl font-bold leading-none text-gray-100">
+      <span>500</span>{" "}
+      <span className="text-4xl leading-none text-red-500">ЗЛОБНЫХ</span>{" "}
+      <span>карт</span> <br /> <span className="h text-lg">онлайн</span>
+    </h1>
+  </div>
 )
