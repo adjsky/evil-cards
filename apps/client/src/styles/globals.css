@@ -22,3 +22,19 @@
 .scrollable::-webkit-scrollbar-thumb:hover {
   background: theme("colors.gray.200");
 }
+
+@keyframes countdown {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.countdown {
+  animation-name: countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: backwards;
+  animation-duration: 60s;
+}

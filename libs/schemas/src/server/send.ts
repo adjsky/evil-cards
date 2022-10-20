@@ -1,5 +1,6 @@
 export type User = {
   id: string
+  avatarId: number
   username: string
   score: number
   host: boolean
@@ -9,7 +10,7 @@ export type User = {
 }
 export type Session = {
   id: string
-  state: "waiting" | "voting" | "choosing" | "end" | "choosingbest"
+  state: "waiting" | "starting" | "voting" | "choosing" | "end" | "choosingbest"
   users: User[]
   redCard: string | null
   votes: { text: string; userId: string; visible: boolean }[]
@@ -21,25 +22,27 @@ export type Created = {
 }
 export type Joined = {
   type: "joined"
-  details: { session: Session; userId: string }
+  details: { session: Session; userId: string; whiteCards?: string[] }
+}
+export type Disconnected = {
+  type: "disconnected"
+  details: { session: Session }
 }
 export type Voted = {
   type: "voted"
+  details: { session: Session }
+}
+export type GameStart = {
+  type: "gamestart"
   details: { session: Session }
 }
 export type VotingStarted = {
   type: "votingstarted"
   details: { session: Session; whiteCards: string[] }
 }
-export type VotingTimeLeft = {
-  type: "votingtimeleft"
-  details: {
-    secondsLeft: number
-  }
-}
 export type ChoosingStarted = {
   type: "choosingstarted"
-  details: { session: Session }
+  details: { session: Session; whiteCards: string[] }
 }
 export type Choose = {
   type: "choose"
@@ -51,19 +54,25 @@ export type ChoosingBestStarted = {
 }
 export type GameEnd = {
   type: "gameend"
+  details: { session: Session }
 }
 export type Error = {
   type: "error"
   details?: string
 }
+export type Ping = {
+  type: "ping"
+}
 export type Message =
   | Created
   | Joined
+  | Disconnected
   | Voted
+  | GameStart
   | VotingStarted
-  | VotingTimeLeft
   | ChoosingStarted
   | Choose
   | ChoosingBestStarted
   | GameEnd
   | Error
+  | Ping

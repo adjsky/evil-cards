@@ -1,10 +1,14 @@
 import z from "zod"
 
-export const createSessionSchema = z.object({ username: z.string() })
+export const createSessionSchema = z.object({
+  username: z.string(),
+  avatarId: z.number()
+})
 export type CreateSession = z.TypeOf<typeof createSessionSchema>
 export const joinSessionSchema = z.object({
   username: z.string(),
-  sessionId: z.string()
+  sessionId: z.string(),
+  avatarId: z.number()
 })
 export type JoinSession = z.TypeOf<typeof joinSessionSchema>
 export const voteSchema = z.object({
@@ -39,6 +43,9 @@ export const messageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("choosebest"),
     details: chooseSchema
+  }),
+  z.object({
+    type: z.literal("pong")
   })
 ])
 export type Message = z.TypeOf<typeof messageSchema>

@@ -1,11 +1,12 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
-import type { Message } from "@kado/schemas/server/receive"
+import type { Message } from "@kado/schemas/dist/server/receive"
 
 import type { MapDiscriminatedUnion, UnwrapField } from "../types/utility"
 
 export type User = {
   id: string
+  avatarId: number
   username: string
   score: number
   host: boolean
@@ -18,14 +19,14 @@ export type User = {
 
 export type Session = {
   id: string
-  state: "waiting" | "voting" | "choosing" | "choosingbest" | "end"
+  state: "waiting" | "starting" | "voting" | "choosing" | "choosingbest" | "end"
   users: User[]
   redCard: string | null
   votes: { text: string; userId: string; visible: boolean }[]
   _availableWhiteCards: string[]
   _availableRedCards: string[]
   _masterIndex: number
-  _countdownInterval: NodeJS.Timeout | null
+  _countdownTimeout: NodeJS.Timeout | null
 }
 
 export type WithWebsocket<T> = {
@@ -33,7 +34,7 @@ export type WithWebsocket<T> = {
     ? { socket: WebSocket }
     : T[K] & { socket: WebSocket }
 }
-export type EmitteryEvent = WithWebsocket<
+export type ServerEvent = WithWebsocket<
   UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
 >
-export type Emitter = Emittery<EmitteryEvent>
+export type Emitter = Emittery<ServerEvent & { closed: { socket: WebSocket } }>

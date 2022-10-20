@@ -1,4 +1,3 @@
-import React from "react"
 import Image from "next/future/image"
 import catEyes from "../assets/cat-eyes.svg"
 
@@ -45,13 +44,10 @@ export const Pencil = () => (
   </svg>
 )
 
-export const Crown: React.FC<{ width?: number; height?: number }> = ({
-  width = 16,
-  height = 13
-}) => (
+export const Crown = () => (
   <svg
-    width={width}
-    height={height}
+    width={16}
+    height={13}
     viewBox="0 0 16 13"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -68,6 +64,38 @@ export const Crown: React.FC<{ width?: number; height?: number }> = ({
       stroke="#F8C034"
       strokeWidth="2"
       strokeLinecap="round"
+    />
+  </svg>
+)
+
+export const Question = () => (
+  <svg
+    width="48"
+    height="48"
+    viewBox="0 0 48 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M21.0367 38.5V32.2572C21.0367 31.8131 21.3267 31.4222 21.7489 31.2846C23.7703 30.626 29.5032 28.5777 31.1586 26.0458C33.1799 22.9543 32.9866 16.0536 30.1021 13.2906C26.4662 9.80795 18.8126 9.20757 16.4139 13.6675C15.0985 16.1133 15.5898 20.8102 15.5898 20.8102"
+      stroke="#555555"
+      strokeWidth="7"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+export const CheckMark = () => (
+  <svg
+    width="9"
+    height="12"
+    viewBox="0 0 9 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M4.2674 11.5C3.87068 11.5 2.50209 10.6256 0.201251 7.12781C-0.358005 6.27765 0.35993 4.74738 0.994645 5.4275C1.62936 6.10762 3.04422 8.3018 3.87068 9.31388C5.55664 5.54893 8.2126 -0.668661 8.82939 0.690947C9.82111 2.87703 6.25088 8.74714 4.2674 11.5Z"
+      fill="#3BB948"
     />
   </svg>
 )

@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from "react"
 import { useAtom } from "jotai"
-import Image from "next/future/image"
 import dynamic from "next/dynamic"
 import clsx from "clsx"
 
 import { gameStateAtom } from "../atoms"
 import { useSocket } from "../ws/hooks"
 import useToggle from "../hooks/use-toggle"
+import useCountdown from "../hooks/use-countdown"
+import useScreenFactor from "../hooks/use-screen-factor"
 
-import { Logo, Crown } from "../components/icons"
-import cat from "../assets/cat.svg"
+import { Logo } from "../components/icons"
+import UserList from "../components/user-list"
 
-import type {
-  User,
-  Message as ReceiveMessage
-} from "@kado/schemas/client/receive"
-import type { Message as SendMessage } from "@kado/schemas/client/send"
+import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
+import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
 
 const Waiting: React.FC = () => {
   const [gameState, setGameState] = useAtom(gameStateAtom)
+  const scaleFactor = useScreenFactor()
+  const { start, secondsLeft, running } = useCountdown()
   const visible =
     gameState?.session.state == "waiting" || gameState?.session.state == "end"
   const { lastJsonMessage, sendJsonMessage } = useSocket<
@@ -37,22 +37,14 @@ const Waiting: React.FC = () => {
           whiteCards: data.details.whiteCards
         })
       }
-    }
-  })
 
-  const [scaleFactor, setScaleFactor] = useState(1)
-  useEffect(() => {
-    const computeScale = () => {
-      if (window.innerWidth < 880) {
-        setScaleFactor(window.innerWidth / 880)
-      } else {
-        setScaleFactor(1)
+      if (data.type == "disconnected") {
+        setGameState({ ...gameState, session: data.details.session })
       }
-    }
-    window.addEventListener("resize", computeScale)
 
-    return () => {
-      window.removeEventListener("resize", computeScale)
+      if (data.type == "gamestart") {
+        start(3)
+      }
     }
   })
 
@@ -76,7 +68,7 @@ const Waiting: React.FC = () => {
         <Logo />
         <div className="flex w-[850px] gap-4">
           <div className="h-[500px]">
-            <Users users={gameState.session.users} />
+            <UserList users={gameState.session.users} variant="waiting" />
           </div>
           <div className="flex w-full flex-col gap-6">
             <div className="flex h-full w-full flex-col rounded-lg border-2 border-gray-200 p-4">
@@ -86,16 +78,18 @@ const Waiting: React.FC = () => {
             </div>
             <div className="flex w-full justify-center gap-6">
               <DynamicInviteButton id={gameState.session.id} />
-              {user.host && (
-                <button
-                  onClick={() => {
-                    sendJsonMessage({ type: "startgame" })
-                  }}
-                  className="rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-red-500"
-                >
-                  НАЧАТь
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  sendJsonMessage({ type: "startgame" })
+                }}
+                className={clsx(
+                  "w-32 rounded-lg bg-red-500 py-4 text-xl leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
+                  !user.host && "opacity-50"
+                )}
+                disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+              >
+                {lastJsonMessage?.type == "gamestart" ? secondsLeft : "НАЧАТЬ"}
+              </button>
             </div>
           </div>
         </div>
@@ -126,7 +120,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
             `${window.location.href}?sessionId=${id}`
           )
 
-          toggleCopied()
+          !copied && toggleCopied()
         }}
       >
         ПРИГЛАСИТЬ
@@ -145,32 +139,5 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
 const DynamicInviteButton = dynamic(() => Promise.resolve(InviteButton), {
   ssr: false
 })
-
-const Users: React.FC<{ users: User[] }> = ({ users }) => {
-  return (
-    <div className="scrollable flex h-full flex-col gap-2 pr-2">
-      {users.map((user) => (
-        <User key={user.id} user={user} />
-      ))}
-      {Array.from({ length: 10 - users.length }).map((_, index) => (
-        <User key={index} />
-      ))}
-    </div>
-  )
-}
-
-const User: React.FC<{ user?: User }> = ({ user }) => {
-  return (
-    <div className="flex w-[194px] items-center gap-2 rounded-xl border-2 border-gray-200 px-2 py-1">
-      {user?.host && <Crown />}
-      <Image src={cat} width={48} height={48} alt="" />
-      <div className="flex flex-col gap-1 text-gray-100">
-        <span className="text-xs leading-none">
-          {user?.username ?? "Пусто"}
-        </span>
-      </div>
-    </div>
-  )
-}
 
 export default Waiting

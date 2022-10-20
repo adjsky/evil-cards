@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import type { Session } from "@kado/schemas/client/receive"
+import type { Session } from "@kado/schemas/dist/client/receive"
 
 type GameState = {
   session: Session

@@ -1,12 +1,11 @@
 import { nanoid } from "nanoid"
-import dayjs from "dayjs"
 
 import stringify from "../ws/stringify"
 import getRandomInt from "../functions/get-random-int"
 import { whiteCards, redCards } from "./cards"
 import Controller from "./controller"
 
-import type { Session, EmitteryEvent } from "./types"
+import type { User, Session, ServerEvent } from "./types"
 
 class Game {
   private sessions: Map<string, Session>
@@ -22,13 +21,29 @@ class Game {
     this.controller.emitter.on("choosebest", this.chooseBest.bind(this))
     this.controller.emitter.on("startgame", this.startGame.bind(this))
     this.controller.emitter.on("vote", this.vote.bind(this))
+    this.controller.emitter.on("closed", ({ socket }) => {
+      const session = socket.session
+      const user = socket.user
+      if (!session || !user) {
+        return
+      }
+
+      this.handleClose(session, user)
+      socket.user = null
+      socket.session = null
+    })
   }
 
-  private createSession({ socket, username }: EmitteryEvent["createsession"]) {
+  private createSession({
+    socket,
+    username,
+    avatarId
+  }: ServerEvent["createsession"]) {
     const sessionId = nanoid(5)
     const id = nanoid(5)
     const user = {
       id,
+      avatarId,
       username,
       score: 0,
       host: true,
@@ -47,7 +62,7 @@ class Game {
       _availableWhiteCards: [...whiteCards],
       _availableRedCards: [...redCards],
       _masterIndex: 0,
-      _countdownInterval: null
+      _countdownTimeout: null
     }
 
     this.sessions.set(sessionId, session)
@@ -63,35 +78,74 @@ class Game {
         true
       )
     )
+
+    user._socket.on("close", () => {
+      socket.session = null
+      socket.user = null
+
+      this.handleClose(session, user)
+    })
   }
 
   private joinSession({
     sessionId,
     socket,
-    username
-  }: EmitteryEvent["joinsession"]) {
+    username,
+    avatarId
+  }: ServerEvent["joinsession"]) {
     const session = this.sessions.get(sessionId)
     if (!session) {
       throw new Error("session not found")
     }
 
-    const id = nanoid(5)
-    const user = {
-      id,
-      username,
-      score: 0,
-      host: false,
-      master: false,
-      voted: false,
-      disconnected: false,
-      _socket: socket,
-      _whiteCards: []
+    const previousUser = session.users.find((user) => user.username == username)
+    let newUser: User
+    if (previousUser) {
+      previousUser._socket = socket
+      previousUser.disconnected = false
+      previousUser.avatarId = avatarId
+      newUser = previousUser
+    } else {
+      if (session.users.findIndex((user) => user.username == username) != -1) {
+        throw new Error("nickname is taken")
+      }
+
+      const id = nanoid(5)
+      const user = {
+        id,
+        avatarId,
+        username,
+        score: 0,
+        host: false,
+        master: false,
+        voted: false,
+        disconnected: false,
+        _socket: socket,
+        _whiteCards: []
+      }
+      session.users.push(user)
+      newUser = user
     }
-    session.users.push(user)
 
     socket.session = session
-    socket.user = user
-    session.users.forEach((user) =>
+    socket.user = newUser
+    session.users.forEach((user) => {
+      if (previousUser) {
+        previousUser._socket.send(
+          stringify(
+            {
+              type: "joined",
+              details: {
+                session,
+                userId: user.id,
+                whiteCards: previousUser._whiteCards
+              }
+            },
+            true
+          )
+        )
+      }
+
       user._socket.send(
         stringify(
           {
@@ -104,10 +158,17 @@ class Game {
           true
         )
       )
-    )
+    })
+
+    newUser._socket.on("close", () => {
+      socket.session = null
+      socket.user = null
+
+      this.handleClose(session, newUser)
+    })
   }
 
-  private vote({ socket, text }: EmitteryEvent["vote"]) {
+  private vote({ socket, text }: ServerEvent["vote"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -143,12 +204,13 @@ class Game {
       }
     }
     if (allVoted) {
-      session._countdownInterval && clearInterval(session._countdownInterval)
+      session._countdownTimeout && clearTimeout(session._countdownTimeout)
+      session._countdownTimeout = null
       this.startChoosing(session)
     }
   }
 
-  private startGame({ socket }: EmitteryEvent["startgame"]) {
+  private startGame({ socket }: ServerEvent["startgame"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -162,11 +224,21 @@ class Game {
       throw new Error("you are not host")
     }
 
-    if (session.state != "waiting") {
+    if (session.state != "waiting" && session.state != "end") {
       throw new Error("game is started already")
     }
+    // if (session.users.length < 2) {
+    //   throw new Error("need more players")
+    // }
 
-    this.startVoting(session)
+    session.state = "starting"
+    session.users.forEach((user) =>
+      user._socket.send(
+        stringify({ type: "gamestart", details: { session } }, true)
+      )
+    )
+
+    setTimeout(() => this.startVoting(session), 3000)
   }
 
   private startVoting(session: Session) {
@@ -175,30 +247,30 @@ class Game {
     session.state = "voting"
 
     // unmaster previous user
-    const prevMasterUser =
-      session.users[
-        session._masterIndex == 0
-          ? session.users.length - 1
-          : session._masterIndex - 1
-      ]
-    if (!prevMasterUser) {
-      throw new Error("smth happened")
+    const prevMasterUser = session.users.find((user) => user.master == true)
+    if (prevMasterUser) {
+      prevMasterUser.master = false
     }
-    prevMasterUser.master = false
 
     // decide who is master
-    const masterUser = session.users[session._masterIndex]
+    let masterUser = session.users[session._masterIndex]
+    if (!masterUser) {
+      throw new Error("smth happened")
+    }
+    if (masterUser.disconnected) {
+      this.updateMasterIndex(session)
+    }
+    masterUser = session.users[session._masterIndex]
     if (!masterUser) {
       throw new Error("smth happened")
     }
     masterUser.master = true
-    if (session._masterIndex + 1 >= session.users.length) {
-      session._masterIndex = 0
-    } else {
-      session._masterIndex += 1
-    }
+    this.updateMasterIndex(session)
 
     // get red card
+    if (session._availableRedCards.length == 0) {
+      session._availableRedCards = redCards
+    }
     const redCardIndex = getRandomInt(0, session._availableRedCards.length - 1)
     const redCard = session._availableRedCards[redCardIndex]
     if (!redCard) {
@@ -217,11 +289,11 @@ class Game {
           0,
           session._availableWhiteCards.length - 1
         )
-        const whiteCard = session._availableWhiteCards[whiteCardIndex]
-        if (!whiteCard) {
-          throw new Error(whiteCard)
+        if (session._availableWhiteCards.length == 0) {
+          session._availableWhiteCards = whiteCards
         }
-        whiteCards.push(whiteCard)
+        const whiteCard = session._availableWhiteCards[whiteCardIndex]
+        if (whiteCard) whiteCards.push(whiteCard)
         session._availableWhiteCards.splice(whiteCardIndex, 1)
       }
 
@@ -239,47 +311,47 @@ class Game {
       )
     }
 
-    const endDate = dayjs().add(30, "second")
-    const countdown = () => {
-      const diff = endDate.diff(dayjs(), "second", true)
-
-      session.users.forEach((user) =>
-        user._socket.send(
-          stringify({
-            type: "votingtimeleft",
-            details: {
-              secondsLeft: diff <= 0 ? 0 : diff
-            }
-          })
-        )
-      )
-
-      if (diff <= 0) {
-        session._countdownInterval && clearInterval(session._countdownInterval)
-        setTimeout(() => this.startChoosing(session), 1000)
-      }
-    }
-    // start coundown
-    countdown()
-    session._countdownInterval = setInterval(countdown, 1000)
+    session._countdownTimeout = setTimeout(() => {
+      session._countdownTimeout && clearTimeout(session._countdownTimeout)
+      session._countdownTimeout = null
+      this.startChoosing(session)
+    }, 60000)
   }
 
   private startChoosing(session: Session) {
-    if (session.votes.length == 0) {
-      setTimeout(() => this.startVoting(session), 1000)
-      return
-    }
+    session.users.forEach((user) => {
+      if (user.voted || user.master || user.disconnected) {
+        return
+      }
+
+      const randomCardIndex = getRandomInt(0, user._whiteCards.length - 1)
+      const text = user._whiteCards[randomCardIndex]
+      if (!text) {
+        throw new Error("smth happened")
+      }
+      session.votes.push({ text, userId: user.id, visible: false })
+      user._whiteCards.splice(randomCardIndex, 1)
+    })
 
     session.state = "choosing"
+    session.users.forEach((user) => {
+      if (user.disconnected) {
+        return
+      }
 
-    session.users.forEach((user) =>
       user._socket.send(
-        stringify({ type: "choosingstarted", details: { session } }, true)
+        stringify(
+          {
+            type: "choosingstarted",
+            details: { session, whiteCards: user._whiteCards }
+          },
+          true
+        )
       )
-    )
+    })
   }
 
-  private choose({ userId, socket }: EmitteryEvent["choose"]) {
+  private choose({ userId, socket }: ServerEvent["choose"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -302,23 +374,31 @@ class Game {
     }
 
     card.visible = true
-    session.users.forEach((user) =>
+    session.users.forEach((user) => {
+      if (user.disconnected) {
+        return
+      }
+
       user._socket.send(
         stringify({ type: "choose", details: { session } }, true)
       )
-    )
+    })
 
     if (session.votes.every((vote) => vote.visible)) {
       session.state = "choosingbest"
-      session.users.forEach((user) =>
+      session.users.forEach((user) => {
+        if (user.disconnected) {
+          return
+        }
+
         user._socket.send(
           stringify({ type: "choosingbeststarted", details: { session } }, true)
         )
-      )
+      })
     }
   }
 
-  private chooseBest({ userId, socket }: EmitteryEvent["choosebest"]) {
+  private chooseBest({ userId, socket }: ServerEvent["choosebest"]) {
     const session = socket.session
     if (!session) {
       throw new Error("no session")
@@ -344,14 +424,89 @@ class Game {
     if (votedUser.score >= 10) {
       this.endGame(session)
     } else {
-      setTimeout(() => this.startVoting(session), 1000)
+      this.startVoting(session)
     }
   }
 
   private endGame(session: Session) {
     session.state = "end"
+    session.redCard = null
+    session.votes = []
+    session._availableRedCards = redCards
+    session._availableWhiteCards = whiteCards
+    session._countdownTimeout && clearTimeout(session._countdownTimeout)
+    session._countdownTimeout = null
+    session._masterIndex = 0
+
+    session.users = session.users.filter((user) => user.disconnected == false)
+    for (const user of session.users) {
+      user._whiteCards = []
+      user.master = false
+      user.voted = false
+    }
+
+    session.users.forEach((user) => {
+      if (user.disconnected) {
+        return
+      }
+
+      user._socket.send(
+        stringify({ type: "gameend", details: { session } }, true)
+      )
+    })
+  }
+
+  private updateMasterIndex(session: Session) {
+    let masterIndex = session._masterIndex
+
+    do {
+      if (masterIndex + 1 >= session.users.length) {
+        masterIndex = 0
+      } else {
+        masterIndex += 1
+      }
+    } while (session.users[masterIndex]?.disconnected == true)
+
+    session._masterIndex = masterIndex
+  }
+
+  public handleClose(session: Session, user: User) {
+    const isHost = user.host
+
+    if (session.state == "waiting") {
+      session.users = session.users.filter(
+        (sessionUser) => sessionUser.id != user.id
+      )
+    } else {
+      user.disconnected = true
+    }
+
+    const connectedUsers = session.users.filter(
+      (user) => user.disconnected == false
+    )
+
+    if (connectedUsers.length == 0) {
+      session._countdownTimeout && clearTimeout(session._countdownTimeout)
+      session._countdownTimeout = null
+      this.sessions.delete(session.id)
+
+      return
+    }
+
+    if (connectedUsers.length > 1) {
+      if (isHost) {
+        connectedUsers[0]!.host = true
+      }
+    } else if (session.state != "waiting") {
+      this.endGame(session)
+
+      return
+    }
+
     session.users.forEach((user) =>
-      user._socket.send(stringify({ type: "gameend" }, true))
+      user._socket.send(
+        stringify({ type: "disconnected", details: { session } }, true)
+      )
     )
   }
 }

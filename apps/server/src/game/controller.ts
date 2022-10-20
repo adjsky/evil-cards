@@ -1,7 +1,7 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
 
-import { messageSchema } from "@kado/schemas/server/receive"
+import { messageSchema } from "@kado/schemas/dist/server/receive"
 import stringify from "../ws/stringify"
 
 import type { WebSocket } from "ws"
@@ -15,14 +15,31 @@ class Controller {
   }
 
   handleConnection(socket: WebSocket) {
+    socket.alive = true
+    const interval = setInterval(() => {
+      if (!socket.alive) {
+        socket.close()
+        this.emitter.emit("closed", { socket })
+        clearInterval(interval)
+        return
+      }
+
+      socket.alive = false
+      socket.send(stringify({ type: "ping" }))
+    }, 3000)
+
     socket.on("message", async (rawData) => {
       try {
         const message = messageSchema.parse(JSON.parse(rawData.toString()))
 
-        await this.emitter.emit(
-          message.type,
-          "details" in message ? { ...message.details, socket } : { socket }
-        )
+        if (message.type == "pong") {
+          socket.alive = true
+        } else {
+          await this.emitter.emit(
+            message.type,
+            "details" in message ? { ...message.details, socket } : { socket }
+          )
+        }
       } catch (error) {
         console.error(error)
         socket.send(

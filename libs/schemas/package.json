@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "./server/index.ts",
+  "main": "./dist/server/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p ."
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "typescript": "^4.8.4",
     "zod": "^3.19.1"
   },
   "peerDependencies": {
