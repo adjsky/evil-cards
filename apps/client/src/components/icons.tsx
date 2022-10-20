@@ -110,3 +110,104 @@ export const Logo = () => (
     </h1>
   </div>
 )
+
+export const Close = ({ fill }: { fill: string }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M5 5.5L15 15.5" stroke={fill} strokeWidth="2" />
+    <path d="M5 15.5L15 5.5" stroke={fill} strokeWidth="2" />
+  </svg>
+)
+
+export const CrossMark = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect y="0.5" width="20" height="20" rx="10" fill="#DF4B4B" />
+    <path
+      d="M13 7.5L7 13.5"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7 7.5L13 13.5"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+export const ExclamationMark = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect y="0.5" width="20" height="20" rx="10" fill="#fff" />
+    <path
+      d="M10 6L10 11"
+      stroke="#2A2A2A"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M10 14.5H10.01"
+      stroke="#2A2A2A"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+export const Cat = () => (
+  <svg
+    width="33"
+    height="30"
+    viewBox="0 0 33 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <ellipse cx="16.7261" cy="18.0001" rx="12.5" ry="12" fill="#2A2A2A" />
+    <path
+      d="M6.57312 1.1194C6.60847 1.06641 6.68692 1.06702 6.72226 1.12057L10.9314 7.4998L13.1793 11.4435C13.9415 12.7807 13.8716 14.4288 12.9995 15.6848L7.9485 22.9596C7.59336 23.4711 6.83687 23.4811 6.4605 22.9793L5.81203 22.1147C4.77928 20.7377 4.18953 19.0831 4.1213 17.3711L3.95238 13.1325C3.84316 10.3917 4.13141 7.65257 4.80822 4.99979C5.14599 3.67591 5.70544 2.41984 6.46312 1.28426L6.57312 1.1194Z"
+      fill="#2A2A2A"
+    />
+    <path
+      d="M26.1178 1.11962C26.0825 1.06663 26.004 1.06724 25.9687 1.12079L21.7595 7.50001L19.4902 11.4813C18.7392 12.7989 18.7952 14.4204 19.635 15.6714L24.3935 22.7599C24.7896 23.3499 25.6635 23.3439 26.0605 22.7485L27.6887 20.3061C28.6882 18.8069 29.1915 17.0358 29.1272 15.2438L29.0514 13.131C28.9529 10.3848 28.5612 7.65912 27.8827 5.00001C27.545 3.67613 26.9855 2.42006 26.2278 1.28448L26.1178 1.11962Z"
+      fill="#2A2A2A"
+    />
+    <path
+      d="M25.2261 15.2048L18.2261 19.2048C19.2261 19.7048 21.4178 20.9742 23.7261 20.2048C25.2261 19.7048 25.7261 16.7048 25.2261 15.2048Z"
+      fill="white"
+    />
+    <path
+      d="M23.0169 19.5232L21.3624 16.5288L22.9825 16.1023L23.0169 19.5232Z"
+      fill="#2A2A2A"
+    />
+    <path
+      d="M8.41357 15.2048L15.4136 19.2048C14.4136 19.7048 12.2218 20.9742 9.91357 20.2048C8.41357 19.7048 7.91357 16.7048 8.41357 15.2048Z"
+      fill="white"
+    />
+    <path
+      d="M10.6227 19.5232L12.2773 16.5288L10.6572 16.1023L10.6227 19.5232Z"
+      fill="#2A2A2A"
+    />
+  </svg>
+)

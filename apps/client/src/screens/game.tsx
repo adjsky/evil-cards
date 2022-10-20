@@ -1,65 +1,29 @@
-import React, { useState, useEffect } from "react"
+import React from "react"
 import { useAtom } from "jotai"
 import clsx from "clsx"
 
 import { gameStateAtom } from "../atoms"
-import { useSocket } from "../ws/hooks"
+import useSocket from "../hooks/use-socket"
+import useScreenFactor from "../hooks/use-screen-factor"
 
 import UserList from "../components/user-list"
+import { Cat } from "../components/icons"
 
 import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
 import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
 
 const Game: React.FC = () => {
-  const [gameState, setGameState] = useAtom(gameStateAtom)
-  const visible =
-    gameState?.session.state != "end" && gameState?.session.state != "waiting"
+  const [gameState] = useAtom(gameStateAtom)
+  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
-    onJsonMessage(data) {
-      if (!visible || !gameState) {
-        return
-      }
-
-      if (
-        data.type == "choose" ||
-        data.type == "choosingbeststarted" ||
-        data.type == "voted" ||
-        data.type == "disconnected" ||
-        data.type == "gameend"
-      ) {
-        setGameState({ ...gameState, session: data.details.session })
-      }
-
-      if (data.type == "votingstarted" || data.type == "choosingstarted") {
-        setGameState({
-          ...gameState,
-          session: data.details.session,
-          whiteCards: data.details.whiteCards
-        })
-      }
-    }
+  const screenStyles = useScreenFactor({
+    width: 850,
+    height: 718,
+    px: 40,
+    py: 40
   })
 
-  const [scaleFactor, setScaleFactor] = useState(
-    window.innerWidth < 880 ? window.innerWidth / 880 : 1
-  )
-  useEffect(() => {
-    const computeScale = () => {
-      if (window.innerWidth < 880) {
-        setScaleFactor(window.innerWidth / 880)
-      } else {
-        setScaleFactor(1)
-      }
-    }
-    window.addEventListener("resize", computeScale)
-
-    return () => {
-      window.removeEventListener("resize", computeScale)
-    }
-  })
-
-  if (!visible || !gameState) {
+  if (!gameState) {
     return null
   }
   const user = gameState.session.users.find(
@@ -70,10 +34,10 @@ const Game: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center py-10">
+    <div className="relative h-screen">
       <div
         className="flex flex-col items-center justify-center gap-3"
-        style={{ transform: `scale(${scaleFactor})` }}
+        style={screenStyles}
       >
         <div className="flex h-[342px] items-center justify-center gap-[49px]">
           <div className="h-[241px] w-[174px] break-words rounded-lg bg-red-500 p-4 text-lg font-medium leading-[1.15] text-gray-100">
@@ -121,12 +85,14 @@ const Game: React.FC = () => {
                   disabled={
                     gameState.session.state == "choosing" ||
                     gameState.session.state == "choosingbest" ||
-                    user.master
+                    user.master ||
+                    user.voted
                   }
                   lowerOpacity={
                     gameState.session.state == "choosing" ||
                     gameState.session.state == "choosingbest" ||
-                    user.master
+                    user.master ||
+                    user.voted
                   }
                 />
               ))}
@@ -149,12 +115,19 @@ const Card: React.FC<{
       onClick={onClick}
       className={clsx(
         "flex h-[167px] w-[120px] rounded-lg bg-gray-100 p-3 text-left",
-        lowerOpacity && "opacity-60"
+        lowerOpacity && "opacity-60",
+        !text && "items-center justify-center"
       )}
       disabled={disabled}
     >
-      <span className="inline-block w-full break-words text-sm font-medium leading-[1.15]">
-        {text}
+      <span
+        className={clsx(
+          text &&
+            "inline-block w-full break-words text-sm font-medium leading-[1.15]",
+          !text && "flex items-center justify-center"
+        )}
+      >
+        {text ?? <Cat />}
       </span>
     </button>
   )

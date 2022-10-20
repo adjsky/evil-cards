@@ -30,7 +30,7 @@ export type Disconnected = {
 }
 export type Voted = {
   type: "voted"
-  details: { session: Session }
+  details: { session: Session; whiteCards: string[] }
 }
 export type GameStart = {
   type: "gamestart"

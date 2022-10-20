@@ -18,15 +18,15 @@ class Controller {
     socket.alive = true
     const interval = setInterval(() => {
       if (!socket.alive) {
-        socket.close()
-        this.emitter.emit("closed", { socket })
+        this.emitter.emit("lostconnection", { socket })
+        socket.terminate()
         clearInterval(interval)
         return
       }
 
       socket.alive = false
       socket.send(stringify({ type: "ping" }))
-    }, 3000)
+    }, 60000)
 
     socket.on("message", async (rawData) => {
       try {

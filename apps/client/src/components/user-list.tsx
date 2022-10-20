@@ -60,7 +60,11 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
         {user && variant == "game" && (
           <span className="text-base font-medium leading-none">
             {user.score}{" "}
-            {user.score == 0 ? "очков" : user.score == 1 ? "очко" : "очка"}
+            {user.score == 0 || user.score > 4
+              ? "очков"
+              : user.score == 1
+              ? "очко"
+              : "очка"}
           </span>
         )}
       </div>

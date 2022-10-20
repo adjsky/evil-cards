@@ -1,10 +1,8 @@
 import React, { useState } from "react"
 import Image from "next/future/image"
 import Router from "next/router"
-import { useAtom } from "jotai"
 
-import { useSocket } from "../ws/hooks"
-import { gameStateAtom } from "../atoms"
+import useSocket from "../hooks/use-socket"
 
 import UsernameInput from "../components/username-input"
 import { Plus, Logo } from "../components/icons"
@@ -13,34 +11,9 @@ import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
 import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
 
 const Entry: React.FC = () => {
-  const { sendJsonMessage, lastJsonMessage } = useSocket<
-    SendMessage,
-    ReceiveMessage
-  >({
-    onJsonMessage(data) {
-      if (data.type == "created" || data.type == "joined") {
-        setGameState((prev) => ({
-          session: data.details.session,
-          userId: data.details.userId,
-          whiteCards:
-            data.type == "joined" && data.details.whiteCards
-              ? data.details.whiteCards
-              : prev?.whiteCards ?? []
-        }))
-
-        if (data.type == "joined") {
-          Router.replace(Router.pathname, undefined, { shallow: true })
-        }
-      }
-    }
-  })
-  const [gameState, setGameState] = useAtom(gameStateAtom)
+  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
   const [username, setUsername] = useState("Игрок")
   const [avatarId, setAvatarId] = useState(1)
-
-  if (gameState) {
-    return null
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 py-10">
@@ -66,13 +39,13 @@ const Entry: React.FC = () => {
       </div>
       <button
         onClick={() => {
-          const { sessionId } = Router.query
-          if (typeof sessionId == "string") {
+          const { s } = Router.query
+          if (typeof s == "string") {
             sendJsonMessage({
               type: "joinsession",
               details: {
                 username,
-                sessionId,
+                sessionId: s,
                 avatarId
               }
             })

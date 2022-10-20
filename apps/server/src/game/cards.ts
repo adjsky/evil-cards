@@ -1,5 +1,5 @@
 export const whiteCards: string[] = Array.from({ length: 500 }).map(
-  (_, index) => `Хуй`
+  (_, index) => `Хуй ${index}`
 )
 export const redCards: string[] = [
   "Моя любимая рубрика на порносайтах - это ____",

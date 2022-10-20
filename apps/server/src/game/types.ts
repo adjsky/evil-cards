@@ -37,4 +37,6 @@ export type WithWebsocket<T> = {
 export type ServerEvent = WithWebsocket<
   UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
 >
-export type Emitter = Emittery<ServerEvent & { closed: { socket: WebSocket } }>
+export type Emitter = Emittery<
+  ServerEvent & { lostconnection: { socket: WebSocket } }
+>

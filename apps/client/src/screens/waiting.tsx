@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { useAtom } from "jotai"
 import dynamic from "next/dynamic"
 import clsx from "clsx"
 
 import { gameStateAtom } from "../atoms"
-import { useSocket } from "../ws/hooks"
+import useSocket from "../hooks/use-socket"
 import useToggle from "../hooks/use-toggle"
 import useCountdown from "../hooks/use-countdown"
 import useScreenFactor from "../hooks/use-screen-factor"
@@ -16,42 +16,28 @@ import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receiv
 import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
 
 const Waiting: React.FC = () => {
-  const [gameState, setGameState] = useAtom(gameStateAtom)
-  const scaleFactor = useScreenFactor()
-  const { start, secondsLeft, running } = useCountdown()
-  const visible =
-    gameState?.session.state == "waiting" || gameState?.session.state == "end"
+  const [gameState] = useAtom(gameStateAtom)
+  const screenStyles = useScreenFactor({
+    width: 850,
+    height: 633,
+    px: 40,
+    py: 40
+  })
+  const { start, secondsLeft } = useCountdown()
   const { lastJsonMessage, sendJsonMessage } = useSocket<
     SendMessage,
     ReceiveMessage
   >({
     onJsonMessage(data) {
-      if (!visible) {
-        return
-      }
-
-      if (data.type == "votingstarted") {
-        setGameState({
-          ...gameState,
-          session: data.details.session,
-          whiteCards: data.details.whiteCards
-        })
-      }
-
-      if (data.type == "disconnected") {
-        setGameState({ ...gameState, session: data.details.session })
-      }
-
       if (data.type == "gamestart") {
         start(3)
       }
     }
   })
 
-  if (!visible) {
+  if (!gameState) {
     return null
   }
-
   const user = gameState.session.users.find(
     (user) => user.id == gameState.userId
   )
@@ -60,10 +46,10 @@ const Waiting: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-10">
+    <div className="relative h-screen">
       <div
+        style={screenStyles}
         className="flex flex-col items-center justify-center gap-6"
-        style={{ transform: `scale(${scaleFactor})` }}
       >
         <Logo />
         <div className="flex w-[850px] gap-4">
@@ -84,7 +70,10 @@ const Waiting: React.FC = () => {
                 }}
                 className={clsx(
                   "w-32 rounded-lg bg-red-500 py-4 text-xl leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
-                  !user.host && "opacity-50"
+                  !user.host &&
+                    (gameState.session.state == "waiting" ||
+                      gameState.session.state == "end") &&
+                    "opacity-50"
                 )}
                 disabled={lastJsonMessage?.type == "gamestart" || !user.host}
               >
@@ -116,9 +105,13 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
       <button
         className="rounded-lg border-gray-100 bg-gray-100 px-5 py-4 text-xl leading-none text-gray-900"
         onClick={async () => {
-          await navigator.clipboard.writeText(
-            `${window.location.href}?sessionId=${id}`
-          )
+          const url = `${window.location.href}?s=${id}`
+
+          try {
+            await navigator.clipboard.writeText(url)
+          } catch (error) {
+            alert(url)
+          }
 
           !copied && toggleCopied()
         }}

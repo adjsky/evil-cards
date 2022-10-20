@@ -21,14 +21,14 @@ class Game {
     this.controller.emitter.on("choosebest", this.chooseBest.bind(this))
     this.controller.emitter.on("startgame", this.startGame.bind(this))
     this.controller.emitter.on("vote", this.vote.bind(this))
-    this.controller.emitter.on("closed", ({ socket }) => {
+    this.controller.emitter.on("lostconnection", ({ socket }) => {
       const session = socket.session
       const user = socket.user
       if (!session || !user) {
         return
       }
 
-      this.handleClose(session, user)
+      this.handleDisconnect(session, user)
       socket.user = null
       socket.session = null
     })
@@ -83,7 +83,7 @@ class Game {
       socket.session = null
       socket.user = null
 
-      this.handleClose(session, user)
+      this.handleDisconnect(session, user)
     })
   }
 
@@ -97,15 +97,19 @@ class Game {
     if (!session) {
       throw new Error("session not found")
     }
+    const waitingState = session.state == "waiting" || session.state == "end"
 
     const previousUser = session.users.find((user) => user.username == username)
     let newUser: User
-    if (previousUser) {
+    if (previousUser && !waitingState) {
       previousUser._socket = socket
       previousUser.disconnected = false
       previousUser.avatarId = avatarId
       newUser = previousUser
     } else {
+      if (!waitingState) {
+        throw new Error("game is started already")
+      }
       if (session.users.findIndex((user) => user.username == username) != -1) {
         throw new Error("nickname is taken")
       }
@@ -130,7 +134,7 @@ class Game {
     socket.session = session
     socket.user = newUser
     session.users.forEach((user) => {
-      if (previousUser) {
+      if (previousUser && !waitingState) {
         previousUser._socket.send(
           stringify(
             {
@@ -164,7 +168,7 @@ class Game {
       socket.session = null
       socket.user = null
 
-      this.handleClose(session, newUser)
+      this.handleDisconnect(session, newUser)
     })
   }
 
@@ -187,19 +191,26 @@ class Game {
     if (!user._whiteCards.includes(text)) {
       throw new Error("you have no such card")
     }
+    if (user.voted) {
+      throw new Error("you are voted already")
+    }
 
     user.voted = true
+    user._whiteCards = user._whiteCards.filter((cardText) => text != cardText)
     session.votes.push({ text, userId: user.id, visible: false })
 
     session.users.forEach((user) =>
       user._socket.send(
-        stringify({ type: "voted", details: { session } }, true)
+        stringify(
+          { type: "voted", details: { session, whiteCards: user._whiteCards } },
+          true
+        )
       )
     )
 
     let allVoted = true
     for (const user of session.users) {
-      if (!user.master && !user.voted) {
+      if (!user.master && !user.voted && !user.disconnected) {
         allVoted = false
       }
     }
@@ -227,9 +238,9 @@ class Game {
     if (session.state != "waiting" && session.state != "end") {
       throw new Error("game is started already")
     }
-    // if (session.users.length < 2) {
-    //   throw new Error("need more players")
-    // }
+    if (session.users.length < 2) {
+      throw new Error("need more players")
+    }
 
     session.state = "starting"
     session.users.forEach((user) =>
@@ -244,6 +255,9 @@ class Game {
   private startVoting(session: Session) {
     // prepare
     session.votes = []
+    for (const user of session.users) {
+      user.voted = false
+    }
     session.state = "voting"
 
     // unmaster previous user
@@ -289,9 +303,6 @@ class Game {
           0,
           session._availableWhiteCards.length - 1
         )
-        if (session._availableWhiteCards.length == 0) {
-          session._availableWhiteCards = whiteCards
-        }
         const whiteCard = session._availableWhiteCards[whiteCardIndex]
         if (whiteCard) whiteCards.push(whiteCard)
         session._availableWhiteCards.splice(whiteCardIndex, 1)
@@ -329,6 +340,7 @@ class Game {
       if (!text) {
         throw new Error("smth happened")
       }
+      user.voted = true
       session.votes.push({ text, userId: user.id, visible: false })
       user._whiteCards.splice(randomCardIndex, 1)
     })
@@ -443,6 +455,7 @@ class Game {
       user._whiteCards = []
       user.master = false
       user.voted = false
+      user.score = 0
     }
 
     session.users.forEach((user) => {
@@ -470,7 +483,7 @@ class Game {
     session._masterIndex = masterIndex
   }
 
-  public handleClose(session: Session, user: User) {
+  public handleDisconnect(session: Session, user: User) {
     const isHost = user.host
 
     if (session.state == "waiting") {
@@ -484,23 +497,39 @@ class Game {
     const connectedUsers = session.users.filter(
       (user) => user.disconnected == false
     )
-
     if (connectedUsers.length == 0) {
       session._countdownTimeout && clearTimeout(session._countdownTimeout)
       session._countdownTimeout = null
       this.sessions.delete(session.id)
-
-      return
-    }
-
-    if (connectedUsers.length > 1) {
-      if (isHost) {
-        connectedUsers[0]!.host = true
+    } else {
+      if (session.state == "waiting" || session.state == "end") {
+        if (isHost) {
+          connectedUsers[0]!.host = true
+        }
       }
-    } else if (session.state != "waiting") {
-      this.endGame(session)
 
-      return
+      if (session.state != "waiting" && user.master) {
+        user.master = false
+
+        // decide who is master
+        let masterUser = session.users[session._masterIndex]
+        if (!masterUser) {
+          throw new Error("smth happened")
+        }
+        if (masterUser.disconnected) {
+          this.updateMasterIndex(session)
+        }
+        masterUser = session.users[session._masterIndex]
+        if (!masterUser) {
+          throw new Error("smth happened")
+        }
+        masterUser.master = true
+        this.updateMasterIndex(session)
+      }
+
+      if (session.state != "waiting" && connectedUsers.length == 1) {
+        this.endGame(session)
+      }
     }
 
     session.users.forEach((user) =>
