@@ -44,46 +44,79 @@ const Waiting: React.FC = () => {
   if (!user) {
     return null
   }
+  const lowerButtonOpacity =
+    !user.host &&
+    (gameState.session.state == "waiting" || gameState.session.state == "end")
+  const handleStart = () => {
+    sendJsonMessage({ type: "startgame" })
+  }
 
   return (
-    <div className="relative h-screen">
-      <div
-        style={screenStyles}
-        className="flex flex-col items-center justify-center gap-6"
-      >
-        <Logo />
-        <div className="flex w-[850px] gap-4">
-          <div className="h-[500px]">
-            <UserList users={gameState.session.users} variant="waiting" />
+    <>
+      <div className="flex h-screen flex-col sm:hidden">
+        <UserList users={gameState.session.users} variant="waiting" />
+        <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
+          <Rules />
+          <div className="flex justify-center gap-2">
+            <DynamicInviteButton id={gameState.session.id} />
+            <StartButton
+              lowerOpacity={lowerButtonOpacity}
+              onClick={handleStart}
+              disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+              secondsLeft={secondsLeft}
+              withCountdown={lastJsonMessage?.type == "gamestart"}
+            />
           </div>
-          <div className="flex w-full flex-col gap-6">
-            <div className="flex h-full w-full flex-col rounded-lg border-2 border-gray-200 p-4">
-              <h2 className="text-center text-base font-bold text-gray-100">
-                ПРАВИЛА
-              </h2>
+        </div>
+      </div>
+      <div className="relative hidden h-screen sm:block">
+        <div
+          style={screenStyles}
+          className="flex flex-col items-center justify-center gap-6"
+        >
+          <Logo />
+          <div className="flex w-[850px] gap-4">
+            <div className="h-[500px]">
+              <UserList users={gameState.session.users} variant="waiting" />
             </div>
-            <div className="flex w-full justify-center gap-6">
-              <DynamicInviteButton id={gameState.session.id} />
-              <button
-                onClick={() => {
-                  sendJsonMessage({ type: "startgame" })
-                }}
-                className={clsx(
-                  "w-32 rounded-lg bg-red-500 py-4 text-xl leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
-                  !user.host &&
-                    (gameState.session.state == "waiting" ||
-                      gameState.session.state == "end") &&
-                    "opacity-50"
-                )}
-                disabled={lastJsonMessage?.type == "gamestart" || !user.host}
-              >
-                {lastJsonMessage?.type == "gamestart" ? secondsLeft : "НАЧАТЬ"}
-              </button>
+            <div className="flex w-full flex-col gap-6">
+              <Rules />
+              <div className="flex w-full justify-center gap-6">
+                <DynamicInviteButton id={gameState.session.id} />
+                <StartButton
+                  lowerOpacity={lowerButtonOpacity}
+                  onClick={handleStart}
+                  disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+                  secondsLeft={secondsLeft}
+                  withCountdown={lastJsonMessage?.type == "gamestart"}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
+  )
+}
+
+const StartButton: React.FC<{
+  lowerOpacity?: boolean
+  secondsLeft?: number
+  withCountdown?: boolean
+  disabled?: boolean
+  onClick?: () => void
+}> = ({ lowerOpacity, secondsLeft, withCountdown, disabled, onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "w-32 rounded-lg bg-red-500 py-4 text-xl leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
+        lowerOpacity && "opacity-50"
+      )}
+      disabled={disabled}
+    >
+      {withCountdown ? secondsLeft : "НАЧАТЬ"}
+    </button>
   )
 }
 
@@ -132,5 +165,15 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
 const DynamicInviteButton = dynamic(() => Promise.resolve(InviteButton), {
   ssr: false
 })
+
+const Rules: React.FC = () => {
+  return (
+    <div className="flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
+      <h2 className="text-center text-3xl font-bold text-gray-100 sm:text-base">
+        ПРАВИЛА
+      </h2>
+    </div>
+  )
+}
 
 export default Waiting

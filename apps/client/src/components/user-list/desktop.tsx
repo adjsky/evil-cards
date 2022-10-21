@@ -2,18 +2,18 @@ import React from "react"
 import Image from "next/future/image"
 import clsx from "clsx"
 
-import { CheckMark, Crown, Question } from "../components/icons"
+import { CheckMark, Crown, Question } from "../../components/icons"
 
 import type { User } from "@kado/schemas/dist/client/receive"
 
-const UserList: React.FC<{ users: User[]; variant: "game" | "waiting" }> = ({
-  users,
-  variant
-}) => {
+const DesktopUserList: React.FC<{
+  users: User[]
+  variant: "game" | "waiting"
+}> = ({ users, variant }) => {
   const filteredUsers = users.filter((user) => user.disconnected == false)
 
   return (
-    <div className="scrollable flex h-full flex-col gap-2 pr-2">
+    <div className="scrollable  hidden h-full flex-col gap-2 pr-2 sm:flex">
       {filteredUsers.map((user) => (
         <User key={user.id} user={user} variant={variant} />
       ))}
@@ -72,4 +72,4 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
   )
 }
 
-export default UserList
+export default DesktopUserList

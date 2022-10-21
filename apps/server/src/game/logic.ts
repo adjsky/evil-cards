@@ -501,35 +501,31 @@ class Game {
       session._countdownTimeout && clearTimeout(session._countdownTimeout)
       session._countdownTimeout = null
       this.sessions.delete(session.id)
-    } else {
-      if (session.state == "waiting" || session.state == "end") {
-        if (isHost) {
-          connectedUsers[0]!.host = true
-        }
+
+      return
+    }
+
+    if (isHost) {
+      connectedUsers[0]!.host = true
+    }
+
+    if (session.state != "waiting" && user.master) {
+      user.master = false
+
+      // decide who is master
+      let masterUser = session.users[session._masterIndex]
+      if (!masterUser) {
+        throw new Error("smth happened")
       }
-
-      if (session.state != "waiting" && user.master) {
-        user.master = false
-
-        // decide who is master
-        let masterUser = session.users[session._masterIndex]
-        if (!masterUser) {
-          throw new Error("smth happened")
-        }
-        if (masterUser.disconnected) {
-          this.updateMasterIndex(session)
-        }
-        masterUser = session.users[session._masterIndex]
-        if (!masterUser) {
-          throw new Error("smth happened")
-        }
-        masterUser.master = true
+      if (masterUser.disconnected) {
         this.updateMasterIndex(session)
       }
-
-      if (session.state != "waiting" && connectedUsers.length == 1) {
-        this.endGame(session)
+      masterUser = session.users[session._masterIndex]
+      if (!masterUser) {
+        throw new Error("smth happened")
       }
+      masterUser.master = true
+      this.updateMasterIndex(session)
     }
 
     session.users.forEach((user) =>
@@ -537,6 +533,10 @@ class Game {
         stringify({ type: "disconnected", details: { session } }, true)
       )
     )
+
+    if (session.state != "waiting" && connectedUsers.length == 1) {
+      this.endGame(session)
+    }
   }
 }
 

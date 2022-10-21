@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:not(input) {
+  user-select: none;
+}
+
 .scrollable {
   overflow-y: auto;
   overflow-x: hidden;

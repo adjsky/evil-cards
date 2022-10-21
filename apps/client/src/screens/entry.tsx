@@ -16,7 +16,7 @@ const Entry: React.FC = () => {
   const [avatarId, setAvatarId] = useState(1)
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 py-10">
+    <main className="flex h-screen flex-col items-center justify-center gap-8 py-10">
       <Logo />
       <div className="flex aspect-[0.71942446043] w-[200px] flex-col items-center justify-center gap-5 rounded-lg bg-gray-100 pt-3">
         <div className="rounded-full border-[2px] border-gray-900 p-[2px]">

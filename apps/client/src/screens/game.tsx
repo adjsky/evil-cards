@@ -32,40 +32,55 @@ const Game: React.FC = () => {
   if (!user) {
     return null
   }
+  const availableCardDisabled =
+    gameState.session.state == "choosing" ||
+    gameState.session.state == "choosingbest" ||
+    user.master ||
+    user.voted
+  const handleTableCardClick = (userId: string) => {
+    if (gameState.session.state == "choosing") {
+      sendJsonMessage({ type: "choose", details: { userId } })
+    } else {
+      sendJsonMessage({ type: "choosebest", details: { userId } })
+    }
+  }
 
   return (
-    <div className="relative h-screen">
+    <div className="h-screen overflow-y-auto sm:relative">
       <div
-        className="flex flex-col items-center justify-center gap-3"
+        className="flex h-screen flex-col sm:h-auto sm:items-center sm:justify-center sm:gap-3"
         style={screenStyles}
       >
-        <div className="flex h-[342px] items-center justify-center gap-[49px]">
-          <div className="h-[241px] w-[174px] break-words rounded-lg bg-red-500 p-4 text-lg font-medium leading-[1.15] text-gray-100">
+        <div className="sm:hidden">
+          <UserList users={gameState.session.users} variant="game" />
+        </div>
+        <div className="sm: flex flex-auto flex-col items-center justify-center gap-[44px] px-2 py-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:py-0 sm:px-0">
+          <div className="aspect-[174/241] w-[100px] break-words rounded-lg bg-red-500 p-3 text-xs font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:p-4 sm:text-lg">
             {gameState.session.redCard}
           </div>
-          <div className="grid grid-cols-5 grid-rows-2 gap-2">
-            {gameState.session.votes.map(({ text, userId, visible }) => (
-              <Card
-                key={text}
-                text={visible ? text : undefined}
-                disabled={
-                  !user.master ||
-                  (visible && gameState.session.state == "choosing")
-                }
-                onClick={() => {
-                  if (gameState.session.state == "choosing") {
-                    sendJsonMessage({ type: "choose", details: { userId } })
-                  } else {
-                    sendJsonMessage({ type: "choosebest", details: { userId } })
+          {gameState.session.votes.length > 0 && (
+            <div className="grid w-full grid-cols-5 grid-rows-2 gap-1 sm:w-auto sm:gap-2">
+              {gameState.session.votes.map(({ text, userId, visible }) => (
+                <Card
+                  key={text}
+                  text={visible ? text : undefined}
+                  disabled={
+                    !user.master ||
+                    (visible && gameState.session.state == "choosing")
                   }
-                }}
-              />
-            ))}
-          </div>
+                  onClick={() => {
+                    handleTableCardClick(userId)
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex h-[364px] gap-4">
-          <UserList users={gameState.session.users} variant="game" />
-          <div className="flex flex-col gap-3">
+        <div className="flex gap-4 px-2 pb-10 sm:h-[364px] sm:px-0 sm:pb-0">
+          <div className="hidden sm:block">
+            <UserList users={gameState.session.users} variant="game" />
+          </div>
+          <div className="flex w-full flex-col gap-2 sm:gap-3">
             <div className="relative h-[10px] w-full rounded-lg bg-gray-200">
               <div
                 className={clsx(
@@ -74,7 +89,7 @@ const Game: React.FC = () => {
                 )}
               ></div>
             </div>
-            <div className="grid grid-cols-[repeat(5,1fr)] grid-rows-2 gap-2">
+            <div className="grid grid-cols-[repeat(5,1fr)] grid-rows-2 gap-1 sm:gap-2">
               {gameState.whiteCards.map((text) => (
                 <Card
                   key={text}
@@ -82,18 +97,8 @@ const Game: React.FC = () => {
                   onClick={() =>
                     sendJsonMessage({ type: "vote", details: { text } })
                   }
-                  disabled={
-                    gameState.session.state == "choosing" ||
-                    gameState.session.state == "choosingbest" ||
-                    user.master ||
-                    user.voted
-                  }
-                  lowerOpacity={
-                    gameState.session.state == "choosing" ||
-                    gameState.session.state == "choosingbest" ||
-                    user.master ||
-                    user.voted
-                  }
+                  disabled={availableCardDisabled}
+                  lowerOpacity={availableCardDisabled}
                 />
               ))}
             </div>
@@ -114,7 +119,7 @@ const Card: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "flex h-[167px] w-[120px] rounded-lg bg-gray-100 p-3 text-left",
+        "flex aspect-[120/167] rounded-lg bg-gray-100 p-2 text-left sm:w-[120px] sm:p-3",
         lowerOpacity && "opacity-60",
         !text && "items-center justify-center"
       )}
@@ -123,7 +128,7 @@ const Card: React.FC<{
       <span
         className={clsx(
           text &&
-            "inline-block w-full break-words text-sm font-medium leading-[1.15]",
+            "inline-block w-full whitespace-pre-line break-words text-[8px] font-medium leading-[1.15] sm:text-sm",
           !text && "flex items-center justify-center"
         )}
       >

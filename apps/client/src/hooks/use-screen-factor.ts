@@ -57,14 +57,17 @@ const useScreenFactor = ({
     }
   }, [computeScale])
 
-  const styles: React.CSSProperties = {
-    transform: `scale(${scaleFactor})`,
-    marginLeft: -width / 2,
-    marginTop: -height / 2,
-    position: "absolute",
-    top: "50%",
-    left: "50%"
-  }
+  const styles: React.CSSProperties =
+    window.innerWidth < 640
+      ? {}
+      : {
+          transform: `scale(${scaleFactor})`,
+          marginLeft: -width / 2,
+          marginTop: -height / 2,
+          position: "absolute",
+          top: "50%",
+          left: "50%"
+        }
 
   return styles
 }

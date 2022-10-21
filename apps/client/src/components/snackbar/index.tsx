@@ -14,12 +14,12 @@ const getSeverityColor = (severity: Severity): Colors => {
   switch (severity) {
     case "error":
       return {
-        bg: "#DF4B4B1A",
+        bg: "#811212",
         fg: "#DF4B4B"
       }
     case "information":
       return {
-        bg: "#FFFFFF1A",
+        bg: "#555555",
         fg: "#FFFFFF"
       }
   }
@@ -208,7 +208,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
         borderColor: severityColor.fg
       }}
       className={clsx(
-        "fixed top-10 left-1/2 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-4 px-5 md:min-w-[350px] md:max-w-[440px]",
+        "fixed top-3 left-1/2 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]",
         state.openAnimation && "fade-open",
         state.closeAnimation && "fade-close"
       )}
@@ -222,7 +222,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
       <span>{icon}</span>
       <span
         style={{ color: severityColor.fg }}
-        className="ml-5 mr-8 text-base font-bold leading-tight"
+        className="ml-2 mr-5 text-sm font-bold leading-tight sm:ml-5 sm:mr-8 sm:text-base"
       >
         {message}
       </span>
