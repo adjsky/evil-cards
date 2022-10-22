@@ -56,7 +56,9 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
               : "очка"}
           </span>
         )}
-        <span className="text-[10px]">{user?.username ?? "Пусто"}</span>
+        <span className="inline-block max-w-[60px] overflow-hidden overflow-ellipsis whitespace-nowrap text-[10px]">
+          {user?.username ?? "Пусто"}
+        </span>
       </div>
     </div>
   )

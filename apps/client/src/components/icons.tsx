@@ -183,10 +183,13 @@ export const ExclamationMark = () => (
   </svg>
 )
 
-export const Cat = () => (
+export const Cat: React.FC<{
+  width?: string | number
+  height?: string | number
+}> = ({ width = 33, height = 30 }) => (
   <svg
-    width="33"
-    height="30"
+    width={width}
+    height={height}
     viewBox="0 0 33 30"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

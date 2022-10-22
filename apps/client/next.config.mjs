@@ -13,8 +13,8 @@ const config = async (phase) => {
     reactStrictMode: true,
     swcMinify: true,
     i18n: {
-      locales: ["en"],
-      defaultLocale: "en"
+      locales: ["ru"],
+      defaultLocale: "ru"
     }
   }
 

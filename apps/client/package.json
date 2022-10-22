@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "clsx": "^1.2.1",
+    "interweave": "^13.0.0",
     "jotai": "^1.8.6",
     "next": "12.3.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-use-websocket": "^4.2.0",
+    "ru-typo": "^4.0.2",
     "zod": "^3.18.0"
   },
   "devDependencies": {

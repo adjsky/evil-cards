@@ -238,9 +238,9 @@ class Game {
     if (session.state != "waiting" && session.state != "end") {
       throw new Error("game is started already")
     }
-    if (session.users.length < 2) {
-      throw new Error("need more players")
-    }
+    // if (session.users.length < 2) {
+    //   throw new Error("need more players")
+    // }
 
     session.state = "starting"
     session.users.forEach((user) =>

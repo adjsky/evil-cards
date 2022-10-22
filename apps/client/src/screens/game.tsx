@@ -1,6 +1,8 @@
 import React from "react"
 import { useAtom } from "jotai"
 import clsx from "clsx"
+import { Interweave } from "interweave"
+import typo from "ru-typo"
 
 import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
@@ -55,8 +57,15 @@ const Game: React.FC = () => {
           <UserList users={gameState.session.users} variant="game" />
         </div>
         <div className="sm: flex flex-auto flex-col items-center justify-center gap-[44px] px-2 py-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:py-0 sm:px-0">
-          <div className="aspect-[174/241] w-[100px] break-words rounded-lg bg-red-500 p-3 text-xs font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:p-4 sm:text-lg">
-            {gameState.session.redCard}
+          <div
+            className="aspect-[174/241] w-[100px] whitespace-pre-line rounded-lg bg-red-500 p-3 text-xs font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:p-4 sm:text-lg"
+            style={{ hyphens: "manual" }}
+          >
+            {
+              <Interweave
+                content={typo(gameState.session.redCard, { hyphens: true })}
+              />
+            }
           </div>
           {gameState.session.votes.length > 0 && (
             <div className="grid w-full grid-cols-5 grid-rows-2 gap-1 sm:w-auto sm:gap-2">
@@ -66,7 +75,8 @@ const Game: React.FC = () => {
                   text={visible ? text : undefined}
                   disabled={
                     !user.master ||
-                    (visible && gameState.session.state == "choosing")
+                    (visible && gameState.session.state != "choosingbest") ||
+                    (!visible && gameState.session.state != "choosing")
                   }
                   onClick={() => {
                     handleTableCardClick(userId)
@@ -119,7 +129,7 @@ const Card: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "flex aspect-[120/167] rounded-lg bg-gray-100 p-2 text-left sm:w-[120px] sm:p-3",
+        "flex aspect-[120/167] min-w-0 max-w-full rounded-lg bg-gray-100 p-2 text-left sm:w-[120px] sm:p-3",
         lowerOpacity && "opacity-60",
         !text && "items-center justify-center"
       )}
@@ -128,11 +138,16 @@ const Card: React.FC<{
       <span
         className={clsx(
           text &&
-            "inline-block w-full whitespace-pre-line break-words text-[8px] font-medium leading-[1.15] sm:text-sm",
+            "inline-block w-full whitespace-pre-line text-card font-medium leading-[1.15] sm:text-sm",
           !text && "flex items-center justify-center"
         )}
+        style={{ hyphens: "manual" }}
       >
-        {text ?? <Cat />}
+        {text ? (
+          <Interweave content={typo(text, { hyphens: true })} />
+        ) : (
+          <Cat width="50%" height="50%" />
+        )}
       </span>
     </button>
   )
