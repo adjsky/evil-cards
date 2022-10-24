@@ -57,10 +57,7 @@ const Game: React.FC = () => {
           <UserList users={gameState.session.users} variant="game" />
         </div>
         <div className="sm: flex flex-auto flex-col items-center justify-center gap-[44px] px-2 py-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:py-0 sm:px-0">
-          <div
-            className="aspect-[174/241] w-[100px] whitespace-pre-line rounded-lg bg-red-500 p-3 text-xs font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:p-4 sm:text-lg"
-            style={{ hyphens: "manual" }}
-          >
+          <div className="aspect-[174/241] w-[100px] whitespace-pre-line rounded-lg bg-red-500 p-3 text-xs font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:p-4 sm:text-lg">
             {
               <Interweave
                 content={typo(gameState.session.redCard, { hyphens: true })}
@@ -141,7 +138,6 @@ const Card: React.FC<{
             "inline-block w-full whitespace-pre-line text-card font-medium leading-[1.15] sm:text-sm",
           !text && "flex items-center justify-center"
         )}
-        style={{ hyphens: "manual" }}
       >
         {text ? (
           <Interweave content={typo(text, { hyphens: true })} />
