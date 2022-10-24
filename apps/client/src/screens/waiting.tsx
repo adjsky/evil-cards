@@ -1,6 +1,5 @@
 import React, { useEffect } from "react"
 import { useAtom } from "jotai"
-import dynamic from "next/dynamic"
 import clsx from "clsx"
 
 import { gameStateAtom } from "../atoms"
@@ -58,7 +57,7 @@ const Waiting: React.FC = () => {
         <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
           <Rules />
           <div className="flex justify-center gap-2">
-            <DynamicInviteButton id={gameState.session.id} />
+            <InviteButton id={gameState.session.id} />
             <StartButton
               lowerOpacity={lowerButtonOpacity}
               onClick={handleStart}
@@ -82,7 +81,7 @@ const Waiting: React.FC = () => {
             <div className="flex w-full flex-col gap-6">
               <Rules />
               <div className="flex w-full justify-center gap-6">
-                <DynamicInviteButton id={gameState.session.id} />
+                <InviteButton id={gameState.session.id} />
                 <StartButton
                   lowerOpacity={lowerButtonOpacity}
                   onClick={handleStart}
@@ -162,9 +161,6 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
     </div>
   )
 }
-const DynamicInviteButton = dynamic(() => Promise.resolve(InviteButton), {
-  ssr: false
-})
 
 const Rules: React.FC = () => {
   return (
