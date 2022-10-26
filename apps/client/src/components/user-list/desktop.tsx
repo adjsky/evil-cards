@@ -2,7 +2,9 @@ import React from "react"
 import Image from "next/future/image"
 import clsx from "clsx"
 
-import { CheckMark, Crown, Question } from "../../components/icons"
+import CheckMark from "../../assets/check-mark.svg"
+import Crown from "../../assets/crown.svg"
+import Question from "../../assets/question.svg"
 
 import type { User } from "@kado/schemas/dist/client/receive"
 
@@ -29,15 +31,18 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
   user,
   variant
 }) => {
+  const displayCrown =
+    (variant == "waiting" && user?.host) || (variant == "game" && user?.master)
+  const displayCheckMark = variant == "game" && user?.voted
+
   return (
     <div className="flex w-[194px] items-center gap-2 rounded-xl border-2 border-gray-200 px-2 py-1">
-      {user && (variant == "waiting" && user.host ? <Crown /> : null)}
-      {user &&
-        (variant == "game" && user.master ? (
-          <Crown />
-        ) : user.voted ? (
-          <CheckMark />
-        ) : null)}
+      {(displayCheckMark || displayCrown) && (
+        <div className="flex w-[16px] justify-center">
+          {displayCrown && <Crown />}
+          {displayCheckMark && <CheckMark />}
+        </div>
+      )}
       {user ? (
         <Image
           src={`/avatars/${user.avatarId}.svg`}

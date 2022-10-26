@@ -1,6 +1,7 @@
 import React from "react"
 import useToggle from "../hooks/use-toggle"
-import { Pencil } from "./icons"
+
+import Pencil from "../assets/pencil.svg"
 
 const UsernameInput: React.FC<{
   value?: string

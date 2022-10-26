@@ -5,7 +5,8 @@ import Router from "next/router"
 import useSocket from "../hooks/use-socket"
 
 import UsernameInput from "../components/username-input"
-import { Plus, Logo } from "../components/icons"
+import Plus from "../assets/plus.svg"
+import Logo from "../components/logo"
 
 import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
 import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"

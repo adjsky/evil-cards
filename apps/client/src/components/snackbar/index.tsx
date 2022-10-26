@@ -4,7 +4,9 @@ import clsx from "clsx"
 
 import useIsomorphicLayoutEffect from "../../hooks/use-isomorphic-layout-effect"
 
-import { Close, CrossMark, ExclamationMark } from "../icons"
+import Close from "../../assets/close.svg"
+import CrossMark from "../../assets/cross-mark.svg"
+import ExclamationMark from "../../assets/exclamation-mark.svg"
 
 import type { SnackbarProps, Severity, Colors } from "./types"
 
@@ -233,7 +235,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
         tabIndex={0}
         aria-label="Close"
       >
-        <Close fill={severityColor.fg} />
+        <Close stroke={severityColor.fg} />
       </button>
     </div>,
     document.body

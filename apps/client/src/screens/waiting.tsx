@@ -8,7 +8,7 @@ import useToggle from "../hooks/use-toggle"
 import useCountdown from "../hooks/use-countdown"
 import useScreenFactor from "../hooks/use-screen-factor"
 
-import { Logo } from "../components/icons"
+import Logo from "../components/logo"
 import UserList from "../components/user-list"
 import Rules from "../components/rules"
 

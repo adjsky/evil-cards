@@ -3,7 +3,7 @@ import clsx from "clsx"
 import { Interweave } from "interweave"
 import typo from "ru-typo"
 
-import { Cat } from "./icons"
+import Cat from "../assets/cat.svg"
 
 const Card: React.FC<{
   text?: string
@@ -31,7 +31,7 @@ const Card: React.FC<{
         {text ? (
           <Interweave content={typo(text, { hyphens: true })} />
         ) : (
-          <Cat width="50%" height="50%" />
+          <Cat />
         )}
       </span>
     </button>
