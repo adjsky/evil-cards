@@ -31,8 +31,12 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
   user,
   variant
 }) => {
+  const displayCrown =
+    (variant == "waiting" && user?.host) || (variant == "game" && user?.master)
+  const displayMark = variant == "game" && user?.voted
+
   return (
-    <div className="flex flex-col items-center gap-1 px-2 py-1">
+    <div className="flex flex-col items-center gap-1 p-2">
       <div className="relative h-[44px] w-[44px] flex-none">
         {user ? (
           <Image
@@ -43,6 +47,16 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
           />
         ) : (
           <Question width={44} height={44} />
+        )}
+        {displayCrown && (
+          <div className="absolute left-0 bottom-0">
+            <Crown />
+          </div>
+        )}
+        {displayMark && (
+          <div className="absolute right-0 bottom-0">
+            <CheckMark />
+          </div>
         )}
       </div>
       <div className="flex flex-col items-center justify-center text-gray-100">

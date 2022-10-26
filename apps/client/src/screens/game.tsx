@@ -48,7 +48,7 @@ const Game: React.FC = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-auto sm:relative">
+    <div className="mx-auto h-screen max-w-[500px] sm:relative sm:max-w-none">
       <div
         className="flex h-screen flex-col sm:h-auto sm:items-center sm:justify-center sm:gap-3"
         style={screenStyles}
@@ -56,8 +56,8 @@ const Game: React.FC = () => {
         <div className="sm:hidden">
           <UserList users={gameState.session.users} variant="game" />
         </div>
-        <div className="sm: flex flex-auto flex-col items-center justify-center gap-[44px] px-2 py-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:py-0 sm:px-0">
-          <div className="aspect-[174/241] w-[100px] whitespace-pre-line rounded-lg bg-red-500 p-3 text-xs font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:p-4 sm:text-lg">
+        <div className="flex flex-auto flex-col items-center justify-around px-2 pb-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:gap-[44px] sm:px-0 sm:pb-0">
+          <div className="aspect-[174/241] w-[115px] whitespace-pre-line rounded-md bg-red-500 p-3 text-[0.625rem] font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:rounded-lg sm:p-4 sm:text-sm">
             {
               <Interweave
                 content={typo(gameState.session.redCard, { hyphens: true })}
@@ -96,7 +96,13 @@ const Game: React.FC = () => {
                 )}
               ></div>
             </div>
-            <div className="grid grid-cols-[repeat(5,1fr)] grid-rows-2 gap-1 sm:gap-2">
+            <div
+              className={clsx(
+                "grid grid-flow-col grid-rows-1 gap-1 overflow-x-auto sm:grid-rows-2 sm:gap-2",
+                "auto-cols-[minmax(calc(20%-0.25rem*4/5),1fr)] grid-cols-[repeat(5,minmax(20%-0.25rem*4/5,1fr))]",
+                "sm:grid-cols-[repeat(5,1fr)]"
+              )}
+            >
               {gameState.whiteCards.map((text) => (
                 <Card
                   key={text}
@@ -126,7 +132,7 @@ const Card: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "flex aspect-[120/167] min-w-0 max-w-full rounded-lg bg-gray-100 p-2 text-left sm:w-[120px] sm:p-3",
+        "flex aspect-[120/167] rounded-[0.25rem] bg-gray-100 p-2 text-left sm:w-[120px] sm:min-w-0 sm:max-w-full sm:rounded-lg sm:p-3",
         lowerOpacity && "opacity-60",
         !text && "items-center justify-center"
       )}
@@ -135,7 +141,7 @@ const Card: React.FC<{
       <span
         className={clsx(
           text &&
-            "inline-block w-full whitespace-pre-line text-card font-medium leading-[1.15] sm:text-sm",
+            "inline-block w-full whitespace-pre-line text-[0.5rem] font-medium leading-[1.15] sm:text-xs",
           !text && "flex items-center justify-center"
         )}
       >

@@ -43,9 +43,6 @@ module.exports = {
           "Comfortaa",
           ...require("tailwindcss/defaultTheme").fontFamily.sans
         ]
-      },
-      fontSize: {
-        card: "clamp(0rem, 2.13vw, 0.875rem)"
       }
     }
   },
