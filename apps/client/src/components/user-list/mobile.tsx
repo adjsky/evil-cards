@@ -13,7 +13,7 @@ const MobileUserList: React.FC<{
   const filteredUsers = users.filter((user) => user.disconnected == false)
 
   return (
-    <div className="w-full overflow-y-auto sm:hidden">
+    <div className="w-full overflow-x-auto sm:hidden">
       <div className="flex">
         {filteredUsers.map((user) => (
           <User key={user.id} user={user} variant={variant} />

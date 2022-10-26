@@ -1,0 +1,15 @@
+@keyframes offsettozero {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.circle-progress {
+  transform: rotate(-90deg);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.circle-progress[data-running="true"] {
+  animation: offsettozero 5s linear forwards;
+}

@@ -10,6 +10,7 @@ import useScreenFactor from "../hooks/use-screen-factor"
 
 import { Logo } from "../components/icons"
 import UserList from "../components/user-list"
+import Rules from "../components/rules"
 
 import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
 import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
@@ -109,7 +110,7 @@ const StartButton: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "w-32 rounded-lg bg-red-500 py-4 text-xl leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
+        "w-28 rounded-lg bg-red-500 py-4 text-base leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl",
         lowerOpacity && "opacity-50"
       )}
       disabled={disabled}
@@ -135,7 +136,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
   return (
     <div className="relative">
       <button
-        className="rounded-lg border-gray-100 bg-gray-100 px-5 py-4 text-xl leading-none text-gray-900"
+        className="rounded-lg border-gray-100 bg-gray-100 px-4 py-4 text-base leading-none text-gray-900 sm:px-5 sm:text-xl"
         onClick={async () => {
           const url = `${window.location.href}?s=${id}`
 
@@ -158,16 +159,6 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
       >
         СКОПИРОВАНО
       </span>
-    </div>
-  )
-}
-
-const Rules: React.FC = () => {
-  return (
-    <div className="flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
-      <h2 className="text-center text-3xl font-bold text-gray-100 sm:text-base">
-        ПРАВИЛА
-      </h2>
     </div>
   )
 }

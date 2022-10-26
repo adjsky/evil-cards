@@ -9,7 +9,7 @@ import useSocket from "../hooks/use-socket"
 import useScreenFactor from "../hooks/use-screen-factor"
 
 import UserList from "../components/user-list"
-import { Cat } from "../components/icons"
+import Card from "../components/card"
 
 import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
 import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
@@ -119,39 +119,6 @@ const Game: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
-
-const Card: React.FC<{
-  text?: string
-  onClick?: () => void
-  disabled?: boolean
-  lowerOpacity?: boolean
-}> = ({ text, onClick, disabled, lowerOpacity }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        "flex aspect-[120/167] rounded-[0.25rem] bg-gray-100 p-2 text-left sm:w-[120px] sm:min-w-0 sm:max-w-full sm:rounded-lg sm:p-3",
-        lowerOpacity && "opacity-60",
-        !text && "items-center justify-center"
-      )}
-      disabled={disabled}
-    >
-      <span
-        className={clsx(
-          text &&
-            "inline-block w-full whitespace-pre-line text-[0.5rem] font-medium leading-[1.15] sm:text-xs",
-          !text && "flex items-center justify-center"
-        )}
-      >
-        {text ? (
-          <Interweave content={typo(text, { hyphens: true })} />
-        ) : (
-          <Cat width="50%" height="50%" />
-        )}
-      </span>
-    </button>
   )
 }
 

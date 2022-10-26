@@ -1,5 +1,4 @@
-import Image from "next/future/image"
-import catEyes from "../assets/cat-eyes.svg"
+import CatEyes from "../assets/cat-eyes.svg"
 
 export const Plus = () => (
   <svg
@@ -109,7 +108,7 @@ export const CheckMark = () => (
 
 export const Logo = () => (
   <div className="flex flex-col items-center justify-center">
-    <Image src={catEyes} alt="" />
+    <CatEyes />
     <h1 className="text-center text-2xl font-bold leading-none text-gray-100">
       <span>500</span>{" "}
       <span className="text-4xl leading-none text-red-500">ЗЛОБНЫХ</span>{" "}
