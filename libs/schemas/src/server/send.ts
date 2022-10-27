@@ -8,65 +8,102 @@ export type User = {
   voted: boolean
   disconnected: boolean
 }
-export type Session = {
-  id: string
-  state: "waiting" | "starting" | "voting" | "choosing" | "end" | "choosingbest"
-  users: User[]
-  redCard: string | null
-  votes: { text: string; userId: string; visible: boolean }[]
-}
+export type Status =
+  | "waiting"
+  | "starting"
+  | "voting"
+  | "choosing"
+  | "end"
+  | "choosingbest"
+export type Vote = { text: string; userId: string; visible: boolean }
 
 export type Created = {
   type: "created"
-  details: { session: Session; userId: string }
+  details: {
+    id: string
+    status: Status
+    users: User[]
+    userId: string
+  }
 }
+
 export type Joined = {
   type: "joined"
-  details: { session: Session; userId: string; whiteCards?: string[] }
+  details: {
+    id: string
+    status: Status
+    users: User[]
+    userId: string
+    whiteCards: string[]
+  }
 }
-export type Disconnected = {
-  type: "disconnected"
-  details: { session: Session }
+
+export type UserJoined = {
+  type: "userjoined"
+  details: {
+    users: User[]
+  }
 }
+
+export type UserDisconnected = {
+  type: "userdisconnected"
+  details: { users: User[] }
+}
+
 export type Voted = {
   type: "voted"
-  details: { session: Session; whiteCards: string[] }
+  details: { users: User[]; votes: Vote[]; whiteCards: string[] }
 }
+
 export type GameStart = {
   type: "gamestart"
-  details: { session: Session }
+  details: { status: Status }
 }
+
 export type VotingStarted = {
   type: "votingstarted"
-  details: { session: Session; whiteCards: string[] }
+  details: {
+    status: Status
+    whiteCards: string[]
+    redCard: string
+    users: User[]
+    votes: Vote[]
+  }
 }
+
 export type ChoosingStarted = {
   type: "choosingstarted"
-  details: { session: Session; whiteCards: string[] }
+  details: { status: Status; votes: Vote[]; whiteCards: string[] }
 }
+
 export type Choose = {
   type: "choose"
-  details: { session: Session }
+  details: { votes: Vote[] }
 }
+
 export type ChoosingBestStarted = {
   type: "choosingbeststarted"
-  details: { session: Session }
+  details: { status: Status }
 }
 export type GameEnd = {
   type: "gameend"
-  details: { session: Session }
+  details: { status: Status }
 }
+
 export type Error = {
   type: "error"
   details?: string
 }
+
 export type Ping = {
   type: "ping"
 }
+
 export type Message =
   | Created
   | Joined
-  | Disconnected
+  | UserJoined
+  | UserDisconnected
   | Voted
   | GameStart
   | VotingStarted

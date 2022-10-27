@@ -1,9 +1,13 @@
 import { atom } from "jotai"
-import type { Session } from "@kado/schemas/dist/client/receive"
+import type { Vote, User, Status } from "@kado/schemas/dist/client/receive"
 
 type GameState = {
-  session: Session
+  users: User[]
+  votes: Vote[]
+  id: string
   userId: string
+  status: Status
+  redCard: string | null
   whiteCards: string[]
 }
 

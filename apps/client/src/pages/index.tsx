@@ -19,7 +19,8 @@ const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })
 const Home: NextPage = () => {
   const { updateSnackbar, Snackbar } = useSnackbar()
   const [gameState, setGameState] = useAtom(gameStateAtom)
-  const sessionState = gameState?.session.state
+  const gameStatus = gameState?.status
+
   useSocket<SendMessage, ReceiveMessage>({
     onClose() {
       setGameState(null)
@@ -37,53 +38,26 @@ const Home: NextPage = () => {
         })
       }
 
-      if (data.type == "created" || data.type == "joined") {
-        setGameState((prev) => ({
-          session: data.details.session,
-          userId: data.details.userId,
-          whiteCards:
-            data.type == "joined" && data.details.whiteCards
-              ? data.details.whiteCards
-              : prev?.whiteCards ?? []
-        }))
-
-        if (data.type == "joined") {
-          Router.replace(Router.pathname, undefined, { shallow: true })
-        }
+      if (data.type == "joined") {
+        Router.replace(Router.pathname, undefined, { shallow: true })
       }
 
-      if (!gameState) {
-        return
-      }
-
-      if (
-        data.type == "gamestart" ||
-        data.type == "choose" ||
-        data.type == "choosingbeststarted" ||
-        data.type == "disconnected" ||
-        data.type == "gameend"
-      ) {
-        setGameState({ ...gameState, session: data.details.session })
-      }
-
-      if (
-        data.type == "voted" ||
-        data.type == "votingstarted" ||
-        data.type == "choosingstarted"
-      ) {
+      if (data.type == "joined" || data.type == "created") {
         setGameState({
-          ...gameState,
-          session: data.details.session,
-          whiteCards: data.details.whiteCards
+          ...data.details,
+          votes: [],
+          redCard: null,
+          whiteCards:
+            "whiteCards" in data.details ? data.details.whiteCards : []
         })
+      } else if ("details" in data && data.type != "error" && data.details) {
+        setGameState((prev) => (prev ? { ...prev, ...data.details } : null))
       }
     }
   })
 
   const waiting =
-    sessionState == "waiting" ||
-    sessionState == "end" ||
-    sessionState == "starting"
+    gameStatus == "waiting" || gameStatus == "end" || gameStatus == "starting"
 
   return (
     <>

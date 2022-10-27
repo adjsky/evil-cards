@@ -38,15 +38,12 @@ const Waiting: React.FC = () => {
   if (!gameState) {
     return null
   }
-  const user = gameState.session.users.find(
-    (user) => user.id == gameState.userId
-  )
+  const user = gameState.users.find((user) => user.id == gameState.userId)
   if (!user) {
     return null
   }
   const lowerButtonOpacity =
-    !user.host &&
-    (gameState.session.state == "waiting" || gameState.session.state == "end")
+    !user.host && (gameState.status == "waiting" || gameState.status == "end")
   const handleStart = () => {
     sendJsonMessage({ type: "startgame" })
   }
@@ -54,11 +51,11 @@ const Waiting: React.FC = () => {
   return (
     <>
       <div className="flex h-screen flex-col sm:hidden">
-        <UserList users={gameState.session.users} variant="waiting" />
+        <UserList users={gameState.users} variant="waiting" />
         <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
           <Rules />
           <div className="flex justify-center gap-2">
-            <InviteButton id={gameState.session.id} />
+            <InviteButton id={gameState.id} />
             <StartButton
               lowerOpacity={lowerButtonOpacity}
               onClick={handleStart}
@@ -77,12 +74,12 @@ const Waiting: React.FC = () => {
           <Logo />
           <div className="flex w-[850px] gap-4">
             <div className="h-[500px]">
-              <UserList users={gameState.session.users} variant="waiting" />
+              <UserList users={gameState.users} variant="waiting" />
             </div>
             <div className="flex w-full flex-col gap-6">
               <Rules />
               <div className="flex w-full justify-center gap-6">
-                <InviteButton id={gameState.session.id} />
+                <InviteButton id={gameState.id} />
                 <StartButton
                   lowerOpacity={lowerButtonOpacity}
                   onClick={handleStart}
