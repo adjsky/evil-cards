@@ -4,6 +4,7 @@ import Session from "./session"
 
 import type { ServerEvent } from "./types"
 import type { User } from "@kado/schemas/dist/server/send"
+import { WebSocket } from "ws"
 
 class Game {
   private sessions: Map<string, Session>
@@ -13,24 +14,29 @@ class Game {
     this.sessions = new Map()
     this.controller = new Controller()
 
-    this.controller.emitter.on("createsession", this.createSession.bind(this))
-    this.controller.emitter.on("joinsession", this.joinSession.bind(this))
+    this.controller.eventBus.on("createsession", this.createSession.bind(this))
+    this.controller.eventBus.on("joinsession", this.joinSession.bind(this))
 
-    this.controller.emitter.on("choose", this.choose.bind(this))
-    this.controller.emitter.on("choosebest", this.chooseBest.bind(this))
-    this.controller.emitter.on("startgame", this.startGame.bind(this))
-    this.controller.emitter.on("vote", this.vote.bind(this))
-    this.controller.emitter.on("lostconnection", ({ socket }) => {
-      const session = socket.session
-      const user = socket.user
-      if (!session || !user) {
-        return
-      }
+    this.controller.eventBus.on("choose", this.choose.bind(this))
+    this.controller.eventBus.on("choosebest", this.chooseBest.bind(this))
+    this.controller.eventBus.on("startgame", this.startGame.bind(this))
+    this.controller.eventBus.on("vote", this.vote.bind(this))
+    this.controller.eventBus.on("lostconnection", ({ socket }) =>
+      this.disconnectUser(socket)
+    )
+  }
 
-      session.disconnectUser(user, () => this.onSessionEnd(session.id))
-      socket.user = null
-      socket.session = null
-    })
+  private disconnectUser(socket: WebSocket) {
+    const session = socket.session
+    const user = socket.user
+    if (!session || !user) {
+      return
+    }
+
+    session.disconnectUser(user, () => this.onSessionEnd(session.id))
+
+    socket.user = null
+    socket.session = null
   }
 
   private createSession({
@@ -57,12 +63,7 @@ class Game {
       })
     )
 
-    socket.on("close", () => {
-      socket.session = null
-      socket.user = null
-
-      session.disconnectUser(user, () => this.onSessionEnd(session.id))
-    })
+    socket.on("close", () => this.disconnectUser(socket))
   }
 
   private joinSession({
@@ -109,7 +110,8 @@ class Game {
               status: session.status,
               userId: newUser.id,
               users: session.users,
-              whiteCards: session.getUserWhitecards(user)
+              whiteCards: session.getUserWhitecards(user),
+              redCard: session.redCard
             }
           })
         )
@@ -125,12 +127,7 @@ class Game {
       }
     })
 
-    socket.on("close", () => {
-      socket.session = null
-      socket.user = null
-
-      session.disconnectUser(newUser, () => this.onSessionEnd(session.id))
-    })
+    socket.on("close", () => this.disconnectUser(socket))
   }
 
   private vote({ socket, text }: ServerEvent["vote"]) {
@@ -170,7 +167,7 @@ class Game {
     }
 
     if (!user.host) {
-      throw new Error("you are not host")
+      throw new Error("you are not a host")
     }
 
     if (session.status != "waiting" && session.status != "end") {
@@ -179,6 +176,77 @@ class Game {
     if (session.users.length < 0) {
       throw new Error("need more players")
     }
+
+    session.eventBus.on("starting", () => {
+      session.users.forEach((user) => {
+        if (user.disconnected) {
+          return
+        }
+
+        session.getUserSocket(user).send(
+          stringify({
+            type: "gamestart",
+            details: { status: session.status }
+          })
+        )
+      })
+    })
+    session.eventBus.on("voting", () => {
+      session.users.forEach((user) => {
+        if (user.disconnected) {
+          return
+        }
+
+        if (!session.redCard) {
+          throw new Error("no red card")
+        }
+
+        session.getUserSocket(user).send(
+          stringify({
+            type: "votingstarted",
+            details: {
+              whiteCards: session.getUserWhitecards(user),
+              redCard: session.redCard,
+              users: session.users,
+              status: session.status,
+              votes: session.votes
+            }
+          })
+        )
+      })
+    })
+    session.eventBus.on("choosing", () => {
+      session.users.forEach((user) => {
+        if (user.disconnected) {
+          return
+        }
+
+        session.getUserSocket(user).send(
+          stringify({
+            type: "choosingstarted",
+            details: {
+              status: session.status,
+              votes: session.votes,
+              whiteCards: session.getUserWhitecards(user)
+            }
+          })
+        )
+      })
+    })
+    session.eventBus.on("choosingbest", () => {
+      session.users.forEach((user) => {
+        if (user.disconnected) {
+          return
+        }
+
+        session.getUserSocket(user).send(
+          stringify({
+            type: "choosingbeststarted",
+            details: { status: session.status }
+          })
+        )
+      })
+    })
 
     session.startGame()
   }

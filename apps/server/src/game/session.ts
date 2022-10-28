@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid"
+import Emittery from "emittery"
 
 import { whiteCards, redCards } from "./cards"
 import getRandomInt from "../functions/get-random-int"
@@ -6,27 +7,26 @@ import stringify from "../ws/stringify"
 
 import type WebSocket from "ws"
 import type { Status, User, Vote } from "@kado/schemas/dist/server/send"
-
-type UserData = {
-  socket: WebSocket
-  whiteCards: string[]
-}
+import type { SessionEventBus, UserData } from "./types"
 
 class Session {
   private userData: WeakMap<User, UserData> = new WeakMap()
-  public votes: Vote[] = []
-  public users: User[] = []
-  public id: string
-  public redCard: string | null = null
-  public status: Status = "waiting"
   private availableRedCards = [...redCards]
   private availableWhiteCards = [...whiteCards]
   private masterIndex = 0
   private countdownTimeout: NodeJS.Timeout | null = null
 
+  public votes: Vote[] = []
+  public users: User[] = []
+  public id: string
+  public redCard: string | null = null
+  public status: Status = "waiting"
+  public eventBus: SessionEventBus
+
   constructor() {
     const id = nanoid(5)
     this.id = id
+    this.eventBus = new Emittery()
   }
 
   public addUser(
@@ -159,12 +159,7 @@ class Session {
   public startGame() {
     this.status = "starting"
 
-    this.users.forEach((user) =>
-      this.getUserSocket(user).send(
-        stringify({ type: "gamestart", details: { status: this.status } })
-      )
-    )
-
+    this.eventBus.emit("starting")
     setTimeout(() => this.startVoting(), 3000)
   }
 
@@ -223,20 +218,9 @@ class Session {
         if (whiteCard) whiteCards.push(whiteCard)
         this.availableWhiteCards.splice(whiteCardIndex, 1)
       }
-
-      this.getUserSocket(user).send(
-        stringify({
-          type: "votingstarted",
-          details: {
-            whiteCards,
-            redCard: this.redCard,
-            users: this.users,
-            status: this.status,
-            votes: this.votes
-          }
-        })
-      )
     }
+
+    this.eventBus.emit("voting")
 
     this.countdownTimeout = setTimeout(() => {
       this.countdownTimeout && clearTimeout(this.countdownTimeout)
@@ -263,18 +247,9 @@ class Session {
         this.votes.push({ text, userId: user.id, visible: false })
         userWhitecards.splice(randomCardIndex, 1)
       }
-
-      this.getUserSocket(user).send(
-        stringify({
-          type: "choosingstarted",
-          details: {
-            status: this.status,
-            votes: this.votes,
-            whiteCards: this.getUserWhitecards(user)
-          }
-        })
-      )
     })
+
+    this.eventBus.emit("choosing")
   }
 
   public choose(userId: string) {
@@ -296,18 +271,7 @@ class Session {
 
     if (this.votes.every((vote) => vote.visible)) {
       this.status = "choosingbest"
-      this.users.forEach((user) => {
-        if (user.disconnected) {
-          return
-        }
-
-        this.getUserSocket(user).send(
-          stringify({
-            type: "choosingbeststarted",
-            details: { status: this.status }
-          })
-        )
-      })
+      this.eventBus.emit("choosingbest")
     }
   }
 

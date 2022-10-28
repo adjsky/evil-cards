@@ -12,6 +12,16 @@ export type WithWebsocket<T> = {
 export type ServerEvent = WithWebsocket<
   UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
 >
-export type Emitter = Emittery<
+export type ControllerEventBus = Emittery<
   ServerEvent & { lostconnection: { socket: WebSocket } }
 >
+export type SessionEventBus = Emittery<{
+  starting: undefined
+  voting: undefined
+  choosing: undefined
+  choosingbest: undefined
+}>
+export type UserData = {
+  socket: WebSocket
+  whiteCards: string[]
+}

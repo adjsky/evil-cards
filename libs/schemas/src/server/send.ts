@@ -35,6 +35,7 @@ export type Joined = {
     users: User[]
     userId: string
     whiteCards: string[]
+    redCard: string | null
   }
 }
 

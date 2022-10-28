@@ -42,13 +42,17 @@ const Home: NextPage = () => {
         Router.replace(Router.pathname, undefined, { shallow: true })
       }
 
-      if (data.type == "joined" || data.type == "created") {
+      if (data.type == "joined") {
         setGameState({
           ...data.details,
-          votes: [],
+          votes: []
+        })
+      } else if (data.type == "created") {
+        setGameState({
+          ...data.details,
           redCard: null,
-          whiteCards:
-            "whiteCards" in data.details ? data.details.whiteCards : []
+          votes: [],
+          whiteCards: []
         })
       } else if ("details" in data && data.type != "error" && data.details) {
         setGameState((prev) => (prev ? { ...prev, ...data.details } : null))
