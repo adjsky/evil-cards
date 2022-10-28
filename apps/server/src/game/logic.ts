@@ -33,7 +33,7 @@ class Game {
       return
     }
 
-    session.disconnectUser(user, () => this.onSessionEnd(session.id))
+    session.disconnectUser(user, () => this.onSessionEnd(session))
 
     socket.user = null
     socket.session = null
@@ -177,6 +177,7 @@ class Game {
       throw new Error("need more players")
     }
 
+    session.eventBus.clearListeners()
     session.eventBus.on("starting", () => {
       session.users.forEach((user) => {
         if (user.disconnected) {
@@ -291,8 +292,9 @@ class Game {
     session.chooseBest(userId)
   }
 
-  private onSessionEnd(sessionId: string) {
-    this.sessions.delete(sessionId)
+  private onSessionEnd(session: Session) {
+    session.eventBus.clearListeners()
+    this.sessions.delete(session.id)
   }
 }
 
