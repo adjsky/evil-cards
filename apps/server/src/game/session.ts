@@ -6,7 +6,7 @@ import getRandomInt from "../functions/get-random-int"
 import stringify from "../ws/stringify"
 
 import type WebSocket from "ws"
-import type { Status, User, Vote } from "@kado/schemas/dist/server/send"
+import type { Status, User, Vote } from "../ws/send"
 import type { SessionEventBus, UserData } from "./types"
 
 class Session {

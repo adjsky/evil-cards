@@ -12,8 +12,8 @@ import Logo from "../components/logo"
 import UserList from "../components/user-list"
 import Rules from "../components/rules"
 
-import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
-import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
+import type { Message as ReceiveMessage } from "@kado/server/src/ws/send"
+import type { Message as SendMessage } from "@kado/server/src/ws/receive"
 
 const Waiting: React.FC = () => {
   const [gameState] = useAtom(gameStateAtom)

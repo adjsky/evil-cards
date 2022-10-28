@@ -10,7 +10,7 @@ importers:
 
   apps/client:
     specifiers:
-      '@kado/schemas': '*'
+      '@kado/server': '*'
       '@svgr/webpack': ^6.5.0
       '@types/node': 18.0.0
       '@types/react': 18.0.14
@@ -47,7 +47,7 @@ importers:
       ru-typo: 4.0.2
       zod: 3.19.1
     devDependencies:
-      '@kado/schemas': link:../../libs/schemas
+      '@kado/server': link:../server
       '@svgr/webpack': 6.5.0
       '@types/node': 18.0.0
       '@types/react': 18.0.14
@@ -68,7 +68,6 @@ importers:
   apps/server:
     specifiers:
       '@fastify/websocket': ^7.1.0
-      '@kado/schemas': '*'
       '@types/node': ^18.8.4
       '@types/websocket': ^1.0.5
       '@types/ws': ^8.5.3
@@ -89,7 +88,6 @@ importers:
       zod: ^3.19.1
     dependencies:
       '@fastify/websocket': 7.1.0
-      '@kado/schemas': link:../../libs/schemas
       cross-env: 7.0.3
       dayjs: 1.11.5
       emittery: 1.0.0
@@ -109,14 +107,6 @@ importers:
       prettier: 2.7.1
       ts-node: 10.9.1_lw7q66ikwuedwcorwkk4v6trsa
       typescript: 4.8.4
-
-  libs/schemas:
-    specifiers:
-      typescript: ^4.8.4
-      zod: ^3.19.1
-    devDependencies:
-      typescript: 4.8.4
-      zod: 3.19.1
 
 packages:
 
@@ -8748,3 +8738,4 @@ packages:
 
   /zod/3.19.1:
     resolution: {integrity: sha512-LYjZsEDhCdYET9ikFu6dVPGp2YH9DegXjdJToSzD9rO6fy4qiRYFoyEYwps88OseJlPyl2NOe2iJuhEhL7IpEA==}
+    dev: false

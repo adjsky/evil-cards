@@ -1,7 +1,7 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
 
-import { messageSchema } from "@kado/schemas/dist/server/receive"
+import { messageSchema } from "../ws/receive"
 import stringify from "../ws/stringify"
 
 import type { WebSocket } from "ws"

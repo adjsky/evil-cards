@@ -11,8 +11,8 @@ import useScreenFactor from "../hooks/use-screen-factor"
 import UserList from "../components/user-list"
 import Card from "../components/card"
 
-import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
-import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
+import type { Message as ReceiveMessage } from "@kado/server/src/ws/send"
+import type { Message as SendMessage } from "@kado/server/src/ws/receive"
 
 const Game: React.FC = () => {
   const [gameState] = useAtom(gameStateAtom)

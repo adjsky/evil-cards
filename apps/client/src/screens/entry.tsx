@@ -8,8 +8,8 @@ import UsernameInput from "../components/username-input"
 import Plus from "../assets/plus.svg"
 import Logo from "../components/logo"
 
-import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
-import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
+import type { Message as SendMessage } from "@kado/server/src/ws/receive"
+import type { Message as ReceiveMessage } from "@kado/server/src/ws/send"
 
 const Entry: React.FC = () => {
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()

@@ -1,4 +1,4 @@
-import type { Message } from "@kado/schemas/dist/server/send"
+import type { Message } from "./send"
 
 function stringify(record: Message) {
   return JSON.stringify(record)

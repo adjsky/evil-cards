@@ -3,8 +3,8 @@ import Controller from "./controller"
 import Session from "./session"
 
 import type { ServerEvent } from "./types"
-import type { User } from "@kado/schemas/dist/server/send"
-import { WebSocket } from "ws"
+import type { User } from "../ws/send"
+import type { WebSocket } from "ws"
 
 class Game {
   private sessions: Map<string, Session>

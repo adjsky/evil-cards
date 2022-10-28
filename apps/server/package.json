@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@fastify/websocket": "^7.1.0",
-    "@kado/schemas": "*",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.5",
     "emittery": "^1.0.0",

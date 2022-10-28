@@ -10,8 +10,8 @@ import mapErrorMessage from "../functions/map-error-message"
 import Entry from "../screens/entry"
 
 import type { NextPage } from "next"
-import type { Message as SendMessage } from "@kado/schemas/dist/client/send"
-import type { Message as ReceiveMessage } from "@kado/schemas/dist/client/receive"
+import type { Message as SendMessage } from "@kado/server/src/ws/receive"
+import type { Message as ReceiveMessage } from "@kado/server/src/ws/send"
 
 const Game = dynamic(() => import("../screens/game"), { ssr: false })
 const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })

@@ -1,6 +1,6 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
-import type { Message } from "@kado/schemas/dist/server/receive"
+import type { Message } from "../ws/receive"
 
 import type { MapDiscriminatedUnion, UnwrapField } from "../types/utility"
 
