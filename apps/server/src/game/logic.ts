@@ -33,7 +33,19 @@ class Game {
       return
     }
 
-    session.disconnectUser(user, () => this.onSessionEnd(session))
+    session.disconnectUser(user, {
+      onSessionEnd: () => this.onSessionEnd(session),
+      onDisconnect() {
+        for (const user of session.users) {
+          session.getUserSender(user).send(
+            stringify({
+              type: "userdisconnected",
+              details: { users: session.users }
+            })
+          )
+        }
+      }
+    })
 
     socket.user = null
     socket.session = null
@@ -99,7 +111,7 @@ class Game {
     socket.user = newUser
 
     session.users.forEach((user) => {
-      const userSocket = session.getUserSocket(user)
+      const userSocket = session.getUserSender(user)
 
       if (user.id == newUser.id) {
         userSocket.send(
@@ -153,7 +165,22 @@ class Game {
       throw new Error("you have voted already")
     }
 
-    session.vote(user, text)
+    session.vote(user, text, {
+      onVote() {
+        for (const user of session.users) {
+          session.getUserSender(user).send(
+            stringify({
+              type: "voted",
+              details: {
+                users: session.users,
+                votes: session.votes,
+                whiteCards: session.getUserWhitecards(user)
+              }
+            })
+          )
+        }
+      }
+    })
   }
 
   private startGame({ socket }: ServerEvent["startgame"]) {
@@ -184,7 +211,7 @@ class Game {
           return
         }
 
-        session.getUserSocket(user).send(
+        session.getUserSender(user).send(
           stringify({
             type: "gamestart",
             details: { status: session.status }
@@ -202,7 +229,7 @@ class Game {
           throw new Error("no red card")
         }
 
-        session.getUserSocket(user).send(
+        session.getUserSender(user).send(
           stringify({
             type: "votingstarted",
             details: {
@@ -222,7 +249,7 @@ class Game {
           return
         }
 
-        session.getUserSocket(user).send(
+        session.getUserSender(user).send(
           stringify({
             type: "choosingstarted",
             details: {
@@ -240,12 +267,25 @@ class Game {
           return
         }
 
-        session.getUserSocket(user).send(
+        session.getUserSender(user).send(
           stringify({
             type: "choosingbeststarted",
             details: { status: session.status }
           })
         )
+      })
+    })
+    session.eventBus.on("end", () => {
+      session.users.forEach((user) => {
+        if (user.disconnected) {
+          return
+        }
+
+        session
+          .getUserSender(user)
+          .send(
+            stringify({ type: "gameend", details: { status: session.status } })
+          )
       })
     })
 
@@ -269,7 +309,21 @@ class Game {
       throw new Error("only master can choose card to show")
     }
 
-    session.choose(userId)
+    session.choose(userId, {
+      onChoose() {
+        session.users.forEach((user) => {
+          if (user.disconnected) {
+            return
+          }
+
+          session
+            .getUserSender(user)
+            .send(
+              stringify({ type: "choose", details: { votes: session.votes } })
+            )
+        })
+      }
+    })
   }
 
   private chooseBest({ userId, socket }: ServerEvent["choosebest"]) {

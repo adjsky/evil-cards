@@ -3,11 +3,18 @@ import Emittery from "emittery"
 
 import { whiteCards, redCards } from "./cards"
 import getRandomInt from "../functions/get-random-int"
-import stringify from "../ws/stringify"
 
-import type WebSocket from "ws"
 import type { Status, User, Vote } from "../ws/send"
-import type { SessionEventBus, UserData } from "./types"
+import type { SessionEventBus } from "./types"
+
+export type Sender = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  send: (data: any) => void
+}
+export type UserData = {
+  sender: Sender
+  whiteCards: string[]
+}
 
 class Session {
   private userData: WeakMap<User, UserData> = new WeakMap()
@@ -30,7 +37,7 @@ class Session {
   }
 
   public addUser(
-    socket: WebSocket,
+    sender: Sender,
     username: string,
     avatarId: number,
     host: boolean
@@ -48,25 +55,28 @@ class Session {
     }
     this.users.push(user)
     this.userData.set(user, {
-      socket,
+      sender,
       whiteCards: []
     })
 
     return user
   }
 
-  public reconnectUser(socket: WebSocket, user: User, avatarId: number) {
+  public reconnectUser(sender: Sender, user: User, avatarId: number) {
     const userData = this.userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
     }
 
-    userData.socket = socket
+    userData.sender = sender
     user.disconnected = false
     user.avatarId = avatarId
   }
 
-  public disconnectUser(user: User, onSessionEnd: () => void) {
+  public disconnectUser(
+    user: User,
+    callbacks?: { onSessionEnd?: () => void; onDisconnect?: () => void }
+  ) {
     const isHost = user.host
 
     if (this.status == "waiting") {
@@ -81,7 +91,9 @@ class Session {
     if (connectedUsers.length == 0) {
       this.countdownTimeout && clearTimeout(this.countdownTimeout)
       this.countdownTimeout = null
-      onSessionEnd()
+      if (callbacks?.onSessionEnd) {
+        callbacks?.onSessionEnd()
+      }
 
       return
     }
@@ -109,18 +121,16 @@ class Session {
       this.updateMasterIndex()
     }
 
-    this.users.forEach((user) =>
-      this.getUserSocket(user).send(
-        stringify({ type: "userdisconnected", details: { users: this.users } })
-      )
-    )
+    if (callbacks?.onDisconnect) {
+      callbacks.onDisconnect()
+    }
 
     if (this.status != "waiting" && connectedUsers.length == 1) {
       this.endGame()
     }
   }
 
-  public vote(user: User, text: string) {
+  public vote(user: User, text: string, callbacks?: { onVote?: () => void }) {
     const userData = this.userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
@@ -132,18 +142,9 @@ class Session {
     )
     this.votes.push({ text, userId: user.id, visible: false })
 
-    this.users.forEach((user) =>
-      this.getUserSocket(user).send(
-        stringify({
-          type: "voted",
-          details: {
-            users: this.users,
-            votes: this.votes,
-            whiteCards: this.getUserWhitecards(user)
-          }
-        })
-      )
-    )
+    if (callbacks?.onVote) {
+      callbacks.onVote()
+    }
 
     let allVoted = true
     for (const user of this.users) {
@@ -252,22 +253,16 @@ class Session {
     this.eventBus.emit("choosing")
   }
 
-  public choose(userId: string) {
+  public choose(userId: string, callbacks?: { onChoose?: () => void }) {
     const card = this.votes.find((card) => card.userId == userId)
     if (!card) {
       throw new Error("provided user did not vote")
     }
-
     card.visible = true
-    this.users.forEach((user) => {
-      if (user.disconnected) {
-        return
-      }
 
-      this.getUserSocket(user).send(
-        stringify({ type: "choose", details: { votes: this.votes } })
-      )
-    })
+    if (callbacks?.onChoose) {
+      callbacks.onChoose()
+    }
 
     if (this.votes.every((vote) => vote.visible)) {
       this.status = "choosingbest"
@@ -307,24 +302,16 @@ class Session {
       user.score = 0
     }
 
-    this.users.forEach((user) => {
-      if (user.disconnected) {
-        return
-      }
-
-      this.getUserSocket(user).send(
-        stringify({ type: "gameend", details: { status: this.status } })
-      )
-    })
+    this.eventBus.emit("end")
   }
 
-  public getUserSocket(user: User) {
+  public getUserSender(user: User) {
     const userData = this.userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
     }
 
-    return userData.socket
+    return userData.sender
   }
 
   public getUserWhitecards(user: User) {
