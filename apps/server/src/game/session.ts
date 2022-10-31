@@ -7,37 +7,55 @@ import getRandomInt from "../functions/get-random-int"
 import type { Status, User, Vote } from "../ws/send"
 import type { SessionEventBus } from "./types"
 
-export type Sender = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  send: (data: any) => void
+export type Sender<T> = {
+  send: (data: T) => void
 }
-export type UserData = {
-  sender: Sender
+export type UserData<T> = {
+  sender: Sender<T>
   whiteCards: string[]
 }
 
-class Session {
-  private userData: WeakMap<User, UserData> = new WeakMap()
-  private availableRedCards = [...redCards]
-  private availableWhiteCards = [...whiteCards]
-  private masterIndex = 0
-  private countdownTimeout: NodeJS.Timeout | null = null
+class Session<T = string> {
+  private _userData: WeakMap<User, UserData<T>> = new WeakMap()
+  private _availableRedCards = [...redCards]
+  private _availableWhiteCards = [...whiteCards]
+  private _masterIndex = 0
+  private _countdownTimeout: NodeJS.Timeout | null = null
 
-  public votes: Vote[] = []
-  public users: User[] = []
-  public id: string
-  public redCard: string | null = null
-  public status: Status = "waiting"
-  public eventBus: SessionEventBus
+  private _votes: Vote[] = []
+  private _users: User[] = []
+  private _id: string
+  private _redCard: string | null = null
+  private _status: Status = "waiting"
+  private _eventBus: SessionEventBus
+
+  public get votes() {
+    return this._votes
+  }
+  public get users() {
+    return this._users
+  }
+  public get id() {
+    return this._id
+  }
+  public get redCard() {
+    return this._redCard
+  }
+  public get status() {
+    return this._status
+  }
+  public get eventBus() {
+    return this._eventBus
+  }
 
   constructor() {
     const id = nanoid(5)
-    this.id = id
-    this.eventBus = new Emittery()
+    this._id = id
+    this._eventBus = new Emittery()
   }
 
   public addUser(
-    sender: Sender,
+    sender: Sender<T>,
     username: string,
     avatarId: number,
     host: boolean
@@ -53,8 +71,8 @@ class Session {
       voted: false,
       disconnected: false
     }
-    this.users.push(user)
-    this.userData.set(user, {
+    this._users.push(user)
+    this._userData.set(user, {
       sender,
       whiteCards: []
     })
@@ -62,8 +80,8 @@ class Session {
     return user
   }
 
-  public reconnectUser(sender: Sender, user: User, avatarId: number) {
-    const userData = this.userData.get(user)
+  public reconnectUser(sender: Sender<T>, user: User, avatarId: number) {
+    const userData = this._userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
     }
@@ -75,12 +93,17 @@ class Session {
 
   public disconnectUser(
     user: User,
-    callbacks?: { onSessionEnd?: () => void; onDisconnect?: () => void }
+    callbacks?: {
+      onSessionEnd?: () => void
+      onDisconnect?: (anyActivePlayers: boolean) => void
+    }
   ) {
     const isHost = user.host
 
     if (this.status == "waiting") {
-      this.users = this.users.filter((sessionUser) => sessionUser.id != user.id)
+      this._users = this.users.filter(
+        (sessionUser) => sessionUser.id != user.id
+      )
     } else {
       user.disconnected = true
     }
@@ -89,10 +112,13 @@ class Session {
       (user) => user.disconnected == false
     )
     if (connectedUsers.length == 0) {
-      this.countdownTimeout && clearTimeout(this.countdownTimeout)
-      this.countdownTimeout = null
+      this._countdownTimeout && clearTimeout(this._countdownTimeout)
+      this._countdownTimeout = null
       if (callbacks?.onSessionEnd) {
         callbacks?.onSessionEnd()
+      }
+      if (callbacks?.onDisconnect) {
+        callbacks.onDisconnect(false)
       }
 
       return
@@ -106,14 +132,14 @@ class Session {
       user.master = false
 
       // decide who is master
-      let masterUser = this.users[this.masterIndex]
+      let masterUser = this.users[this._masterIndex]
       if (!masterUser) {
         throw new Error("smth happened")
       }
       if (masterUser.disconnected) {
         this.updateMasterIndex()
       }
-      masterUser = this.users[this.masterIndex]
+      masterUser = this.users[this._masterIndex]
       if (!masterUser) {
         throw new Error("smth happened")
       }
@@ -122,7 +148,7 @@ class Session {
     }
 
     if (callbacks?.onDisconnect) {
-      callbacks.onDisconnect()
+      callbacks.onDisconnect(true)
     }
 
     if (this.status != "waiting" && connectedUsers.length == 1) {
@@ -131,7 +157,7 @@ class Session {
   }
 
   public vote(user: User, text: string, callbacks?: { onVote?: () => void }) {
-    const userData = this.userData.get(user)
+    const userData = this._userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
     }
@@ -158,7 +184,7 @@ class Session {
   }
 
   public startGame() {
-    this.status = "starting"
+    this._status = "starting"
 
     this.eventBus.emit("starting")
     setTimeout(() => this.startVoting(), 3000)
@@ -166,11 +192,11 @@ class Session {
 
   public startVoting() {
     // prepare
-    this.votes = []
+    this._votes = []
     for (const user of this.users) {
       user.voted = false
     }
-    this.status = "voting"
+    this._status = "voting"
 
     // unmaster previous user
     const prevMasterUser = this.users.find((user) => user.master == true)
@@ -179,14 +205,14 @@ class Session {
     }
 
     // decide who is master
-    let masterUser = this.users[this.masterIndex]
+    let masterUser = this.users[this._masterIndex]
     if (!masterUser) {
       throw new Error("smth happened")
     }
     if (masterUser.disconnected) {
       this.updateMasterIndex()
     }
-    masterUser = this.users[this.masterIndex]
+    masterUser = this.users[this._masterIndex]
     if (!masterUser) {
       throw new Error("smth happened")
     }
@@ -194,16 +220,16 @@ class Session {
     this.updateMasterIndex()
 
     // get red card
-    if (this.availableRedCards.length == 0) {
-      this.availableRedCards = redCards
+    if (this._availableRedCards.length == 0) {
+      this._availableRedCards = redCards
     }
-    const redCardIndex = getRandomInt(0, this.availableRedCards.length - 1)
-    const redCard = this.availableRedCards[redCardIndex]
+    const redCardIndex = getRandomInt(0, this._availableRedCards.length - 1)
+    const redCard = this._availableRedCards[redCardIndex]
     if (!redCard) {
       throw new Error("smth happened")
     }
-    this.redCard = redCard
-    this.availableRedCards.splice(redCardIndex, 1)
+    this._redCard = redCard
+    this._availableRedCards.splice(redCardIndex, 1)
 
     // get up to 10 white cards
     for (const user of this.users) {
@@ -213,28 +239,28 @@ class Session {
       for (let i = 0; i < 10 - whiteCardsLength; i++) {
         const whiteCardIndex = getRandomInt(
           0,
-          this.availableWhiteCards.length - 1
+          this._availableWhiteCards.length - 1
         )
-        const whiteCard = this.availableWhiteCards[whiteCardIndex]
+        const whiteCard = this._availableWhiteCards[whiteCardIndex]
         if (whiteCard) whiteCards.push(whiteCard)
-        this.availableWhiteCards.splice(whiteCardIndex, 1)
+        this._availableWhiteCards.splice(whiteCardIndex, 1)
       }
     }
 
     this.eventBus.emit("voting")
 
-    this.countdownTimeout = setTimeout(() => {
-      this.countdownTimeout && clearTimeout(this.countdownTimeout)
-      this.countdownTimeout = null
+    this._countdownTimeout = setTimeout(() => {
+      this._countdownTimeout && clearTimeout(this._countdownTimeout)
+      this._countdownTimeout = null
       this.startChoosing()
     }, 60000)
   }
 
   public startChoosing() {
-    this.countdownTimeout && clearTimeout(this.countdownTimeout)
-    this.countdownTimeout = null
+    this._countdownTimeout && clearTimeout(this._countdownTimeout)
+    this._countdownTimeout = null
 
-    this.status = "choosing"
+    this._status = "choosing"
 
     this.users.forEach((user) => {
       if (!user.voted && !user.master && !user.disconnected) {
@@ -265,7 +291,7 @@ class Session {
     }
 
     if (this.votes.every((vote) => vote.visible)) {
-      this.status = "choosingbest"
+      this._status = "choosingbest"
       this.eventBus.emit("choosingbest")
     }
   }
@@ -285,16 +311,16 @@ class Session {
   }
 
   public endGame() {
-    this.status = "end"
-    this.redCard = null
-    this.votes = []
-    this.availableRedCards = redCards
-    this.availableWhiteCards = whiteCards
-    this.countdownTimeout && clearTimeout(this.countdownTimeout)
-    this.countdownTimeout = null
-    this.masterIndex = 0
+    this._status = "end"
+    this._redCard = null
+    this._votes = []
+    this._availableRedCards = redCards
+    this._availableWhiteCards = whiteCards
+    this._countdownTimeout && clearTimeout(this._countdownTimeout)
+    this._countdownTimeout = null
+    this._masterIndex = 0
 
-    this.users = this.users.filter((user) => user.disconnected == false)
+    this._users = this.users.filter((user) => user.disconnected == false)
     for (const user of this.users) {
       this.getUserWhitecards(user).length = 0
       user.master = false
@@ -306,7 +332,7 @@ class Session {
   }
 
   public getUserSender(user: User) {
-    const userData = this.userData.get(user)
+    const userData = this._userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
     }
@@ -315,7 +341,7 @@ class Session {
   }
 
   public getUserWhitecards(user: User) {
-    const userData = this.userData.get(user)
+    const userData = this._userData.get(user)
     if (!userData) {
       throw new Error("no userdata found")
     }
@@ -324,7 +350,7 @@ class Session {
   }
 
   private updateMasterIndex() {
-    let masterIndex = this.masterIndex
+    let masterIndex = this._masterIndex
 
     do {
       if (masterIndex + 1 >= this.users.length) {
@@ -334,7 +360,7 @@ class Session {
       }
     } while (this.users[masterIndex]?.disconnected == true)
 
-    this.masterIndex = masterIndex
+    this._masterIndex = masterIndex
   }
 }
 

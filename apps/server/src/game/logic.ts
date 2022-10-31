@@ -35,7 +35,11 @@ class Game {
 
     session.disconnectUser(user, {
       onSessionEnd: () => this.onSessionEnd(session),
-      onDisconnect() {
+      onDisconnect(anyActivePlayers) {
+        if (!anyActivePlayers) {
+          return
+        }
+
         for (const user of session.users) {
           session.getUserSender(user).send(
             stringify({
@@ -200,7 +204,7 @@ class Game {
     if (session.status != "waiting" && session.status != "end") {
       throw new Error("game is started already")
     }
-    if (session.users.length < 0) {
+    if (session.users.length < 2) {
       throw new Error("need more players")
     }
 
