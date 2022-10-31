@@ -9,7 +9,7 @@
     "start": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node dist/app.js",
     "build": "tsc -p .",
     "dev": "cross-env NODE_ENV=development nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm ./src/app.ts",
-    "test": "c8 tap --no-cov --test-ignore='(helpers|dist)'"
+    "test": "c8 tap --no-cov --test-ignore='(/helpers/|dist/)'"
   },
   "dependencies": {
     "@fastify/websocket": "^7.1.0",
