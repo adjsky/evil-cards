@@ -2,7 +2,7 @@ import t from "tap"
 import sinon from "sinon"
 
 import BufferedSender from "../helpers/buffered-sender"
-import Session from "../../session"
+import Session from "../../src/game/session"
 
 const bufferedSender = new BufferedSender(true)
 let session = new Session()

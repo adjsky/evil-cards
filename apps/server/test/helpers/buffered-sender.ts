@@ -1,4 +1,4 @@
-import type { Sender } from "../../../../src/game/session"
+import type { Sender } from "../../src/game/session"
 
 class BufferedSender<T = string> implements Sender<T> {
   private skip = false
