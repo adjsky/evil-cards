@@ -1,4 +1,4 @@
-import game from "../game/logic"
+import game from "../game"
 import type { FastifyPluginCallback } from "fastify"
 
 const websocketRoutes: FastifyPluginCallback = (fastify, _, done) => {

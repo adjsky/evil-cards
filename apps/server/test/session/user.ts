@@ -1,13 +1,16 @@
 import t from "tap"
 import sinon from "sinon"
 
-import BufferedSender from "../helpers/buffered-sender"
 import Session from "../../src/game/session"
 
-const bufferedSender = new BufferedSender(true)
-let session = new Session()
+const sender = {
+  send() {
+    //
+  }
+}
+let session: Session
 
-t.afterEach(() => {
+t.beforeEach(() => {
   session = new Session()
 })
 
@@ -18,7 +21,7 @@ t.test("adds user", (t) => {
   const avatarId = 1
   const host = false
 
-  const user = session.addUser(bufferedSender, username, avatarId, host)
+  const user = session.addUser(sender, username, avatarId, host)
 
   t.equal(session.users[0], user)
   t.equal(user.avatarId, avatarId)
@@ -31,7 +34,7 @@ t.test("disconnectUser calls onDisconnect", (t) => {
 
   const onDisconnectFake = sinon.fake()
 
-  const user = session.addUser(bufferedSender, "qweqwe", 1, false)
+  const user = session.addUser(sender, "qweqwe", 1, false)
   session.disconnectUser(user, {
     onDisconnect: onDisconnectFake
   })
@@ -46,8 +49,8 @@ t.test(
 
     const onDisconnectFake = sinon.fake()
 
-    const user = session.addUser(bufferedSender, "qweqwe", 1, false)
-    session.addUser(bufferedSender, "qweqwe", 1, false)
+    const user = session.addUser(sender, "qweqwe", 1, false)
+    session.addUser(sender, "qweqwe", 1, false)
     session.disconnectUser(user, {
       onDisconnect: onDisconnectFake
     })
@@ -64,7 +67,7 @@ t.test(
     const onSessionEndFake = sinon.fake()
     const onDisconnectFake = sinon.fake()
 
-    const user = session.addUser(bufferedSender, "qweqwe", 1, false)
+    const user = session.addUser(sender, "qweqwe", 1, false)
     session.disconnectUser(user, {
       onSessionEnd: onSessionEndFake,
       onDisconnect: onDisconnectFake
@@ -78,18 +81,18 @@ t.test(
 t.test("disconnectUser deletes user if status==waiting", (t) => {
   t.plan(1)
 
-  session.addUser(bufferedSender, "wqe", 1, false)
-  const user = session.addUser(bufferedSender, "wqe", 1, false)
+  session.addUser(sender, "wqe", 1, false)
+  const user = session.addUser(sender, "wqe", 1, false)
 
   session.disconnectUser(user)
   t.equal(session.users.length, 1)
 })
 
 t.test("disconnectUser marks user as disconnected if playing", (t) => {
-  session.addUser(bufferedSender, "wqe", 1, false)
-  const user = session.addUser(bufferedSender, "wqe", 1, false)
+  session.addUser(sender, "wqe", 1, false)
+  const user = session.addUser(sender, "wqe", 1, false)
 
-  session.startVoting()
+  session.startGame()
   session.disconnectUser(user)
   t.ok(user.disconnected)
 
@@ -100,8 +103,8 @@ t.test("disconnectUser marks user as disconnected if playing", (t) => {
 t.test("if host disconnects the first connected player becomes host", (t) => {
   t.plan(1)
 
-  const user1 = session.addUser(bufferedSender, "wqe", 1, true)
-  const user2 = session.addUser(bufferedSender, "wqe", 1, false)
+  const user1 = session.addUser(sender, "wqe", 1, true)
+  const user2 = session.addUser(sender, "wqe", 1, false)
   session.disconnectUser(user1)
 
   t.ok(user2.host)
@@ -113,10 +116,10 @@ t.test(
     const endCallback = sinon.fake()
     session.eventBus.on("end", endCallback)
 
-    session.addUser(bufferedSender, "wqe", 1, true)
-    const user = session.addUser(bufferedSender, "wqe", 1, false)
+    session.addUser(sender, "wqe", 1, true)
+    const user = session.addUser(sender, "wqe", 1, false)
 
-    session.startVoting()
+    session.startGame()
     session.disconnectUser(user)
 
     await new Promise((resolve) => setTimeout(resolve, 0))
@@ -130,18 +133,38 @@ t.test(
 )
 
 t.test(
-  "if playing the next player should become master on disconnection if disconnected user was master",
+  "if playing the next connected player should become master on disconnection if disconnected user was master",
   (t) => {
-    const user1 = session.addUser(bufferedSender, "wqe", 1, true)
-    const user2 = session.addUser(bufferedSender, "wqe", 1, false)
-    session.addUser(bufferedSender, "wqe", 1, false)
+    const clock = sinon.useFakeTimers()
+    t.teardown(() => clock.restore())
 
-    session.startVoting()
+    const user1 = session.addUser(sender, "wqe", 1, true)
+    const user2 = session.addUser(sender, "wqe", 1, false)
+    const user3 = session.addUser(sender, "wqe", 1, false)
+    const user4 = session.addUser(sender, "wqe", 1, false)
+    session.addUser(sender, "wqe", 1, false)
+
+    session.startGame()
+    clock.tick(3000)
     session.disconnectUser(user1)
 
     t.ok(user2.master)
+
+    session.disconnectUser(user3)
+    session.disconnectUser(user2)
+    t.ok(user4.master)
 
     session.endGame()
     t.end()
   }
 )
+
+t.test("getUserSender()", (t) => {
+  const user = session.addUser(sender, "qwe", 0, true)
+  const copiedUser = { ...user }
+
+  t.ok(session.getUserSender(user))
+  t.throws(() => session.getUserSender(copiedUser))
+
+  t.end()
+})
