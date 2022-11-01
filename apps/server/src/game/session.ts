@@ -113,10 +113,7 @@ class Session<T = string> {
       (user) => user.disconnected == false
     )
     if (connectedUsers.length == 0) {
-      if (this._timeouts.countdown) {
-        clearTimeout(this._timeouts.countdown)
-        this._timeouts.countdown = null
-      }
+      this.clearTimeouts()
       if (callbacks?.onSessionEnd) {
         callbacks?.onSessionEnd()
       }
@@ -226,14 +223,7 @@ class Session<T = string> {
     this._availableWhiteCards = whiteCards
     this._masterIndex = 0
 
-    for (const [key, value] of Object.entries(this._timeouts)) {
-      if (value == null) {
-        continue
-      }
-
-      clearTimeout(value)
-      this._timeouts[key as keyof Timeouts] = null
-    }
+    this.clearTimeouts()
 
     this._users = this._users.filter((user) => user.disconnected == false)
     for (const user of this._users) {
@@ -278,6 +268,17 @@ class Session<T = string> {
     this._masterIndex = masterIndex
   }
 
+  private clearTimeouts() {
+    for (const [key, value] of Object.entries(this._timeouts)) {
+      if (value == null) {
+        continue
+      }
+
+      clearTimeout(value)
+      this._timeouts[key as keyof Timeouts] = null
+    }
+  }
+
   private async startVoting() {
     // prepare
     this._votes = []
@@ -302,14 +303,8 @@ class Session<T = string> {
     this.updateMasterIndex()
 
     // get red card
-    if (this._availableRedCards.length == 0) {
-      this._availableRedCards = redCards
-    }
     const redCardIndex = getRandomInt(0, this._availableRedCards.length - 1)
-    const redCard = this._availableRedCards.at(redCardIndex)
-    if (!redCard) {
-      throw new Error("smth happened")
-    }
+    const redCard = this._availableRedCards[redCardIndex]
     this._redCard = redCard
     this._availableRedCards.splice(redCardIndex, 1)
 
@@ -352,10 +347,7 @@ class Session<T = string> {
       if (!user.voted && !user.master && !user.disconnected) {
         const userWhitecards = this.getUserWhitecards(user)
         const randomCardIndex = getRandomInt(0, userWhitecards.length - 1)
-        const text = userWhitecards.at(randomCardIndex)
-        if (!text) {
-          throw new Error("smth happened")
-        }
+        const text = userWhitecards[randomCardIndex]
         user.voted = true
         this._votes.push({ text, userId: user.id, visible: false })
         userWhitecards.splice(randomCardIndex, 1)

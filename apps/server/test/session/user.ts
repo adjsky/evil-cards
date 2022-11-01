@@ -168,3 +168,31 @@ t.test("getUserSender()", (t) => {
 
   t.end()
 })
+
+t.test("should be able to reconnect user while playing", (t) => {
+  session.addUser(sender, "adsad", 0, true)
+  const user2 = session.addUser(sender, "adsad", 0, true)
+  session.addUser(sender, "adsad", 0, true)
+
+  session.startGame()
+  session.disconnectUser(user2)
+  t.ok(user2.disconnected)
+  t.doesNotThrow(() => session.reconnectUser(sender, user2, 2))
+  t.equal(user2.avatarId, 2)
+
+  session.endGame()
+  t.end()
+})
+
+t.test("should not be able to reconnect a new user while playing", (t) => {
+  session.addUser(sender, "adsad", 0, true)
+  const user2 = session.addUser(sender, "adsad", 0, true)
+  session.addUser(sender, "adsad", 0, true)
+
+  session.startGame()
+  session.disconnectUser(user2)
+  t.throw(() => session.reconnectUser(sender, { ...user2 }, 2))
+
+  session.endGame()
+  t.end()
+})

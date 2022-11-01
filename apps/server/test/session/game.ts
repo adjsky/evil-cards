@@ -229,3 +229,18 @@ t.test(
     t.end()
   }
 )
+
+t.test("should process disconnected users when choosing master", (t) => {
+  const user1 = session.addUser(sender, "qwe", 0, true)
+  const user2 = session.addUser(sender, "qwe", 0, false)
+  session.addUser(sender, "qwe", 0, false)
+
+  session.startGame()
+  session.disconnectUser(user1)
+
+  clock.tick(3000)
+
+  t.ok(user2.master)
+
+  t.end()
+})
