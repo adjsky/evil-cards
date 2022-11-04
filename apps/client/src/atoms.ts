@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import type { Vote, User, Status } from "@kado/server/src/ws/send"
+import type { Vote, User, Status } from "@evil-cards/server/src/ws/send"
 
 type GameState = {
   users: User[]

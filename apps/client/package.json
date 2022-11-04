@@ -1,5 +1,5 @@
 {
-  "name": "@kado/client",
+  "name": "@evil-cards/client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -20,7 +20,7 @@
     "zod": "^3.18.0"
   },
   "devDependencies": {
-    "@kado/server": "*",
+    "@evil-cards/server": "*",
     "@svgr/webpack": "^6.5.0",
     "@types/node": "18.0.0",
     "@types/react": "18.0.14",

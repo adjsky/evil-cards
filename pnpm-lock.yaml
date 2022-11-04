@@ -10,7 +10,7 @@ importers:
 
   apps/client:
     specifiers:
-      '@kado/server': '*'
+      '@evil-cards/server': '*'
       '@svgr/webpack': ^6.5.0
       '@types/node': 18.0.0
       '@types/react': 18.0.14
@@ -47,7 +47,7 @@ importers:
       ru-typo: 4.0.2
       zod: 3.19.1
     devDependencies:
-      '@kado/server': link:../server
+      '@evil-cards/server': link:../server
       '@svgr/webpack': 6.5.0
       '@types/node': 18.0.0
       '@types/react': 18.0.14

@@ -2,7 +2,7 @@ import React from "react"
 import DesktopUserList from "./desktop"
 import MobileUserList from "./mobile"
 
-import type { User } from "@kado/server/src/ws/send"
+import type { User } from "@evil-cards/server/src/ws/send"
 
 const UserList: React.FC<{ users: User[]; variant: "game" | "waiting" }> = ({
   users,
