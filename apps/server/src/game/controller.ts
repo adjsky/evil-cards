@@ -1,8 +1,8 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
 
-import { messageSchema } from "../ws/receive"
-import stringify from "../ws/stringify"
+import { messageSchema } from "../lib/ws/receive"
+import stringify from "../lib/ws/stringify"
 
 import type { WebSocket } from "ws"
 import type { ControllerEventBus } from "./types"

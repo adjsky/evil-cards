@@ -7,12 +7,13 @@ import typo from "ru-typo"
 import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useScreenFactor from "../hooks/use-screen-factor"
+import useTimeBar from "../hooks/use-time-bar"
 
 import UserList from "../components/user-list"
 import Card from "../components/card"
 
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
-import type { Message as SendMessage } from "@evil-cards/server/src/ws/receive"
+import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 
 const Game: React.FC = () => {
   const [gameState] = useAtom(gameStateAtom)
@@ -24,6 +25,7 @@ const Game: React.FC = () => {
     px: 40,
     py: 40
   })
+  const timeBarStyles = useTimeBar(gameState?.votingEndsAt)
 
   if (!gameState) {
     return null
@@ -88,11 +90,9 @@ const Game: React.FC = () => {
           <div className="flex w-full flex-col gap-2 sm:gap-3">
             <div className="relative h-[10px] w-full rounded-lg bg-gray-200">
               <div
-                className={clsx(
-                  "absolute left-0 top-0 h-full rounded-lg bg-red-500",
-                  gameState.status == "voting" && "countdown"
-                )}
-              ></div>
+                className="absolute left-0 top-0 h-full rounded-lg bg-red-500"
+                style={timeBarStyles}
+              />
             </div>
             <div
               className={clsx(

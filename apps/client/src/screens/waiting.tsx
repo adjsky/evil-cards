@@ -12,8 +12,8 @@ import Logo from "../components/logo"
 import UserList from "../components/user-list"
 import Rules from "../components/rules"
 
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
-import type { Message as SendMessage } from "@evil-cards/server/src/ws/receive"
+import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 
 const Waiting: React.FC = () => {
   const [gameState] = useAtom(gameStateAtom)

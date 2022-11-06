@@ -1,9 +1,9 @@
-import stringify from "../ws/stringify"
+import stringify from "../lib/ws/stringify"
 import Controller from "./controller"
 import Session from "./session"
 
 import type { ServerEvent } from "./types"
-import type { User } from "../ws/send"
+import type { User } from "../lib/ws/send"
 import type { WebSocket } from "ws"
 
 class Game {
@@ -60,7 +60,7 @@ class Game {
     username,
     avatarId
   }: ServerEvent["createsession"]) {
-    const session = new Session()
+    const session = new Session({ votingDuration: 60 })
     const user = session.addUser(socket, username, avatarId, true)
 
     this.sessions.set(session.id, session)
@@ -127,7 +127,8 @@ class Game {
               userId: newUser.id,
               users: session.users,
               whiteCards: session.getUserWhitecards(user),
-              redCard: session.redCard
+              redCard: session.redCard,
+              votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null
             }
           })
         )
@@ -241,7 +242,8 @@ class Game {
               redCard: session.redCard,
               users: session.users,
               status: session.status,
-              votes: session.votes
+              votes: session.votes,
+              votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null
             }
           })
         )

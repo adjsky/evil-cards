@@ -5,7 +5,7 @@ import CheckMark from "../../assets/check-mark.svg"
 import Crown from "../../assets/crown.svg"
 import Question from "../../assets/question.svg"
 
-import type { User } from "@evil-cards/server/src/ws/send"
+import type { User } from "@evil-cards/server/src/lib/ws/send"
 
 const MobileUserList: React.FC<{
   users: User[]
