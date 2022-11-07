@@ -1,5 +1,5 @@
 import React from "react"
-import Image from "next/future/image"
+import Image from "next/image"
 
 import CheckMark from "../../assets/check-mark.svg"
 import Crown from "../../assets/crown.svg"

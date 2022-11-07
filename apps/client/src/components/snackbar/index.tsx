@@ -67,8 +67,8 @@ const Snackbar: React.FC<SnackbarProps> = ({
 
     containerRef.current.style.animation = "none"
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    containerRef.current.offsetHeight // start reflow
+    // start reflow
+    containerRef.current.offsetHeight
 
     containerRef.current.style.removeProperty("animation")
     containerRef.current.style.animationDuration =
@@ -110,11 +110,9 @@ const Snackbar: React.FC<SnackbarProps> = ({
     if (state.openAnimation || state.closeAnimation) {
       resetAnimation()
     }
-
     if (state.openAnimation) {
       stopShowing()
     }
-
     if (state.closeAnimation) {
       stopClosing()
     }
@@ -191,7 +189,6 @@ const Snackbar: React.FC<SnackbarProps> = ({
     }
 
     show()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, message, severity])
 
   if (!isBrowser || !state.display) {

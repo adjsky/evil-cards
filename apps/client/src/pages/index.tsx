@@ -38,7 +38,7 @@ const Home: NextPage = () => {
       }
 
       if (data.type == "joined") {
-        Router.replace(Router.pathname, undefined, { shallow: true })
+        Router.replace("/", undefined, { shallow: true })
       }
 
       switch (data.type) {

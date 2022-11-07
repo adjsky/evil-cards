@@ -25,15 +25,13 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   })
   const timeBarStyles = useTimeBar(gameState.votingEndsAt)
 
-  const user = gameState.users.find((user) => user.id == gameState.userId)
-  if (!user) {
-    return null
-  }
+  const user = gameState.users.find((user) => user.id == gameState.userId)!
   const availableCardDisabled =
     gameState.status == "choosing" ||
     gameState.status == "choosingbest" ||
     user.master ||
     user.voted
+
   const handleTableCardClick = (userId: string) => {
     if (gameState.status == "choosing") {
       sendJsonMessage({ type: "choose", details: { userId } })

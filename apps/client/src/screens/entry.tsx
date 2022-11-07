@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import Image from "next/future/image"
-import Router from "next/router"
+import Image from "next/image"
+import { useSearchParams } from "next/navigation"
 
 import useSocket from "../hooks/use-socket"
 
@@ -15,6 +15,7 @@ const Entry: React.FC = () => {
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
   const [username, setUsername] = useState("Игрок")
   const [avatarId, setAvatarId] = useState(1)
+  const searchParams = useSearchParams()
 
   return (
     <main className="flex h-screen flex-col items-center justify-center gap-8 py-10">
@@ -40,7 +41,7 @@ const Entry: React.FC = () => {
       </div>
       <button
         onClick={() => {
-          const { s } = Router.query
+          const s = searchParams.get("s")
           if (typeof s == "string") {
             sendJsonMessage({
               type: "joinsession",
