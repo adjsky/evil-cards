@@ -36,6 +36,7 @@ export type Joined = {
     userId: string
     whiteCards: string[]
     redCard: string | null
+    votingEndsAt: number | null
   }
 }
 
@@ -69,6 +70,7 @@ export type VotingStarted = {
     redCard: string
     users: User[]
     votes: Vote[]
+    votingEndsAt: number | null
   }
 }
 

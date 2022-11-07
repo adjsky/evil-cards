@@ -10,8 +10,8 @@ import mapErrorMessage from "../functions/map-error-message"
 import Entry from "../screens/entry"
 
 import type { NextPage } from "next"
-import type { Message as SendMessage } from "@evil-cards/server/src/ws/receive"
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
+import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
+import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
 const Game = dynamic(() => import("../screens/game"), { ssr: false })
 const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })
@@ -42,20 +42,32 @@ const Home: NextPage = () => {
         Router.replace(Router.pathname, undefined, { shallow: true })
       }
 
-      if (data.type == "joined") {
-        setGameState({
-          ...data.details,
-          votes: []
-        })
-      } else if (data.type == "created") {
-        setGameState({
-          ...data.details,
-          redCard: null,
-          votes: [],
-          whiteCards: []
-        })
-      } else if ("details" in data && data.type != "error" && data.details) {
-        setGameState((prev) => (prev ? { ...prev, ...data.details } : null))
+      switch (data.type) {
+        case "joined":
+          setGameState({
+            ...data.details,
+            votes: []
+          })
+          break
+        case "created":
+          setGameState({
+            ...data.details,
+            redCard: null,
+            votes: [],
+            whiteCards: [],
+            votingEndsAt: null
+          })
+          break
+        case "votingstarted":
+          setGameState((prev) => ({ ...prev!, ...data.details }))
+          break
+        default:
+          if (data.type != "ping" && data.type != "error")
+            setGameState((prev) => ({
+              ...prev!,
+              ...data.details,
+              votingEndsAt: null
+            }))
       }
     }
   })

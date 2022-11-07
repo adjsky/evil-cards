@@ -1,4 +1,4 @@
-import type { User } from "../ws/send"
+import type { User } from "../lib/ws/send"
 import type Session from "../game/session"
 
 declare module "ws" {

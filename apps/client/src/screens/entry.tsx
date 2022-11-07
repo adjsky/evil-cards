@@ -8,8 +8,8 @@ import UsernameInput from "../components/username-input"
 import Plus from "../assets/plus.svg"
 import Logo from "../components/logo"
 
-import type { Message as SendMessage } from "@evil-cards/server/src/ws/receive"
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
+import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
+import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
 const Entry: React.FC = () => {
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()

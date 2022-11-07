@@ -1,10 +1,13 @@
 import { nanoid } from "nanoid"
 import Emittery from "emittery"
+import dayjs from "dayjs"
 
 import { whiteCards, redCards } from "./cards"
 import getRandomInt from "../functions/get-random-int"
+import { setDateTimeout } from "../lib/date-timeout"
 
-import type { Status, User, Vote } from "../ws/send"
+import type { Status, User, Vote } from "../lib/ws/send"
+import type { DateTimeout } from "../lib/date-timeout"
 import type { SessionEventBus } from "./types"
 
 export type Sender<T> = {
@@ -14,26 +17,30 @@ export type UserData<T> = {
   sender: Sender<T>
   whiteCards: string[]
 }
-type Timeouts = Record<"countdown" | "starting", null | NodeJS.Timeout>
+type Timeouts = Record<"voting" | "starting", null | DateTimeout>
+type Config = {
+  votingDuration: number
+}
 
 class Session<T = string> {
   private _userData: WeakMap<User, UserData<T>> = new WeakMap()
   private _availableRedCards = [...redCards]
   private _availableWhiteCards = [...whiteCards]
   private _masterIndex = 0
-  private _timeouts: Timeouts = { countdown: null, starting: null }
+  private _timeouts: Timeouts = { voting: null, starting: null }
 
   private _votes: Vote[] = []
   private _users: User[] = []
-  private _id: string
   private _redCard: string | null = null
   private _status: Status = "waiting"
-  private _eventBus: SessionEventBus
+  private _eventBus: SessionEventBus = new Emittery()
+  private _id: string
+  private _config: Config
 
-  constructor() {
+  constructor(config: Config) {
     const id = nanoid(5)
     this._id = id
-    this._eventBus = new Emittery()
+    this._config = config
   }
 
   public get votes() {
@@ -152,7 +159,10 @@ class Session<T = string> {
 
   public async startGame() {
     this._status = "starting"
-    this._timeouts.starting = setTimeout(() => this.startVoting(), 3000)
+    this._timeouts.starting = setDateTimeout(
+      () => this.startVoting(),
+      dayjs().add(3, "s").toDate()
+    )
 
     await this._eventBus.emit("starting")
   }
@@ -245,6 +255,10 @@ class Session<T = string> {
     return userData.sender
   }
 
+  public getTimeoutDate(name: keyof Timeouts) {
+    return this._timeouts[name]?.date
+  }
+
   public getUserWhitecards(user: User) {
     const userData = this._userData.get(user)
     if (!userData) {
@@ -274,7 +288,7 @@ class Session<T = string> {
         continue
       }
 
-      clearTimeout(value)
+      value.clear()
       this._timeouts[key as keyof Timeouts] = null
     }
   }
@@ -324,21 +338,21 @@ class Session<T = string> {
       }
     }
 
-    this._timeouts.countdown = setTimeout(() => {
-      if (this._timeouts.countdown) {
-        clearTimeout(this._timeouts.countdown)
-        this._timeouts.countdown = null
+    this._timeouts.voting = setDateTimeout(() => {
+      if (this._timeouts.voting) {
+        this._timeouts.voting.clear()
+        this._timeouts.voting = null
       }
       this.startChoosing()
-    }, 60000)
+    }, dayjs().add(this._config.votingDuration, "s").toDate())
 
     await this._eventBus.emit("voting")
   }
 
   private async startChoosing() {
-    if (this._timeouts.countdown) {
-      clearTimeout(this._timeouts.countdown)
-      this._timeouts.countdown = null
+    if (this._timeouts.voting) {
+      this._timeouts.voting.clear()
+      this._timeouts.voting = null
     }
 
     this._status = "choosing"
