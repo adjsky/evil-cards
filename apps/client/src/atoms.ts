@@ -1,7 +1,7 @@
 import { atom } from "jotai"
 import type { Vote, User, Status } from "@evil-cards/server/src/lib/ws/send"
 
-type GameState = {
+export type GameState = {
   users: User[]
   votes: Vote[]
   id: string

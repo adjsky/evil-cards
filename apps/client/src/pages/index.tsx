@@ -7,12 +7,11 @@ import useSocket from "../hooks/use-socket"
 import useSnackbar from "../components/snackbar/use"
 import mapErrorMessage from "../functions/map-error-message"
 
-import Entry from "../screens/entry"
-
 import type { NextPage } from "next"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
+import Entry from "../screens/entry"
 const Game = dynamic(() => import("../screens/game"), { ssr: false })
 const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })
 
@@ -79,8 +78,8 @@ const Home: NextPage = () => {
     <>
       {Snackbar}
       {!gameState && <Entry />}
-      {waiting && <Waiting />}
-      {!waiting && <Game />}
+      {gameState && waiting && <Waiting gameState={gameState} />}
+      {gameState && !waiting && <Game gameState={gameState} />}
     </>
   )
 }

@@ -1,8 +1,6 @@
 import React, { useEffect } from "react"
-import { useAtom } from "jotai"
 import clsx from "clsx"
 
-import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useToggle from "../hooks/use-toggle"
 import useCountdown from "../hooks/use-countdown"
@@ -14,9 +12,9 @@ import Rules from "../components/rules"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
+import type { GameState } from "../atoms"
 
-const Waiting: React.FC = () => {
-  const [gameState] = useAtom(gameStateAtom)
+const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   const screenStyles = useScreenFactor({
     width: 850,
     height: 633,
@@ -35,18 +33,13 @@ const Waiting: React.FC = () => {
     }
   })
 
-  if (!gameState) {
-    return null
-  }
-  const user = gameState.users.find((user) => user.id == gameState.userId)
-  if (!user) {
-    return null
-  }
-  const lowerButtonOpacity =
-    !user.host && (gameState.status == "waiting" || gameState.status == "end")
   const handleStart = () => {
     sendJsonMessage({ type: "startgame" })
   }
+
+  const user = gameState.users.find((user) => user.id == gameState.userId)!
+  const lowerButtonOpacity =
+    !user.host && (gameState.status == "waiting" || gameState.status == "end")
 
   return (
     <>
