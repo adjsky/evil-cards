@@ -1,10 +1,8 @@
 import React from "react"
-import { useAtom } from "jotai"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 import typo from "ru-typo"
 
-import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useScreenFactor from "../hooks/use-screen-factor"
 import useTimeBar from "../hooks/use-time-bar"
@@ -14,9 +12,9 @@ import Card from "../components/card"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
+import type { GameState } from "../atoms"
 
-const Game: React.FC = () => {
-  const [gameState] = useAtom(gameStateAtom)
+const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
   const screenStyles = useScreenFactor({
@@ -25,11 +23,8 @@ const Game: React.FC = () => {
     px: 40,
     py: 40
   })
-  const timeBarStyles = useTimeBar(gameState?.votingEndsAt)
+  const timeBarStyles = useTimeBar(gameState.votingEndsAt)
 
-  if (!gameState) {
-    return null
-  }
   const user = gameState.users.find((user) => user.id == gameState.userId)
   if (!user) {
     return null
