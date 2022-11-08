@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
     "clsx": "^1.2.1",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@evil-cards/server": "*",
+    "@next/bundle-analyzer": "^13.0.2",
     "@svgr/webpack": "^6.5.0",
     "@types/node": "18.0.0",
     "@types/react": "18.0.14",
@@ -27,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "autoprefixer": "^10.4.7",
+    "cross-env": "^7.0.3",
     "eslint": "8.22.0",
     "eslint-config-next": "13.0.2",
     "eslint-plugin-prettier": "^4.2.1",
