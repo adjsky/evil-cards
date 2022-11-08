@@ -16,6 +16,7 @@ const Entry: React.FC = () => {
   const [username, setUsername] = useState("Игрок")
   const [avatarId, setAvatarId] = useState(1)
   const searchParams = useSearchParams()
+  const joining = searchParams.has("s")
 
   return (
     <main className="flex h-screen flex-col items-center justify-center gap-8 py-10">
@@ -42,7 +43,7 @@ const Entry: React.FC = () => {
       <button
         onClick={() => {
           const s = searchParams.get("s")
-          if (typeof s == "string") {
+          if (s) {
             sendJsonMessage({
               type: "joinsession",
               details: {
