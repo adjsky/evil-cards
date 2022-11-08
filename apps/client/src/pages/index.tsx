@@ -11,7 +11,7 @@ import type { NextPage } from "next"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
-import Entry from "../screens/entry"
+const Entry = dynamic(() => import("../screens/entry"), { ssr: false })
 const Game = dynamic(() => import("../screens/game"), { ssr: false })
 const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })
 
@@ -37,7 +37,12 @@ const Home: NextPage = () => {
         })
       }
 
-      if (data.type == "joined") {
+      if (
+        data.type == "joined" ||
+        (data.type == "error" &&
+          data.details &&
+          data.details == "session not found")
+      ) {
         Router.replace("/", undefined, { shallow: true })
       }
 

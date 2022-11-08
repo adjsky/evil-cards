@@ -11,11 +11,23 @@ import Logo from "../components/logo"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
+const saveUsername = (username: string) => {
+  try {
+    localStorage.setItem("username", username)
+  } catch (_) {
+    //
+  }
+}
+const getUsername = () => {
+  return localStorage.getItem("username") ?? "Игрок"
+}
+
 const Entry: React.FC = () => {
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
-  const [username, setUsername] = useState("Игрок")
+  const [username, setUsername] = useState(getUsername())
   const [avatarId, setAvatarId] = useState(1)
   const searchParams = useSearchParams()
+  const joining = searchParams.has("s")
 
   return (
     <main className="flex h-screen flex-col items-center justify-center gap-8 py-10">
@@ -41,8 +53,10 @@ const Entry: React.FC = () => {
       </div>
       <button
         onClick={() => {
+          saveUsername(username)
+
           const s = searchParams.get("s")
-          if (typeof s == "string") {
+          if (s) {
             sendJsonMessage({
               type: "joinsession",
               details: {
@@ -65,7 +79,7 @@ const Entry: React.FC = () => {
         }}
         className="rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-red-500"
       >
-        НАЧАТЬ
+        {joining ? "ВОЙТИ" : "НАЧАТЬ"}
       </button>
     </main>
   )
