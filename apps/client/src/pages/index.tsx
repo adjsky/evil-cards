@@ -37,7 +37,12 @@ const Home: NextPage = () => {
         })
       }
 
-      if (data.type == "joined") {
+      if (
+        data.type == "joined" ||
+        (data.type == "error" &&
+          data.details &&
+          data.details == "session not found")
+      ) {
         Router.replace("/", undefined, { shallow: true })
       }
 
