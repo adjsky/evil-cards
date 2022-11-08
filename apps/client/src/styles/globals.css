@@ -28,21 +28,3 @@
 .scrollable::-webkit-scrollbar-thumb:hover {
   background: theme("colors.gray.200");
 }
-
-@keyframes fade {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.fade-open {
-  animation: fade ease-in-out 0.3s;
-  animation-direction: reverse;
-}
-
-.fade-close {
-  animation: fade ease-in-out 0.3s;
-}

@@ -7,6 +7,7 @@ import useIsomorphicLayoutEffect from "../../hooks/use-isomorphic-layout-effect"
 import Close from "../../assets/close.svg"
 import CrossMark from "../../assets/cross-mark.svg"
 import ExclamationMark from "../../assets/exclamation-mark.svg"
+import styles from "./snackbar.module.css"
 
 import type { SnackbarProps, Severity, Colors } from "./types"
 
@@ -208,8 +209,8 @@ const Snackbar: React.FC<SnackbarProps> = ({
       }}
       className={clsx(
         "fixed top-3 left-1/2 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]",
-        state.openAnimation && "fade-open",
-        state.closeAnimation && "fade-close"
+        state.openAnimation && styles["fade-open"],
+        state.closeAnimation && styles["fade-close"]
       )}
       onMouseEnter={() => !state.closeAnimation && stopAutoHide()}
       onMouseLeave={() =>
