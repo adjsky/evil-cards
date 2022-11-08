@@ -10,6 +10,10 @@ export const serverSchema = z.object({
   BUILD_STANDALONE: z
     .string()
     .optional()
+    .transform((v) => v == "true"),
+  ANALYZE: z
+    .string()
+    .optional()
     .transform((v) => v == "true")
 })
 
