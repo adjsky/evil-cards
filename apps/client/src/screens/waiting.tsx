@@ -5,6 +5,7 @@ import useSocket from "../hooks/use-socket"
 import useToggle from "../hooks/use-toggle"
 import useCountdown from "../hooks/use-countdown"
 import useScreenFactor from "../hooks/use-screen-factor"
+import useLeavePreventer from "../hooks/use-leave-preventer"
 
 import Logo from "../components/logo"
 import UserList from "../components/user-list"
@@ -15,6 +16,7 @@ import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/recei
 import type { GameState } from "../atoms"
 
 const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+  useLeavePreventer()
   const screenStyles = useScreenFactor({
     width: 850,
     height: 633,
