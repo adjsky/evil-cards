@@ -1,49 +1,41 @@
 import React, { useState, useEffect, useCallback } from "react"
+import useIsomorphicLayoutEffect from "./use-isomorphic-layout-effect"
+import type { RefObject } from "react"
 
 type UseScreenFactorProps = {
-  width: number
-  height: number
+  ref: RefObject<HTMLElement>
   px?: number
   py?: number
+  disableOnMobile?: boolean
 }
 
 const useScreenFactor = ({
-  width,
-  height,
+  ref,
   px = 0,
-  py = 0
+  py = 0,
+  disableOnMobile
 }: UseScreenFactorProps) => {
   const computeScale = useCallback(() => {
-    const computedWidth = width + px * 2
-    const computedHeight = height + py * 2
+    if (!ref.current) {
+      return 1
+    }
+
+    const computedWidth = ref.current.offsetWidth + px * 2
+    const computedHeight = ref.current.offsetHeight + py * 2
     const scaledWidth = (computedWidth * window.innerHeight) / computedHeight
 
-    if (
-      window.innerHeight < computedHeight &&
-      window.innerWidth >= scaledWidth
-    ) {
-      return window.innerHeight / computedHeight
-    }
-
-    if (
-      window.innerHeight < computedHeight &&
-      window.innerWidth < scaledWidth
-    ) {
+    if (scaledWidth > window.innerWidth) {
       return window.innerWidth / computedWidth
     }
 
-    if (window.innerHeight < computedHeight) {
-      return window.innerHeight / computedWidth
-    }
+    return window.innerHeight / computedHeight
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref, ref.current?.offsetWidth, ref.current?.offsetHeight, px, py])
 
-    if (window.innerWidth < computedWidth) {
-      return window.innerWidth / computedWidth
-    }
-
-    return 1
-  }, [width, height, px, py])
-
-  const [scaleFactor, setScaleFactor] = useState(computeScale())
+  const [scaleFactor, setScaleFactor] = useState(1)
+  useIsomorphicLayoutEffect(() => {
+    setScaleFactor(computeScale())
+  }, [computeScale])
 
   useEffect(() => {
     const callback = () => {
@@ -51,19 +43,18 @@ const useScreenFactor = ({
     }
 
     window.addEventListener("resize", callback)
-
     return () => {
       window.removeEventListener("resize", callback)
     }
   }, [computeScale])
 
   const styles: React.CSSProperties =
-    window.innerWidth < 640
+    !ref.current || (disableOnMobile && window.innerWidth <= 640)
       ? {}
       : {
           transform: `scale(${scaleFactor})`,
-          marginLeft: -width / 2,
-          marginTop: -height / 2,
+          marginLeft: -ref.current.offsetWidth / 2,
+          marginTop: -ref.current.offsetHeight / 2,
           position: "absolute",
           top: "50%",
           left: "50%"

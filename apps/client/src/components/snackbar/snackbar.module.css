@@ -8,10 +8,10 @@
 }
 
 .fade-open {
-  animation: fade ease-in-out 0.3s;
+  animation: fade cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
   animation-direction: reverse;
 }
 
 .fade-close {
-  animation: fade ease-in-out 0.3s;
+  animation: fade cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
 }

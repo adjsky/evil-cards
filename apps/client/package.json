@@ -10,6 +10,7 @@
     "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.4",
     "clsx": "^1.2.1",
     "interweave": "^13.0.0",
     "jotai": "^1.9.1",

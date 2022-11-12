@@ -205,7 +205,7 @@ class Game {
     if (session.status != "waiting" && session.status != "end") {
       throw new Error("game is started already")
     }
-    if (session.users.length < 2) {
+    if (session.users.length < 3) {
       throw new Error("need more players")
     }
 
@@ -287,11 +287,12 @@ class Game {
           return
         }
 
-        session
-          .getUserSender(user)
-          .send(
-            stringify({ type: "gameend", details: { status: session.status } })
-          )
+        session.getUserSender(user).send(
+          stringify({
+            type: "gameend",
+            details: { status: session.status, users: session.users }
+          })
+        )
       })
     })
 

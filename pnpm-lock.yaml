@@ -11,6 +11,7 @@ importers:
   apps/client:
     specifiers:
       '@evil-cards/server': '*'
+      '@headlessui/react': ^1.7.4
       '@next/bundle-analyzer': ^13.0.2
       '@svgr/webpack': ^6.5.0
       '@types/node': 18.0.0
@@ -38,6 +39,7 @@ importers:
       typescript: ^4.8.4
       zod: ^3.18.0
     dependencies:
+      '@headlessui/react': 1.7.4_biqbaboplfbrettd7655fr4n2y
       clsx: 1.2.1
       interweave: 13.0.0_react@18.2.0
       jotai: 1.9.1_react@18.2.0
@@ -1465,6 +1467,18 @@ packages:
   /@gar/promisify/1.1.3:
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
     dev: true
+
+  /@headlessui/react/1.7.4_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-D8n5yGCF3WIkPsjEYeM8knn9jQ70bigGGb5aUvN6y4BGxcT3OcOQOKcM3zRGllRCZCFxCZyQvYJF6ZE7bQUOyQ==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: ^16 || ^17 || ^18
+      react-dom: ^16 || ^17 || ^18
+    dependencies:
+      client-only: 0.0.1
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
 
   /@humanwhocodes/config-array/0.10.7:
     resolution: {integrity: sha512-MDl6D6sBsaV452/QSdX+4CXIjZhIcI0PELsxUjk4U828yd58vk3bTIvk/6w5FY+4hIy9sLW0sfrV7K7Kc++j/w==}

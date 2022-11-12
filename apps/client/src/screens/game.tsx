@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useRef } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 import typo from "ru-typo"
@@ -19,11 +19,12 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
+  const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
-    width: 850,
-    height: 718,
+    ref: containerRef,
     px: 40,
-    py: 40
+    py: 40,
+    disableOnMobile: true
   })
   const timeBarStyles = useTimeBar(gameState.votingEndsAt)
 
@@ -47,6 +48,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
       <div
         className="flex h-screen flex-col sm:h-auto sm:items-center sm:justify-center sm:gap-3"
         style={screenStyles}
+        ref={containerRef}
       >
         <div className="sm:hidden">
           <UserList users={gameState.users} variant="game" />

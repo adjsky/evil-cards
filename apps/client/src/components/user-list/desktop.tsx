@@ -2,6 +2,8 @@ import React from "react"
 import Image from "next/image"
 import clsx from "clsx"
 
+import getScoreLabel from "../../functions/get-score-label"
+
 import CheckMark from "../../assets/check-mark.svg"
 import Crown from "../../assets/crown.svg"
 import Question from "../../assets/question.svg"
@@ -64,12 +66,7 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
         </span>
         {user && variant == "game" && (
           <span className="text-base font-medium leading-none">
-            {user.score}{" "}
-            {user.score == 0 || user.score > 4
-              ? "очков"
-              : user.score == 1
-              ? "очко"
-              : "очка"}
+            {user.score} {getScoreLabel(user.score)}
           </span>
         )}
       </div>
