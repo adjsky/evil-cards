@@ -2,7 +2,7 @@ const errorMessages: Record<string, string | undefined> = {
   "nickname is taken": "Ой, в комнате уже есть игрок с таким никнеймом",
   "session not found": "Комната не найдена",
   "game is started already": "Упс, игра уже началась",
-  "need more players": "Нельзя начать игру пока не наберется хотя бы 2 игрока"
+  "need more players": "Нельзя начать игру пока не наберется хотя бы 3 игрока"
 }
 
 function mapErrorMessage(message: string) {

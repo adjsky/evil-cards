@@ -1,25 +1,33 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import clsx from "clsx"
+import Image from "next/image"
+import { Transition } from "@headlessui/react"
 
 import useSocket from "../hooks/use-socket"
 import useToggle from "../hooks/use-toggle"
 import useCountdown from "../hooks/use-countdown"
 import useScreenFactor from "../hooks/use-screen-factor"
 import useLeavePreventer from "../hooks/use-leave-preventer"
+import getScoreLabel from "../functions/get-score-label"
 
 import Logo from "../components/logo"
 import UserList from "../components/user-list"
 import Rules from "../components/rules"
 
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+import type {
+  Message as ReceiveMessage,
+  User
+} from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { GameState } from "../atoms"
 
+const heightPerScore = 29
+
 const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
+  const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
-    width: 850,
-    height: 633,
+    ref: containerRef,
     px: 40,
     py: 40
   })
@@ -45,6 +53,9 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
 
   return (
     <>
+      {gameState.status == "end" && gameState.winners && (
+        <Winners winners={gameState.winners} />
+      )}
       <div className="flex h-screen flex-col sm:hidden">
         <UserList users={gameState.users} variant="waiting" />
         <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
@@ -63,6 +74,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
       </div>
       <div className="relative hidden h-screen sm:block">
         <div
+          ref={containerRef}
           style={screenStyles}
           className="flex flex-col items-center justify-center gap-6"
         >
@@ -119,7 +131,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
       return
     }
 
-    const timeout = setTimeout(toggleCopied, 1000)
+    const timeout = setTimeout(toggleCopied, 3000)
     return () => {
       clearTimeout(timeout)
     }
@@ -152,6 +164,85 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         СКОПИРОВАНО
       </span>
     </div>
+  )
+}
+
+const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
+  const [show, setShow] = useState(true)
+  useEffect(() => {
+    const timeout = setTimeout(() => setShow(false), 5000)
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [])
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const screenStyles = useScreenFactor({
+    ref: containerRef,
+    px: 40,
+    py: 40
+  })
+
+  const renderUserPlace = (user: User, place: number) => (
+    <div className="flex flex-col items-center gap-4">
+      <Image
+        width={120}
+        height={120}
+        src={`/avatars/${user.avatarId}.svg`}
+        alt=""
+      />
+      <div
+        style={{ minHeight: 100, height: user.score * heightPerScore }}
+        className={clsx(
+          "flex w-56 flex-col items-center justify-end p-4",
+          place == 1 && "bg-gold-300",
+          place == 2 && "bg-gold-700",
+          place == 3 && "bg-gold-700"
+        )}
+      >
+        <span className="text-2xl font-bold">{user.username}</span>
+        <span className="text-lg font-bold">
+          {user.score} {getScoreLabel(user.score)}
+        </span>
+      </div>
+    </div>
+  )
+
+  if (winners.length < 3) {
+    return null
+  }
+
+  return (
+    <Transition
+      className="fixed top-0 left-0 z-50 flex h-screen w-full items-center justify-center bg-gray-900"
+      show={show}
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      enter="transition-opacity duration-500"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+      leave="transition-opacity duration-500"
+    >
+      <div
+        ref={containerRef}
+        style={screenStyles}
+        className="flex flex-col items-center gap-32"
+      >
+        <div className="text-center text-gray-100">
+          <h2 className="text-5xl font-bold leading-normal">ПОЗДРАВЛЯЮ!</h2>
+          <p className="text-4xl font-bold">
+            {winners[0].username} НАБРАЛ {winners[0].score}{" "}
+            {getScoreLabel(winners[0].score)}
+          </p>
+        </div>
+        <div className="flex items-end">
+          {renderUserPlace(winners[1], 2)}
+          {renderUserPlace(winners[0], 1)}
+          {renderUserPlace(winners[2], 3)}
+        </div>
+      </div>
+    </Transition>
   )
 }
 

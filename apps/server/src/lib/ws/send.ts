@@ -90,7 +90,7 @@ export type ChoosingBestStarted = {
 }
 export type GameEnd = {
   type: "gameend"
-  details: { status: Status }
+  details: { status: Status; users: User[] }
 }
 
 export type Error = {

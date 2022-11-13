@@ -1,19 +1,19 @@
-import dynamic from "next/dynamic"
 import { useAtom } from "jotai"
 import Router from "next/router"
+import { Transition } from "@headlessui/react"
 
 import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useSnackbar from "../components/snackbar/use"
 import mapErrorMessage from "../functions/map-error-message"
 
+import Entry from "../screens/entry"
+import Game from "../screens/game"
+import Waiting from "../screens/waiting"
+
 import type { NextPage } from "next"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
-
-const Entry = dynamic(() => import("../screens/entry"), { ssr: false })
-const Game = dynamic(() => import("../screens/game"), { ssr: false })
-const Waiting = dynamic(() => import("../screens/waiting"), { ssr: false })
 
 const Home: NextPage = () => {
   const { updateSnackbar, Snackbar } = useSnackbar()
@@ -50,7 +50,8 @@ const Home: NextPage = () => {
         case "joined":
           setGameState({
             ...data.details,
-            votes: []
+            votes: [],
+            winners: null
           })
           break
         case "created":
@@ -59,32 +60,57 @@ const Home: NextPage = () => {
             redCard: null,
             votes: [],
             whiteCards: [],
-            votingEndsAt: null
+            votingEndsAt: null,
+            winners: null
           })
           break
         case "votingstarted":
           setGameState((prev) => ({ ...prev!, ...data.details }))
           break
         default:
-          if (data.type != "ping" && data.type != "error")
-            setGameState((prev) => ({
-              ...prev!,
-              ...data.details,
-              votingEndsAt: null
-            }))
+          if (data.type != "ping" && data.type != "error") {
+            setGameState((prev) => {
+              if (!prev) {
+                return null
+              }
+
+              let winners = prev.winners
+              if (data.type == "gameend" && data.details.users.length >= 3) {
+                winners = data.details.users
+                  .sort((a, b) => b.score - a.score)
+                  .slice(0, 3)
+              }
+
+              return {
+                ...prev,
+                ...data.details,
+                votingEndsAt:
+                  data.type == "choosingstarted" ? null : prev.votingEndsAt,
+                winners
+              }
+            })
+          }
       }
     }
   })
 
   const waiting =
     gameStatus == "waiting" || gameStatus == "end" || gameStatus == "starting"
+  const playing = gameStatus != undefined && !waiting
 
   return (
     <>
       {Snackbar}
       {!gameState && <Entry />}
-      {gameState && waiting && <Waiting gameState={gameState} />}
-      {gameState && !waiting && <Game gameState={gameState} />}
+      <Transition
+        show={waiting}
+        className="opacity-0"
+        enter="transition-opacity duration-500"
+        enterTo="opacity-100"
+      >
+        <Waiting gameState={gameState!} />
+      </Transition>
+      {playing && <Game gameState={gameState!} />}
     </>
   )
 }

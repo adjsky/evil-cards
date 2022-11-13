@@ -152,13 +152,16 @@ class Session<T = string> {
       callbacks.onDisconnect(true)
     }
 
-    if (this._status != "waiting" && connectedUsers.length == 1) {
+    if (this._status != "waiting" && connectedUsers.length < 3) {
       this.endGame()
     }
   }
 
   public async startGame() {
     this._status = "starting"
+    this.users.forEach((user) => {
+      user.score = 0
+    })
     this._timeouts.starting = setDateTimeout(
       () => this.startVoting(),
       dayjs().add(3, "s").toDate()
@@ -240,7 +243,6 @@ class Session<T = string> {
       this.getUserWhitecards(user).length = 0
       user.master = false
       user.voted = false
-      user.score = 0
     }
 
     await this._eventBus.emit("end")

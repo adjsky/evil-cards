@@ -1,6 +1,8 @@
 import React from "react"
 import Image from "next/image"
 
+import getScoreLabel from "../../functions/get-score-label"
+
 import CheckMark from "../../assets/check-mark.svg"
 import Crown from "../../assets/crown.svg"
 import Question from "../../assets/question.svg"
@@ -63,12 +65,7 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
       <div className="flex flex-col items-center justify-center text-gray-100">
         {variant == "game" && user && (
           <span className="text-xs font-medium">
-            {user.score}{" "}
-            {user.score == 0 || user.score > 4
-              ? "очков"
-              : user.score == 1
-              ? "очко"
-              : "очка"}
+            {user.score} {getScoreLabel(user.score)}
           </span>
         )}
         <span className="inline-block max-w-[60px] overflow-hidden overflow-ellipsis whitespace-nowrap text-[10px]">
