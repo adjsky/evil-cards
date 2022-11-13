@@ -232,8 +232,8 @@ class Session<T = string> {
     this._status = "end"
     this._redCard = null
     this._votes = []
-    this._availableRedCards = redCards
-    this._availableWhiteCards = whiteCards
+    this._availableRedCards = [...redCards]
+    this._availableWhiteCards = [...whiteCards]
     this._masterIndex = 0
 
     this.clearTimeouts()

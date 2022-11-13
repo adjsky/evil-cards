@@ -206,9 +206,9 @@ class Game {
     if (session.status != "waiting" && session.status != "end") {
       throw new Error("game is started already")
     }
-    // if (session.users.length < 3) {
-    //   throw new Error("need more players")
-    // }
+    if (session.users.length < 3) {
+      throw new Error("need more players")
+    }
 
     session.eventBus.clearListeners()
     session.eventBus.on("starting", () => {

@@ -10,6 +10,7 @@
     "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
+    "@formkit/auto-animate": "1.0.0-beta.3",
     "@headlessui/react": "^1.7.4",
     "clsx": "^1.2.1",
     "interweave": "^13.0.0",

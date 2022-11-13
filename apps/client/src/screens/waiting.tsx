@@ -246,10 +246,10 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
       show={show}
       enterFrom="opacity-0"
       enterTo="opacity-100"
-      enter="transition-opacity duration-500"
+      enter="transition-opacity duration-300"
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
-      leave="transition-opacity duration-500"
+      leave="transition-opacity duration-300"
     >
       <div
         ref={containerRef}

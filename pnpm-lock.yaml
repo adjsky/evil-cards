@@ -11,6 +11,7 @@ importers:
   apps/client:
     specifiers:
       '@evil-cards/server': '*'
+      '@formkit/auto-animate': 1.0.0-beta.3
       '@headlessui/react': ^1.7.4
       '@next/bundle-analyzer': ^13.0.2
       '@svgr/webpack': ^6.5.0
@@ -39,6 +40,7 @@ importers:
       typescript: ^4.8.4
       zod: ^3.18.0
     dependencies:
+      '@formkit/auto-animate': 1.0.0-beta.3
       '@headlessui/react': 1.7.4_biqbaboplfbrettd7655fr4n2y
       clsx: 1.2.1
       interweave: 13.0.0_react@18.2.0
@@ -1462,6 +1464,10 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: false
+
+  /@formkit/auto-animate/1.0.0-beta.3:
+    resolution: {integrity: sha512-glsi+ytwQpxT/Ctr9GtcIfVr4dO6mJ04mQbNU8MFSdCdqMopHtyfU5Fib0+9lNFIeR0luY4/0NW95/2R5pKsag==}
     dev: false
 
   /@gar/promisify/1.1.3:
