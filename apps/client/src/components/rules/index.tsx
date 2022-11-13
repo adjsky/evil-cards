@@ -34,11 +34,11 @@ const Rules: React.FC = () => {
   const [currentRuleIndex, setCurrentRuleIndex] = useState(0)
 
   return (
-    <div className="flex w-full flex-auto flex-col gap-4 rounded-lg border-2 border-gray-200 p-4">
+    <div className="flex w-full flex-auto flex-col gap-4">
       <h2 className="text-center text-xl font-bold text-gray-100 sm:text-3xl">
         ПРАВИЛА
       </h2>
-      <div className="flex h-full flex-col items-center justify-center gap-4">
+      <div className="flex flex-auto flex-col items-center justify-center gap-4">
         <div className="flex h-[210px] items-center justify-center">
           {rules[currentRuleIndex]?.preview}
         </div>
@@ -58,8 +58,9 @@ const Rules: React.FC = () => {
 const NextButtons: React.FC<{
   count: number
   current: number
+  running?: boolean
   onNext?: (index: number) => void
-}> = ({ count, current, onNext }) => {
+}> = ({ count, current, running, onNext }) => {
   return (
     <div className="flex justify-center gap-2">
       {Array.from({ length: count }).map((_, index) => (
@@ -72,7 +73,7 @@ const NextButtons: React.FC<{
             height={30}
             width={30}
             className={styles["circle-progress"]}
-            data-running={current == index}
+            data-running={running && current == index}
             onAnimationEnd={() => {
               if (current == count - 1) {
                 onNext && onNext(0)

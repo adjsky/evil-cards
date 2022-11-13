@@ -1,6 +1,11 @@
 import { atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
-import type { Vote, User, Status } from "@evil-cards/server/src/lib/ws/send"
+import type {
+  Vote,
+  User,
+  Status,
+  Configuration
+} from "@evil-cards/server/src/lib/ws/send"
 
 export type GameState = {
   users: User[]
@@ -8,6 +13,7 @@ export type GameState = {
   id: string
   userId: string
   status: Status
+  configuration: Configuration
   redCard: string | null
   whiteCards: string[]
   votingEndsAt: number | null

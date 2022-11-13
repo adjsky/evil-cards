@@ -1,21 +1,21 @@
 import React, { useRef } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
-import typo from "ru-typo"
 import { Transition } from "@headlessui/react"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
-import useSocket from "../hooks/use-socket"
-import useScreenFactor from "../hooks/use-screen-factor"
-import useTimeBar from "../hooks/use-time-bar"
-import useLeavePreventer from "../hooks/use-leave-preventer"
+import useSocket from "../../hooks/use-socket"
+import useScreenFactor from "../../hooks/use-screen-factor"
+import useTimeBar from "../../hooks/use-time-bar"
+import useLeavePreventer from "../../hooks/use-leave-preventer"
 
-import UserList from "../components/user-list"
-import Card from "../components/card"
+import UserList from "../../components/user-list"
+import Card from "../../components/card"
+import styles from "./game.module.css"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { GameState } from "../atoms"
+import type { GameState } from "../../atoms"
 
 const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
@@ -33,7 +33,20 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     py: 40,
     disableOnMobile: true
   })
-  const timeBarStyles = useTimeBar(gameState.votingEndsAt)
+  const boardRef = useRef<HTMLDivElement>(null)
+  const boardStyles = useScreenFactor({
+    ref: boardRef,
+    px: 0,
+    py: 0,
+    stopAt: 639,
+    reduceScreenSizeBy: {
+      y: 235
+    }
+  })
+  const timeBarStyles = useTimeBar(
+    gameState.configuration.votingDuration,
+    gameState.votingEndsAt
+  )
 
   const user = gameState.users.find((user) => user.id == gameState.userId)!
   const availableCardDisabled =
@@ -52,51 +65,68 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
 
   return (
     <Transition
-      className="mx-auto h-screen max-w-[500px] opacity-0 sm:relative sm:max-w-none"
+      className="mx-auto h-screen sm:relative"
       enter="transition-opacity duration-300"
       enterTo="opacity-100"
+      enterFrom="opacity-0"
       show
       appear
     >
       <div
-        className="flex h-screen flex-col sm:h-auto sm:items-center sm:justify-center sm:gap-3"
+        className="flex h-screen flex-col items-center sm:h-auto sm:justify-center sm:gap-3"
         style={screenStyles}
         ref={containerRef}
       >
-        <div className="sm:hidden">
+        <div className="w-full sm:hidden">
           <UserList users={gameState.users} variant="game" />
         </div>
         <div
           ref={cardsRef}
-          className="flex w-full flex-auto flex-col items-center justify-around px-2 pb-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:gap-[44px] sm:px-0 sm:pb-0"
+          className="relative flex w-full flex-auto items-center justify-center"
         >
-          <div className="aspect-[174/241] w-[115px] whitespace-pre-line rounded-md bg-red-500 p-3 text-[0.625rem] font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:rounded-lg sm:p-4 sm:text-sm">
-            {
+          <div
+            className={clsx(
+              "flex items-center justify-center",
+              gameState.votes.length > 0 && "sm:justify-between",
+              styles["board"]
+            )}
+            style={boardStyles}
+            ref={boardRef}
+          >
+            <div className={clsx("bg-red-500", styles["red-card"])}>
               <Interweave
-                content={typo(gameState.redCard, { hyphens: true })}
+                content={gameState.redCard}
+                className="whitespace-pre-line break-words text-[0.625rem] font-medium text-gray-100 sm:text-sm sm:leading-normal"
               />
-            }
-          </div>
-          {gameState.votes.length > 0 && (
-            <div className="grid w-full grid-cols-5 grid-rows-2 gap-1 sm:w-auto sm:gap-2">
-              {gameState.votes.map(({ text, userId, visible }) => (
-                <Card
-                  key={text}
-                  text={visible ? text : undefined}
-                  disabled={
-                    !user.master ||
-                    (visible && gameState.status != "choosingbest") ||
-                    (!visible && gameState.status != "choosing")
-                  }
-                  onClick={() => {
-                    handleTableCardClick(userId)
-                  }}
-                />
-              ))}
             </div>
-          )}
+            {gameState.votes.length > 0 && (
+              <div className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2">
+                {gameState.votes.map(({ text, userId, visible }, index) => (
+                  <div
+                    className={clsx(
+                      styles["voted-card"],
+                      styles[`card-${index + 1}`]
+                    )}
+                    key={text}
+                  >
+                    <Card
+                      text={visible ? text : undefined}
+                      disabled={
+                        !user.master ||
+                        (visible && gameState.status != "choosingbest") ||
+                        (!visible && gameState.status != "choosing")
+                      }
+                      onClick={() => {
+                        handleTableCardClick(userId)
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex gap-4 px-2 pb-10 sm:h-[364px] sm:px-0 sm:pb-0">
+        <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden sm:block">
             <UserList users={gameState.users} variant="game" />
           </div>
@@ -110,8 +140,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
             <div
               className={clsx(
                 "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
-                "auto-cols-[minmax(calc(20%-0.25rem*4/5),1fr)] grid-cols-[repeat(5,minmax(20%-0.25rem*4/5,1fr))]",
-                "sm:grid-cols-[repeat(5,1fr)]"
+                "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
               )}
             >
               {gameState.whiteCards.map((text) => (

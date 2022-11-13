@@ -10,10 +10,6 @@ export class DateTimeout {
     this._date = date
   }
 
-  public get handle() {
-    return this._handle
-  }
-
   public get date() {
     return this._date
   }

@@ -39,7 +39,7 @@ const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
   const displayMark = variant == "game" && user?.voted
 
   return (
-    <div className="flex flex-col items-center gap-1 p-2">
+    <div className="flex flex-col items-center gap-1 p-2 pb-0">
       <div className="relative h-[44px] w-[44px] flex-none">
         {user ? (
           <Image

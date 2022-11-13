@@ -6,7 +6,7 @@ const easingFunctions = {
   }
 }
 
-const useTimeBar = (timestamp?: number | null) => {
+const useTimeBar = (duration: number, timestamp?: number | null) => {
   const [position, setPosition] = useState(0)
 
   useEffect(() => {
@@ -14,11 +14,11 @@ const useTimeBar = (timestamp?: number | null) => {
       return
     }
 
-    const expectedStart = timestamp - 60 * 1000
+    const expectedStart = timestamp - duration * 1000
     const start = Date.now()
     const begin = ((start - expectedStart) / (timestamp - expectedStart)) * 100
     const change = 100 - begin
-    const duration = timestamp - start
+    const span = timestamp - start
 
     let requestId: number | null = null
     const calculatePosition = () => {
@@ -29,7 +29,7 @@ const useTimeBar = (timestamp?: number | null) => {
       }
 
       const time = now - start
-      setPosition(easingFunctions["linear"](time, begin, change, duration))
+      setPosition(easingFunctions["linear"](time, begin, change, span))
       requestId = requestAnimationFrame(calculatePosition)
     }
 
@@ -39,7 +39,7 @@ const useTimeBar = (timestamp?: number | null) => {
       if (requestId) cancelAnimationFrame(requestId)
       setPosition(0)
     }
-  }, [timestamp])
+  }, [timestamp, duration])
 
   const styles: React.CSSProperties = { width: position + "%" }
 

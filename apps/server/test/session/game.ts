@@ -1,6 +1,7 @@
 import t from "tap"
 import sinon, { SinonFakeTimers } from "sinon"
 import esmock from "esmock"
+import dayjs from "dayjs"
 
 import Session from "../../src/game/session"
 
@@ -38,6 +39,7 @@ t.test("main workflow should work as expected", async (t) => {
   const user1 = session.addUser(sender, "user1", 0, true)
   const user2 = session.addUser(sender, "user2", 0, false)
   const user3 = session.addUser(sender, "user3", 0, false)
+  const user4 = session.addUser(sender, "user4", 0, false)
 
   session.startGame()
 
@@ -67,11 +69,16 @@ t.test("main workflow should work as expected", async (t) => {
   t.ok(user3WhiteCard)
   session.vote(user3, user3WhiteCard)
   t.equal(session.votes.length, 2)
+  const user4WhiteCard = session.getUserWhitecards(user3)[0]
+  t.ok(user4WhiteCard)
+  session.vote(user4, user4WhiteCard)
+  t.equal(session.votes.length, 3)
 
   t.equal(session.status, "choosing")
   session.choose(user2.id)
   t.equal(firstVote.visible, true)
   session.choose(user3.id)
+  session.choose(user4.id)
 
   t.equal(session.status, "choosingbest")
   session.chooseBest(user2.id)
@@ -85,16 +92,10 @@ t.test("main workflow should work as expected", async (t) => {
   t.ok(user2.master)
   t.notOk(user1.master)
 
-  for (let i = 0; i < 14; i++) {
-    for (const user of session.users) {
-      if (user.master) {
-        continue
-      }
+  user1.score = 9
+  session.vote(user1, session.getUserWhitecards(user1)[0])
+  session.chooseBest(session.votes[0].userId)
 
-      session.vote(user, session.getUserWhitecards(user)[0])
-    }
-    session.chooseBest(session.votes[0].userId)
-  }
   t.equal(session.status, "end")
 
   t.end()
@@ -233,7 +234,8 @@ t.test(
 t.test("should process disconnected users when choosing master", (t) => {
   const user1 = session.addUser(sender, "qwe", 0, true)
   const user2 = session.addUser(sender, "qwe", 0, false)
-  session.addUser(sender, "qwe", 0, false)
+  const user3 = session.addUser(sender, "qwe", 0, false)
+  const user4 = session.addUser(sender, "qwe", 0, false)
 
   session.startGame()
   session.disconnectUser(user1)
@@ -241,6 +243,60 @@ t.test("should process disconnected users when choosing master", (t) => {
   clock.tick(3000)
 
   t.ok(user2.master)
+
+  session.reconnectUser(sender, user1, 1)
+  session.disconnectUser(user2)
+  session.reconnectUser(sender, user2, 1)
+  session.disconnectUser(user3)
+  session.reconnectUser(sender, user3, 1)
+  session.disconnectUser(user4)
+
+  t.ok(user1.master)
+
+  t.end()
+})
+
+t.test("configuration", (t) => {
+  const user1 = session.addUser(sender, "qwe", 0, true)
+  session.addUser(sender, "qwe", 0, false)
+  session.addUser(sender, "qwe", 0, false)
+  session.addUser(sender, "qwe", 0, false)
+
+  const configuration = {
+    votingDuration: 30,
+    maxScore: 10,
+    reader: "off"
+  } as const
+  session.updateConfiguration(configuration)
+  t.same(session.configuration, configuration)
+
+  session.startGame()
+  clock.tick(3000)
+
+  t.equal(dayjs(session.getTimeoutDate("voting")).diff(dayjs(), "s"), 30)
+
+  user1.score = 9
+  session.vote(user1, session.getUserWhitecards(user1)[0])
+  session.chooseBest(session.votes[0].userId)
+
+  t.equal(session.status, "end")
+
+  session.updateConfiguration({
+    votingDuration: 30,
+    maxScore: 15,
+    reader: "off"
+  })
+
+  user1.score = 9
+  session.vote(user1, session.getUserWhitecards(user1)[0])
+  session.chooseBest(session.votes[0].userId)
+
+  t.equal(session.status, "voting")
+  user1.score = 14
+  session.vote(user1, session.getUserWhitecards(user1)[0])
+  session.chooseBest(session.votes[0].userId)
+
+  t.equal(session.status, "end")
 
   t.end()
 })

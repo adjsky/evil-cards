@@ -16,7 +16,10 @@ import Logo from "../components/logo"
 import BackButton from "../components/back-button"
 import UserList from "../components/user-list"
 import Rules from "../components/rules"
+import Configuration from "../components/configuration"
 import SoundOn from "../assets/sound-on.svg"
+import Gear from "../assets/gear.svg"
+import Close from "../assets/configuration-close.svg"
 
 import type {
   Message as ReceiveMessage,
@@ -29,13 +32,16 @@ const heightPerScore = 29
 
 const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
+  const [configurationVisible, toggleConfiguration] = useToggle()
   const setGameState = useSetAtom(gameStateAtom)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
     ref: containerRef,
     px: 40,
     py: 40
   })
+
   const { start, secondsLeft } = useCountdown()
   const { lastJsonMessage, sendJsonMessage } = useSocket<
     SendMessage,
@@ -56,11 +62,36 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   const lowerButtonOpacity =
     !user.host && (gameState.status == "waiting" || gameState.status == "end")
 
+  const renderMainFrame = () => (
+    <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
+      {!configurationVisible && <Rules />}
+      {configurationVisible && (
+        <Configuration
+          configuration={gameState.configuration}
+          host={user.host}
+          onSave={(configuration) => {
+            sendJsonMessage({
+              type: "updateconfiguration",
+              details: configuration
+            })
+            toggleConfiguration()
+          }}
+        />
+      )}
+      <button
+        className="absolute top-3 right-3 p-1"
+        onClick={toggleConfiguration}
+      >
+        {configurationVisible ? <Close /> : <Gear />}
+      </button>
+    </div>
+  )
+
   return (
     <Transition
       enter="transition-opacity duration-300"
       className="opacity-0"
-      enterTo="opacity-100"
+      enterTo="!opacity-100"
       show
       appear
     >
@@ -70,7 +101,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
       <div className="flex h-screen flex-col sm:hidden">
         <UserList users={gameState.users} variant="waiting" />
         <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
-          <Rules />
+          {renderMainFrame()}
           <div className="flex justify-center gap-2">
             <InviteButton id={gameState.id} />
             <StartButton
@@ -111,7 +142,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
               <UserList users={gameState.users} variant="waiting" />
             </div>
             <div className="flex w-full flex-col gap-6">
-              <Rules />
+              {renderMainFrame()}
               <div className="flex w-full justify-center gap-6">
                 <InviteButton id={gameState.id} />
                 <StartButton
@@ -141,7 +172,7 @@ const StartButton: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "transition-color h-full w-28 rounded-lg bg-red-500 text-base leading-none text-gray-100 enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl sm:leading-none",
+        "w-28 rounded-lg bg-red-500 text-base leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl sm:leading-none",
         lowerOpacity && "opacity-50"
       )}
       disabled={disabled}
@@ -184,8 +215,8 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
       </button>
       <span
         className={clsx(
-          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold tracking-wider text-gold-500 opacity-0 transition-opacity",
-          copied && "opacity-100"
+          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold tracking-wider text-gold-500 transition-opacity",
+          copied ? "opacity-100" : "opacity-0"
         )}
       >
         СКОПИРОВАНО

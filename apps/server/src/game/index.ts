@@ -17,6 +17,10 @@ class Game {
     this.controller.eventBus.on("createsession", this.createSession.bind(this))
     this.controller.eventBus.on("joinsession", this.joinSession.bind(this))
 
+    this.controller.eventBus.on(
+      "updateconfiguration",
+      this.updateConfiguration.bind(this)
+    )
     this.controller.eventBus.on("choose", this.choose.bind(this))
     this.controller.eventBus.on("choosebest", this.chooseBest.bind(this))
     this.controller.eventBus.on("startgame", this.startGame.bind(this))
@@ -61,7 +65,7 @@ class Game {
     username,
     avatarId
   }: ServerEvent["createsession"]) {
-    const session = new Session({ votingDuration: 60 })
+    const session = new Session()
     const user = session.addUser(socket, username, avatarId, true)
 
     this.sessions.set(session.id, session)
@@ -75,7 +79,8 @@ class Game {
           id: session.id,
           status: session.status,
           users: session.users,
-          userId: user.id
+          userId: user.id,
+          configuration: session.configuration
         }
       })
     )
@@ -97,7 +102,11 @@ class Game {
 
     const previousUser = session.users.find((user) => user.username == username)
     let newUser: User
-    if (previousUser && !waitingState) {
+    if (previousUser) {
+      if (!previousUser.disconnected) {
+        throw new Error("this user is playing right now")
+      }
+
       session.reconnectUser(socket, previousUser, avatarId)
       newUser = previousUser
     } else {
@@ -129,7 +138,8 @@ class Game {
               users: session.users,
               whiteCards: session.getUserWhitecards(user),
               redCard: session.redCard,
-              votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null
+              votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null,
+              configuration: session.configuration
             }
           })
         )
@@ -146,6 +156,33 @@ class Game {
     })
 
     socket.on("close", () => this.disconnectUser(socket))
+  }
+
+  private updateConfiguration({
+    socket,
+    ...configuration
+  }: ServerEvent["updateconfiguration"]) {
+    const session = socket.session
+    if (!session) {
+      throw new Error("no session")
+    }
+    const user = socket.user
+    if (!user) {
+      throw new Error("no user")
+    }
+    if (!user.host) {
+      throw new Error("only host can update configuration")
+    }
+
+    session.updateConfiguration(configuration)
+    session.users.forEach((user) =>
+      session.getUserSender(user).send(
+        stringify({
+          type: "configurationupdated",
+          details: { configuration: session.configuration }
+        })
+      )
+    )
   }
 
   private vote({ socket, text }: ServerEvent["vote"]) {
@@ -207,7 +244,7 @@ class Game {
       throw new Error("game is started already")
     }
     if (session.users.length < 3) {
-      throw new Error("need more players")
+      // throw new Error("need more players")
     }
 
     session.eventBus.clearListeners()

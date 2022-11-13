@@ -1,3 +1,5 @@
+import type { Configuration } from "./receive"
+
 export type User = {
   id: string
   avatarId: number
@@ -24,6 +26,7 @@ export type Created = {
     status: Status
     users: User[]
     userId: string
+    configuration: Configuration
   }
 }
 
@@ -37,6 +40,7 @@ export type Joined = {
     whiteCards: string[]
     redCard: string | null
     votingEndsAt: number | null
+    configuration: Configuration
   }
 }
 
@@ -88,6 +92,7 @@ export type ChoosingBestStarted = {
   type: "choosingbeststarted"
   details: { status: Status }
 }
+
 export type GameEnd = {
   type: "gameend"
   details: { status: Status; users: User[] }
@@ -100,6 +105,11 @@ export type Error = {
 
 export type Ping = {
   type: "ping"
+}
+
+export type ConfigurationUpdated = {
+  type: "configurationupdated"
+  details: { configuration: Configuration }
 }
 
 export type Message =
@@ -116,3 +126,6 @@ export type Message =
   | GameEnd
   | Error
   | Ping
+  | ConfigurationUpdated
+
+export type { Configuration } from "./receive"
