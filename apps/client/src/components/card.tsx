@@ -16,6 +16,7 @@ const Card: React.FC<{
       onClick={onClick}
       className={clsx(
         "flex aspect-[120/167] rounded-[0.25rem] bg-gray-100 p-2 text-left sm:w-[120px] sm:min-w-0 sm:max-w-full sm:rounded-lg sm:p-3",
+        "transition-transform enabled:hover:-translate-y-1",
         lowerOpacity && "opacity-60",
         !text && "items-center justify-center"
       )}

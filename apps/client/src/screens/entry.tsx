@@ -9,7 +9,7 @@ import useScreenFactor from "../hooks/use-screen-factor"
 import useHasMounted from "../hooks/use-has-mounted"
 
 import UsernameInput from "../components/username-input"
-import Plus from "../assets/plus.svg"
+import Arrow from "../assets/arrow.svg"
 import Logo from "../components/logo"
 
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -40,6 +40,14 @@ const Entry: React.FC = () => {
         <div className="flex aspect-[0.71942446043] w-48 flex-col items-center justify-center gap-5 rounded-lg bg-gray-100 pt-3">
           <div className="rounded-full border-[2px] border-gray-900 p-[2px]">
             <div className="relative">
+              <button
+                onClick={() =>
+                  setAvatarId((prev) => (prev == 17 ? 1 : prev + 1))
+                }
+                className="absolute -right-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center rounded-full bg-gray-900"
+              >
+                <Arrow className="rotate-180" />
+              </button>
               <Image
                 src={`/avatars/${avatarId}.svg`}
                 width={120}
@@ -48,11 +56,11 @@ const Entry: React.FC = () => {
               />
               <button
                 onClick={() =>
-                  setAvatarId((prev) => (prev == 17 ? 1 : prev + 1))
+                  setAvatarId((prev) => (prev == 1 ? 17 : prev - 1))
                 }
-                className="absolute right-[4px] top-[4px] flex h-[25px] w-[25px] items-center justify-center rounded-full bg-gray-900 transition-transform hover:rotate-[15deg]"
+                className="absolute -left-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center rounded-full bg-gray-900"
               >
-                <Plus />
+                <Arrow />
               </button>
             </div>
           </div>

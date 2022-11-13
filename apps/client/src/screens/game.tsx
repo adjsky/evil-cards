@@ -3,6 +3,7 @@ import clsx from "clsx"
 import { Interweave } from "interweave"
 import typo from "ru-typo"
 import { Transition } from "@headlessui/react"
+import { useAutoAnimate } from "@formkit/auto-animate/react"
 
 import useSocket from "../hooks/use-socket"
 import useScreenFactor from "../hooks/use-screen-factor"
@@ -20,6 +21,11 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
+  const [cardsRef] = useAutoAnimate<HTMLDivElement>({
+    disrespectUserMotionPreference: true,
+    easing: "linear",
+    duration: 300
+  })
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
     ref: containerRef,
@@ -60,7 +66,10 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         <div className="sm:hidden">
           <UserList users={gameState.users} variant="game" />
         </div>
-        <div className="flex flex-auto flex-col items-center justify-around px-2 pb-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:gap-[44px] sm:px-0 sm:pb-0">
+        <div
+          ref={cardsRef}
+          className="flex w-full flex-auto flex-col items-center justify-around px-2 pb-2 sm:h-[342px] sm:flex-initial sm:flex-row sm:gap-[44px] sm:px-0 sm:pb-0"
+        >
           <div className="aspect-[174/241] w-[115px] whitespace-pre-line rounded-md bg-red-500 p-3 text-[0.625rem] font-medium leading-[1.15] text-gray-100 sm:w-[174px] sm:rounded-lg sm:p-4 sm:text-sm">
             {
               <Interweave
@@ -100,7 +109,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
             </div>
             <div
               className={clsx(
-                "grid grid-flow-col grid-rows-1 gap-1 overflow-x-auto sm:grid-rows-2 sm:gap-2",
+                "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
                 "auto-cols-[minmax(calc(20%-0.25rem*4/5),1fr)] grid-cols-[repeat(5,minmax(20%-0.25rem*4/5,1fr))]",
                 "sm:grid-cols-[repeat(5,1fr)]"
               )}
