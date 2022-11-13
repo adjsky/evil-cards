@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import { Transition } from "@headlessui/react"
+import { useSetAtom } from "jotai"
 
 import useSocket from "../hooks/use-socket"
 import useToggle from "../hooks/use-toggle"
@@ -9,10 +10,13 @@ import useCountdown from "../hooks/use-countdown"
 import useScreenFactor from "../hooks/use-screen-factor"
 import useLeavePreventer from "../hooks/use-leave-preventer"
 import getScoreLabel from "../functions/get-score-label"
+import { gameStateAtom } from "../atoms"
 
 import Logo from "../components/logo"
+import BackButton from "../components/back-button"
 import UserList from "../components/user-list"
 import Rules from "../components/rules"
+import SoundOn from "../assets/sound-on.svg"
 
 import type {
   Message as ReceiveMessage,
@@ -25,6 +29,7 @@ const heightPerScore = 29
 
 const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
+  const setGameState = useSetAtom(gameStateAtom)
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
     ref: containerRef,
@@ -52,7 +57,13 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     !user.host && (gameState.status == "waiting" || gameState.status == "end")
 
   return (
-    <>
+    <Transition
+      enter="transition-opacity duration-300"
+      className="opacity-0"
+      enterTo="opacity-100"
+      show
+      appear
+    >
       {gameState.status == "end" && gameState.winners && (
         <Winners winners={gameState.winners} />
       )}
@@ -76,10 +87,26 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         <div
           ref={containerRef}
           style={screenStyles}
-          className="flex flex-col items-center justify-center gap-6"
+          className="flex w-[850px] flex-col items-center justify-center gap-6"
         >
-          <Logo />
-          <div className="flex w-[850px] gap-4">
+          <div className="relative flex w-full items-end justify-between">
+            <BackButton
+              onClick={() => {
+                setGameState(null)
+                sendJsonMessage({ type: "leavesession" })
+              }}
+            />
+            <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
+              <Logo />
+            </div>
+            <div className="invisible">
+              <Logo />
+            </div>
+            <button>
+              <SoundOn />
+            </button>
+          </div>
+          <div className="flex w-full gap-4">
             <div className="h-[500px]">
               <UserList users={gameState.users} variant="waiting" />
             </div>
@@ -99,7 +126,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
           </div>
         </div>
       </div>
-    </>
+    </Transition>
   )
 }
 
@@ -114,7 +141,7 @@ const StartButton: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "w-28 rounded-lg bg-red-500 py-4 text-base leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl",
+        "transition-color h-full w-28 rounded-lg bg-red-500 text-base leading-none text-gray-100 enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl sm:leading-none",
         lowerOpacity && "opacity-50"
       )}
       disabled={disabled}
@@ -140,7 +167,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
   return (
     <div className="relative">
       <button
-        className="rounded-lg border-gray-100 bg-gray-100 px-4 py-4 text-base leading-none text-gray-900 sm:px-5 sm:text-xl"
+        className="rounded-lg border border-gray-100 bg-gray-900 px-4 py-4 text-base leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:px-5 sm:text-xl sm:leading-none"
         onClick={async () => {
           const url = `${window.location.href}?s=${id}`
 

@@ -1,6 +1,5 @@
 import { useAtom } from "jotai"
 import Router from "next/router"
-import { Transition } from "@headlessui/react"
 
 import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
@@ -18,7 +17,6 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 const Home: NextPage = () => {
   const { updateSnackbar, Snackbar } = useSnackbar()
   const [gameState, setGameState] = useAtom(gameStateAtom)
-  const gameStatus = gameState?.status
 
   useSocket<SendMessage, ReceiveMessage>({
     onClose() {
@@ -94,6 +92,7 @@ const Home: NextPage = () => {
     }
   })
 
+  const gameStatus = gameState?.status
   const waiting =
     gameStatus == "waiting" || gameStatus == "end" || gameStatus == "starting"
   const playing = gameStatus != undefined && !waiting
@@ -101,16 +100,9 @@ const Home: NextPage = () => {
   return (
     <>
       {Snackbar}
-      {!gameState && <Entry />}
-      <Transition
-        show={waiting}
-        className="opacity-0"
-        enter="transition-opacity duration-500"
-        enterTo="opacity-100"
-      >
-        <Waiting gameState={gameState!} />
-      </Transition>
-      {playing && <Game gameState={gameState!} />}
+      {gameState == null && <Entry />}
+      {gameState && waiting && <Waiting gameState={gameState} />}
+      {gameState && playing && <Game gameState={gameState} />}
     </>
   )
 }
