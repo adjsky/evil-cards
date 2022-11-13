@@ -2,6 +2,7 @@ import React, { useRef } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 import typo from "ru-typo"
+import { Transition } from "@headlessui/react"
 
 import useSocket from "../hooks/use-socket"
 import useScreenFactor from "../hooks/use-screen-factor"
@@ -44,7 +45,13 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   }
 
   return (
-    <div className="mx-auto h-screen max-w-[500px] sm:relative sm:max-w-none">
+    <Transition
+      className="mx-auto h-screen max-w-[500px] opacity-0 sm:relative sm:max-w-none"
+      enter="transition-opacity duration-300"
+      enterTo="opacity-100"
+      show
+      appear
+    >
       <div
         className="flex h-screen flex-col sm:h-auto sm:items-center sm:justify-center sm:gap-3"
         style={screenStyles}
@@ -113,7 +120,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   )
 }
 

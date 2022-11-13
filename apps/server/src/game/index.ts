@@ -21,8 +21,9 @@ class Game {
     this.controller.eventBus.on("choosebest", this.chooseBest.bind(this))
     this.controller.eventBus.on("startgame", this.startGame.bind(this))
     this.controller.eventBus.on("vote", this.vote.bind(this))
-    this.controller.eventBus.on("lostconnection", ({ socket }) =>
-      this.disconnectUser(socket)
+    this.controller.eventBus.on(
+      ["lostconnection", "leavesession"],
+      ({ socket }) => this.disconnectUser(socket)
     )
   }
 
@@ -205,9 +206,9 @@ class Game {
     if (session.status != "waiting" && session.status != "end") {
       throw new Error("game is started already")
     }
-    if (session.users.length < 3) {
-      throw new Error("need more players")
-    }
+    // if (session.users.length < 3) {
+    //   throw new Error("need more players")
+    // }
 
     session.eventBus.clearListeners()
     session.eventBus.on("starting", () => {
