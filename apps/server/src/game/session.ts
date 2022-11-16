@@ -6,6 +6,12 @@ import { whiteCards, redCards } from "./cards"
 import getRandomInt from "../functions/get-random-int"
 import shuffleArray from "../functions/shuffle-array"
 import { setDateTimeout } from "../lib/date-timeout"
+import {
+  gameStartDelay,
+  userIdSize,
+  sessionIdSize,
+  minPlayersToStartGame
+} from "./constants"
 
 import type { Status, User, Vote, Configuration } from "../lib/ws/send"
 import type { DateTimeout } from "../lib/date-timeout"
@@ -36,12 +42,12 @@ class Session<T = string> {
   private _id: string
 
   constructor() {
-    const id = nanoid(5)
+    const id = nanoid(sessionIdSize)
     this._id = id
 
     this._configuration = {
       maxScore: 10,
-      reader: "male",
+      reader: "on",
       votingDuration: 60
     }
   }
@@ -74,7 +80,7 @@ class Session<T = string> {
     avatarId: number,
     host: boolean
   ) {
-    const id = nanoid(5)
+    const id = nanoid(userIdSize)
     const user: User = {
       id,
       avatarId,
@@ -158,7 +164,10 @@ class Session<T = string> {
       callbacks.onDisconnect(true)
     }
 
-    if (this._status != "waiting" && connectedUsers.length < 3) {
+    if (
+      this._status != "waiting" &&
+      connectedUsers.length < minPlayersToStartGame
+    ) {
       this.endGame()
     }
   }
@@ -170,7 +179,7 @@ class Session<T = string> {
     })
     this._timeouts.starting = setDateTimeout(
       () => this.startVoting(),
-      dayjs().add(3, "s").toDate()
+      dayjs().add(gameStartDelay, "s").toDate()
     )
 
     await this._eventBus.emit("starting")
