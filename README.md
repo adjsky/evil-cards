@@ -15,5 +15,5 @@
 </p>
 
 <p align="center">
-  Only Russian is supported
+  <small>Only Russian is supported</small>
 </p>
