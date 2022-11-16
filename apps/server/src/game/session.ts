@@ -4,9 +4,10 @@ import dayjs from "dayjs"
 
 import { whiteCards, redCards } from "./cards"
 import getRandomInt from "../functions/get-random-int"
+import shuffleArray from "../functions/shuffle-array"
 import { setDateTimeout } from "../lib/date-timeout"
 
-import type { Status, User, Vote } from "../lib/ws/send"
+import type { Status, User, Vote, Configuration } from "../lib/ws/send"
 import type { DateTimeout } from "../lib/date-timeout"
 import type { SessionEventBus } from "./types"
 
@@ -18,9 +19,6 @@ export type UserData<T> = {
   whiteCards: string[]
 }
 type Timeouts = Record<"voting" | "starting", null | DateTimeout>
-type Config = {
-  votingDuration: number
-}
 
 class Session<T = string> {
   private _userData: WeakMap<User, UserData<T>> = new WeakMap()
@@ -34,13 +32,18 @@ class Session<T = string> {
   private _redCard: string | null = null
   private _status: Status = "waiting"
   private _eventBus: SessionEventBus = new Emittery()
+  private _configuration: Configuration
   private _id: string
-  private _config: Config
 
-  constructor(config: Config) {
+  constructor() {
     const id = nanoid(5)
     this._id = id
-    this._config = config
+
+    this._configuration = {
+      maxScore: 10,
+      reader: "male",
+      votingDuration: 60
+    }
   }
 
   public get votes() {
@@ -60,6 +63,9 @@ class Session<T = string> {
   }
   public get eventBus() {
     return this._eventBus
+  }
+  public get configuration() {
+    return this._configuration
   }
 
   public addUser(
@@ -221,7 +227,7 @@ class Session<T = string> {
     }
 
     votedUser.score += 1
-    if (votedUser.score >= 10) {
+    if (votedUser.score >= this._configuration.maxScore) {
       this.endGame()
     } else {
       this.startVoting()
@@ -268,6 +274,10 @@ class Session<T = string> {
     }
 
     return userData.whiteCards
+  }
+
+  public updateConfiguration(configuration: Configuration) {
+    this._configuration = configuration
   }
 
   private updateMasterIndex() {
@@ -346,7 +356,7 @@ class Session<T = string> {
         this._timeouts.voting = null
       }
       this.startChoosing()
-    }, dayjs().add(this._config.votingDuration, "s").toDate())
+    }, dayjs().add(this._configuration.votingDuration, "s").toDate())
 
     await this._eventBus.emit("voting")
   }
@@ -369,6 +379,7 @@ class Session<T = string> {
         userWhitecards.splice(randomCardIndex, 1)
       }
     })
+    this._votes = shuffleArray(this._votes)
 
     await this._eventBus.emit("choosing")
   }

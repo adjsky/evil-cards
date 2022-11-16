@@ -4,33 +4,52 @@ import type { RefObject } from "react"
 
 type UseScreenFactorProps = {
   ref: RefObject<HTMLElement>
+  reduceScreenSizeBy?: {
+    x?: number
+    y?: number
+  }
   px?: number
   py?: number
   disableOnMobile?: boolean
+  stopAt?: number
 }
 
 const useScreenFactor = ({
   ref,
+  reduceScreenSizeBy,
   px = 0,
   py = 0,
-  disableOnMobile
+  disableOnMobile,
+  stopAt
 }: UseScreenFactorProps) => {
   const computeScale = useCallback(() => {
     if (!ref.current) {
       return 1
     }
 
+    const reducedScreenWidth = window.innerWidth - (reduceScreenSizeBy?.x ?? 0)
+    const reducedScreenHeight =
+      window.innerHeight - (reduceScreenSizeBy?.y ?? 0)
+
     const computedWidth = ref.current.offsetWidth + px * 2
     const computedHeight = ref.current.offsetHeight + py * 2
-    const scaledWidth = (computedWidth * window.innerHeight) / computedHeight
+    const scaledWidth = (computedWidth * reducedScreenHeight) / computedHeight
 
-    if (scaledWidth > window.innerWidth) {
-      return window.innerWidth / computedWidth
+    if (scaledWidth > reducedScreenWidth) {
+      return reducedScreenWidth / computedWidth
     }
 
-    return window.innerHeight / computedHeight
+    return reducedScreenHeight / computedHeight
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref, ref.current?.offsetWidth, ref.current?.offsetHeight, px, py])
+  }, [
+    ref,
+    ref.current?.offsetWidth,
+    ref.current?.offsetHeight,
+    px,
+    py,
+    reduceScreenSizeBy?.x,
+    reduceScreenSizeBy?.y
+  ])
 
   const [scaleFactor, setScaleFactor] = useState(1)
   useIsomorphicLayoutEffect(() => {
@@ -49,7 +68,9 @@ const useScreenFactor = ({
   }, [computeScale])
 
   const styles: React.CSSProperties =
-    !ref.current || (disableOnMobile && window.innerWidth <= 640)
+    !ref.current ||
+    (disableOnMobile && window.innerWidth <= 640) ||
+    (stopAt && window.innerWidth > stopAt)
       ? {}
       : {
           transform: `scale(${scaleFactor})`,

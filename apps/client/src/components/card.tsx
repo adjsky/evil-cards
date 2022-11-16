@@ -1,7 +1,6 @@
 import React from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
-import typo from "ru-typo"
 
 import Cat from "../assets/cat.svg"
 
@@ -15,7 +14,7 @@ const Card: React.FC<{
     <button
       onClick={onClick}
       className={clsx(
-        "flex aspect-[120/167] rounded-[0.25rem] bg-gray-100 p-2 text-left sm:w-[120px] sm:min-w-0 sm:max-w-full sm:rounded-lg sm:p-3",
+        "flex aspect-[120/167] w-full rounded-[0.25rem] bg-gray-100 p-2 text-left sm:w-[140px] sm:min-w-0 sm:max-w-full sm:rounded-lg sm:p-3",
         "transition-transform enabled:hover:-translate-y-1",
         lowerOpacity && "opacity-60",
         !text && "items-center justify-center"
@@ -25,15 +24,11 @@ const Card: React.FC<{
       <span
         className={clsx(
           text &&
-            "inline-block w-full whitespace-pre-line text-[0.5rem] font-medium leading-[1.15] sm:text-xs",
+            "inline-block w-full whitespace-pre-line break-words text-[0.5rem] font-medium sm:text-xs sm:leading-normal",
           !text && "flex items-center justify-center"
         )}
       >
-        {text ? (
-          <Interweave content={typo(text, { hyphens: true })} />
-        ) : (
-          <Cat />
-        )}
+        {text ? <Interweave content={text} /> : <Cat />}
       </span>
     </button>
   )

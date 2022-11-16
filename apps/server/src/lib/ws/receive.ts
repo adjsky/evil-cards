@@ -19,6 +19,12 @@ export const chooseSchema = z.object({
   userId: z.string()
 })
 export type Choose = z.TypeOf<typeof chooseSchema>
+export const configurationSchema = z.object({
+  votingDuration: z.literal(30).or(z.literal(60)).or(z.literal(90)),
+  reader: z.enum(["off", "male", "female"]),
+  maxScore: z.literal(10).or(z.literal(15)).or(z.literal(20))
+})
+export type Configuration = z.TypeOf<typeof configurationSchema>
 
 export const messageSchema = z.discriminatedUnion("type", [
   z.object({
@@ -49,6 +55,10 @@ export const messageSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("pong")
+  }),
+  z.object({
+    type: z.literal("updateconfiguration"),
+    details: configurationSchema
   })
 ])
 export type Message = z.TypeOf<typeof messageSchema>

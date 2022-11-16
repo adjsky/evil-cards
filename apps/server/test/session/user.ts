@@ -143,6 +143,7 @@ t.test(
     const user3 = session.addUser(sender, "wqe", 1, false)
     const user4 = session.addUser(sender, "wqe", 1, false)
     session.addUser(sender, "wqe", 1, false)
+    session.addUser(sender, "wqe", 1, false)
 
     session.startGame()
     clock.tick(3000)

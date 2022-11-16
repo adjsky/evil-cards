@@ -4,6 +4,7 @@ import Router from "next/router"
 import { gameStateAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useSnackbar from "../components/snackbar/use"
+import useHasMounted from "../hooks/use-has-mounted"
 import mapErrorMessage from "../functions/map-error-message"
 
 import Entry from "../screens/entry"
@@ -17,6 +18,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 const Home: NextPage = () => {
   const { updateSnackbar, Snackbar } = useSnackbar()
   const [gameState, setGameState] = useAtom(gameStateAtom)
+  const mounted = useHasMounted()
 
   useSocket<SendMessage, ReceiveMessage>({
     onClose() {
@@ -74,7 +76,7 @@ const Home: NextPage = () => {
 
               let winners = prev.winners
               if (data.type == "gameend" && data.details.users.length >= 3) {
-                winners = data.details.users
+                winners = [...data.details.users]
                   .sort((a, b) => b.score - a.score)
                   .slice(0, 3)
               }
@@ -96,6 +98,10 @@ const Home: NextPage = () => {
   const waiting =
     gameStatus == "waiting" || gameStatus == "end" || gameStatus == "starting"
   const playing = gameStatus != undefined && !waiting
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <>
