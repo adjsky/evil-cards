@@ -1,12 +1,11 @@
-import React, { useState, useRef } from "react"
+import React, { useRef } from "react"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { useAtom } from "jotai"
 
-import { usernameAtom } from "../atoms"
+import { usernameAtom, avatarAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useScreenFactor from "../hooks/use-screen-factor"
-import useHasMounted from "../hooks/use-has-mounted"
 
 import UsernameInput from "../components/username-input"
 import Arrow from "../assets/arrow.svg"
@@ -24,8 +23,7 @@ const Entry: React.FC = () => {
   })
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
   const [username, setUsername] = useAtom(usernameAtom)
-  const [avatarId, setAvatarId] = useState(1)
-  const mounted = useHasMounted()
+  const [avatarId, setAvatarId] = useAtom(avatarAtom)
   const searchParams = useSearchParams()
   const joining = searchParams.has("s")
 
@@ -64,10 +62,7 @@ const Entry: React.FC = () => {
               </button>
             </div>
           </div>
-          <UsernameInput
-            value={mounted ? username : ""} // https://jotai.org/docs/utils/atom-with-storage#server-side-rendering
-            onChange={setUsername}
-          />
+          <UsernameInput value={username} onChange={setUsername} />
         </div>
         <button
           onClick={() => {
