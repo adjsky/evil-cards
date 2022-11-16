@@ -21,7 +21,7 @@ export const chooseSchema = z.object({
 export type Choose = z.TypeOf<typeof chooseSchema>
 export const configurationSchema = z.object({
   votingDuration: z.literal(30).or(z.literal(60)).or(z.literal(90)),
-  reader: z.enum(["off", "male", "female"]),
+  reader: z.enum(["off", "on"]),
   maxScore: z.literal(10).or(z.literal(15)).or(z.literal(20))
 })
 export type Configuration = z.TypeOf<typeof configurationSchema>

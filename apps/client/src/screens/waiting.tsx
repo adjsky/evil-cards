@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import { Transition } from "@headlessui/react"
-import { useSetAtom } from "jotai"
+import { useSetAtom, useAtom } from "jotai"
 
 import useSocket from "../hooks/use-socket"
 import useToggle from "../hooks/use-toggle"
@@ -10,7 +10,7 @@ import useCountdown from "../hooks/use-countdown"
 import useScreenFactor from "../hooks/use-screen-factor"
 import useLeavePreventer from "../hooks/use-leave-preventer"
 import getScoreLabel from "../functions/get-score-label"
-import { gameStateAtom } from "../atoms"
+import { gameStateAtom, soundsAtom } from "../atoms"
 
 import Logo from "../components/logo"
 import BackButton from "../components/back-button"
@@ -18,6 +18,7 @@ import UserList from "../components/user-list"
 import Rules from "../components/rules"
 import Configuration from "../components/configuration"
 import SoundOn from "../assets/sound-on.svg"
+import SoundOff from "../assets/sound-off.svg"
 import Gear from "../assets/gear.svg"
 import Close from "../assets/configuration-close.svg"
 
@@ -34,6 +35,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const [configurationVisible, toggleConfiguration] = useToggle()
   const setGameState = useSetAtom(gameStateAtom)
+  const [sounds, setSounds] = useAtom(soundsAtom)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
@@ -133,8 +135,8 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
             <div className="invisible">
               <Logo />
             </div>
-            <button>
-              <SoundOn />
+            <button onClick={() => setSounds(!sounds)}>
+              {sounds ? <SoundOn /> : <SoundOff />}
             </button>
           </div>
           <div className="flex w-full gap-4">

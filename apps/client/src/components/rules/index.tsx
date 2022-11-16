@@ -50,6 +50,7 @@ const Rules: React.FC = () => {
         count={5}
         current={currentRuleIndex}
         onNext={setCurrentRuleIndex}
+        running
       />
     </div>
   )

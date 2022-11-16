@@ -16,8 +16,7 @@ const maxScoreOptions = [
   { value: 20, name: "20" }
 ] as const
 const readerOptions = [
-  { value: "male", name: "МУЖСКАЯ" },
-  { value: "female", name: "ЖЕНСКАЯ" },
+  { value: "on", name: "ЕСТЬ" },
   { value: "off", name: "НЕТ" }
 ] as const
 
