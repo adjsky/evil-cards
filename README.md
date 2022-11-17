@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./apps/client/src/assets/cat-eyes.svg" width="130" alt="Cat Eyes" />
+  <img src="./apps/client/public/og-preview.svg" width="422" alt="Cat Eyes" />
 </p>
 
 <h1 align="center">
@@ -15,5 +15,5 @@
 </p>
 
 <p align="center">
-  <small>Only Russian is supported</small>
+  Only Russian is supported
 </p>
