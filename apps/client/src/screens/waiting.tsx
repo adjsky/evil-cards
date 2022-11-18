@@ -12,6 +12,7 @@ import useLeavePreventer from "../hooks/use-leave-preventer"
 import getScoreLabel from "../functions/get-score-label"
 import { gameStateAtom, soundsAtom } from "../atoms"
 
+import FadeIn from "../components/fade-in"
 import Logo from "../components/logo"
 import BackButton from "../components/back-button"
 import UserList from "../components/user-list"
@@ -35,20 +36,9 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const [configurationVisible, toggleConfiguration] = useToggle()
   const setGameState = useSetAtom(gameStateAtom)
-  const [sounds, setSounds] = useAtom(soundsAtom)
-
-  const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
-    px: 40,
-    py: 40
-  })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage } = useSocket<
-    SendMessage,
-    ReceiveMessage
-  >({
+  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
@@ -56,13 +46,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     }
   })
 
-  const handleStart = () => {
-    sendJsonMessage({ type: "startgame" })
-  }
-
   const user = gameState.users.find((user) => user.id == gameState.userId)!
-  const lowerButtonOpacity =
-    !user.host && (gameState.status == "waiting" || gameState.status == "end")
 
   const renderMainFrame = () => (
     <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
@@ -89,77 +73,131 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     </div>
   )
 
+  const onStart = () => {
+    sendJsonMessage({ type: "startgame" })
+  }
+
+  const onBack = () => {
+    setGameState(null)
+    sendJsonMessage({ type: "leavesession" })
+  }
+
   return (
-    <Transition
-      enter="transition-opacity duration-300"
-      className="opacity-0"
-      enterTo="!opacity-100"
-      show
-      appear
-    >
+    <FadeIn>
       {gameState.status == "end" && gameState.winners && (
         <Winners winners={gameState.winners} />
       )}
-      <div className="flex h-screen flex-col sm:hidden">
-        <UserList users={gameState.users} variant="waiting" />
-        <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
-          {renderMainFrame()}
-          <div className="flex justify-center gap-2">
-            <InviteButton id={gameState.id} />
-            <StartButton
-              lowerOpacity={lowerButtonOpacity}
-              onClick={handleStart}
-              disabled={lastJsonMessage?.type == "gamestart" || !user.host}
-              secondsLeft={secondsLeft}
-              withCountdown={lastJsonMessage?.type == "gamestart"}
-            />
+      <MobileView
+        gameState={gameState}
+        secondsLeft={secondsLeft}
+        user={user}
+        renderMainFrame={renderMainFrame}
+        onStart={onStart}
+      />
+      <DesktopView
+        gameState={gameState}
+        secondsLeft={secondsLeft}
+        user={user}
+        renderMainFrame={renderMainFrame}
+        onBack={onBack}
+        onStart={onStart}
+      />
+    </FadeIn>
+  )
+}
+
+const MobileView: React.FC<{
+  gameState: GameState
+  secondsLeft: number
+  user: User
+  renderMainFrame: () => JSX.Element
+  onStart?: () => void
+}> = ({ gameState, secondsLeft, user, renderMainFrame, onStart }) => {
+  const { lastJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
+
+  const lowerButtonOpacity =
+    !user.host && (gameState.status == "waiting" || gameState.status == "end")
+
+  return (
+    <div className="flex h-screen flex-col sm:hidden">
+      <UserList users={gameState.users} variant="waiting" />
+      <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
+        {renderMainFrame()}
+        <div className="flex justify-center gap-2">
+          <InviteButton id={gameState.id} />
+          <StartButton
+            lowerOpacity={lowerButtonOpacity}
+            onClick={onStart}
+            disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+            secondsLeft={secondsLeft}
+            withCountdown={lastJsonMessage?.type == "gamestart"}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const DesktopView: React.FC<{
+  gameState: GameState
+  secondsLeft: number
+  user: User
+  renderMainFrame: () => JSX.Element
+  onBack?: () => void
+  onStart?: () => void
+}> = ({ gameState, secondsLeft, user, renderMainFrame, onBack, onStart }) => {
+  const [sounds, setSounds] = useAtom(soundsAtom)
+  const { lastJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const screenStyles = useScreenFactor({
+    ref: containerRef,
+    px: 40,
+    py: 40
+  })
+
+  const lowerButtonOpacity =
+    !user.host && (gameState.status == "waiting" || gameState.status == "end")
+
+  return (
+    <div className="relative hidden h-screen sm:block">
+      <div
+        ref={containerRef}
+        style={screenStyles}
+        className="flex w-[850px] flex-col items-center justify-center gap-6"
+      >
+        <div className="relative flex w-full items-end justify-between">
+          <BackButton onClick={onBack} />
+          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
+            <Logo />
+          </div>
+          <div className="invisible">
+            <Logo />
+          </div>
+          <button onClick={() => setSounds(!sounds)}>
+            {sounds ? <SoundOn /> : <SoundOff />}
+          </button>
+        </div>
+        <div className="flex w-full gap-4">
+          <div className="h-[500px]">
+            <UserList users={gameState.users} variant="waiting" />
+          </div>
+          <div className="flex w-full flex-col gap-6">
+            {renderMainFrame()}
+            <div className="flex w-full justify-center gap-6">
+              <InviteButton id={gameState.id} />
+              <StartButton
+                lowerOpacity={lowerButtonOpacity}
+                onClick={onStart}
+                disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+                secondsLeft={secondsLeft}
+                withCountdown={lastJsonMessage?.type == "gamestart"}
+              />
+            </div>
           </div>
         </div>
       </div>
-      <div className="relative hidden h-screen sm:block">
-        <div
-          ref={containerRef}
-          style={screenStyles}
-          className="flex w-[850px] flex-col items-center justify-center gap-6"
-        >
-          <div className="relative flex w-full items-end justify-between">
-            <BackButton
-              onClick={() => {
-                setGameState(null)
-                sendJsonMessage({ type: "leavesession" })
-              }}
-            />
-            <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
-              <Logo />
-            </div>
-            <div className="invisible">
-              <Logo />
-            </div>
-            <button onClick={() => setSounds(!sounds)}>
-              {sounds ? <SoundOn /> : <SoundOff />}
-            </button>
-          </div>
-          <div className="flex w-full gap-4">
-            <div className="h-[500px]">
-              <UserList users={gameState.users} variant="waiting" />
-            </div>
-            <div className="flex w-full flex-col gap-6">
-              {renderMainFrame()}
-              <div className="flex w-full justify-center gap-6">
-                <InviteButton id={gameState.id} />
-                <StartButton
-                  lowerOpacity={lowerButtonOpacity}
-                  onClick={handleStart}
-                  disabled={lastJsonMessage?.type == "gamestart" || !user.host}
-                  secondsLeft={secondsLeft}
-                  withCountdown={lastJsonMessage?.type == "gamestart"}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
+    </div>
   )
 }
 
@@ -202,7 +240,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
       <button
         className="rounded-lg border border-gray-100 bg-gray-900 px-4 py-4 text-base leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:px-5 sm:text-xl sm:leading-none"
         onClick={async () => {
-          const url = `${window.location.href}?s=${id}`
+          const url = `${window.location.origin}?s=${id}`
 
           try {
             await navigator.clipboard.writeText(url)

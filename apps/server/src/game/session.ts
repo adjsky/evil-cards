@@ -10,7 +10,8 @@ import {
   gameStartDelay,
   userIdSize,
   sessionIdSize,
-  minPlayersToStartGame
+  minPlayersToStartGame,
+  chooseBestDelay
 } from "./constants"
 
 import type { Status, User, Vote, Configuration } from "../lib/ws/send"
@@ -24,14 +25,18 @@ export type UserData<T> = {
   sender: Sender<T>
   whiteCards: string[]
 }
-type Timeouts = Record<"voting" | "starting", null | DateTimeout>
+type Timeouts = Record<"voting" | "starting" | "choosebest", null | DateTimeout>
 
 class Session<T = string> {
   private _userData: WeakMap<User, UserData<T>> = new WeakMap()
   private _availableRedCards = [...redCards]
   private _availableWhiteCards = [...whiteCards]
   private _masterIndex = 0
-  private _timeouts: Timeouts = { voting: null, starting: null }
+  private _timeouts: Timeouts = {
+    voting: null,
+    starting: null,
+    choosebest: null
+  }
 
   private _votes: Vote[] = []
   private _users: User[] = []
@@ -47,7 +52,7 @@ class Session<T = string> {
 
     this._configuration = {
       maxScore: 10,
-      reader: "on",
+      reader: "off",
       votingDuration: 60
     }
   }
@@ -177,10 +182,10 @@ class Session<T = string> {
     this.users.forEach((user) => {
       user.score = 0
     })
-    this._timeouts.starting = setDateTimeout(
-      () => this.startVoting(),
-      dayjs().add(gameStartDelay, "s").toDate()
-    )
+    this._timeouts.starting = setDateTimeout(() => {
+      this._timeouts.starting = null
+      this.startVoting()
+    }, dayjs().add(gameStartDelay, "s").toDate())
 
     await this._eventBus.emit("starting")
   }
@@ -195,7 +200,7 @@ class Session<T = string> {
     userData.whiteCards = userData.whiteCards.filter(
       (cardText) => text != cardText
     )
-    this._votes.push({ text, userId: user.id, visible: false })
+    this._votes.push({ text, userId: user.id, visible: false, winner: false })
 
     if (callbacks?.onVote) {
       callbacks.onVote()
@@ -229,18 +234,30 @@ class Session<T = string> {
     }
   }
 
-  public chooseBest(userId: string) {
+  public chooseBest(userId: string, callbacks?: { onChooseBest?: () => void }) {
     const votedUser = this._users.find((user) => user.id == userId)
-    if (!votedUser) {
+    const vote = this._votes.find((vote) => vote.userId == userId)
+    if (!votedUser || !vote) {
       throw new Error("provided user did not vote")
     }
 
     votedUser.score += 1
-    if (votedUser.score >= this._configuration.maxScore) {
-      this.endGame()
-    } else {
-      this.startVoting()
+    vote.winner = true
+    this._status = "bestcardview"
+
+    if (callbacks?.onChooseBest) {
+      callbacks.onChooseBest()
     }
+
+    this._timeouts.choosebest = setDateTimeout(() => {
+      this._timeouts.choosebest = null
+
+      if (votedUser.score >= this._configuration.maxScore) {
+        this.endGame()
+      } else {
+        this.startVoting()
+      }
+    }, dayjs().add(chooseBestDelay, "s").toDate())
   }
 
   public async endGame() {
@@ -360,10 +377,7 @@ class Session<T = string> {
     }
 
     this._timeouts.voting = setDateTimeout(() => {
-      if (this._timeouts.voting) {
-        this._timeouts.voting.clear()
-        this._timeouts.voting = null
-      }
+      this._timeouts.voting = null
       this.startChoosing()
     }, dayjs().add(this._configuration.votingDuration, "s").toDate())
 
@@ -384,7 +398,12 @@ class Session<T = string> {
         const randomCardIndex = getRandomInt(0, userWhitecards.length - 1)
         const text = userWhitecards[randomCardIndex]
         user.voted = true
-        this._votes.push({ text, userId: user.id, visible: false })
+        this._votes.push({
+          text,
+          userId: user.id,
+          visible: false,
+          winner: false
+        })
         userWhitecards.splice(randomCardIndex, 1)
       }
     })

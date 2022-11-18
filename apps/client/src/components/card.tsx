@@ -5,11 +5,12 @@ import { Interweave } from "interweave"
 import Cat from "../assets/cat.svg"
 
 const Card: React.FC<{
+  author?: string
   text?: string
-  onClick?: () => void
   disabled?: boolean
   lowerOpacity?: boolean
-}> = ({ text, onClick, disabled, lowerOpacity }) => {
+  onClick?: () => void
+}> = ({ author, text, disabled, lowerOpacity, onClick }) => {
   return (
     <button
       onClick={onClick}
@@ -24,11 +25,12 @@ const Card: React.FC<{
       <span
         className={clsx(
           text &&
-            "inline-block w-full whitespace-pre-line break-words text-[0.5rem] font-medium sm:text-xs sm:leading-normal",
+            "flex h-full w-full flex-col justify-between whitespace-pre-line break-words text-[0.5rem] font-medium sm:text-xs sm:leading-normal",
           !text && "flex items-center justify-center"
         )}
       >
         {text ? <Interweave content={text} /> : <Cat />}
+        {author && <span className="text-right">{author}</span>}
       </span>
     </button>
   )

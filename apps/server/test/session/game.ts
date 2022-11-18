@@ -81,7 +81,12 @@ t.test("main workflow should work as expected", async (t) => {
   session.choose(user4.id)
 
   t.equal(session.status, "choosingbest")
+
   session.chooseBest(user2.id)
+  t.equal(session.status, "bestcardview")
+
+  clock.tick(2000)
+
   t.equal(user2.score, 1)
   t.equal(session.votes.length, 0)
   for (const user of session.users) {
@@ -95,6 +100,8 @@ t.test("main workflow should work as expected", async (t) => {
   user1.score = 9
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
+
+  clock.tick(2000)
 
   t.equal(session.status, "end")
 
@@ -138,8 +145,13 @@ t.test("all events are emitted", async (t) => {
   await session.choose(user3.id)
   t.ok(choosingBestFake.calledOnce)
 
+  clock = sinon.useFakeTimers()
   session.chooseBest(user2.id)
+  clock.tick(2000)
+  clock.restore()
+
   await new Promise((resolve) => setTimeout(resolve, 0))
+
   t.ok(votingFake.calledTwice)
 
   await session.endGame()
@@ -154,7 +166,7 @@ t.test("all events are emitted", async (t) => {
   t.end()
 })
 
-t.test("choose() and vote() calls callback", async (t) => {
+t.test("choose(), vote() and choosebest() calls callback", async (t) => {
   session.addUser(sender, "qwe", 0, true)
   const user2 = session.addUser(sender, "qwe", 0, false)
   const user3 = session.addUser(sender, "qwe", 0, false)
@@ -174,6 +186,11 @@ t.test("choose() and vote() calls callback", async (t) => {
   const onChooseFake = sinon.fake()
   await session.choose(user2.id, { onChoose: onChooseFake })
   t.ok(onChooseFake.calledOnce)
+
+  const onChooseBestFake = sinon.fake()
+  session.chooseBest(user2.id, { onChooseBest: onChooseBestFake })
+  t.ok(onChooseBestFake.calledOnce)
+
   t.end()
 })
 
@@ -279,6 +296,8 @@ t.test("configuration", (t) => {
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
 
+  clock.tick(2000)
+
   t.equal(session.status, "end")
 
   session.updateConfiguration({
@@ -291,10 +310,14 @@ t.test("configuration", (t) => {
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
 
+  clock.tick(2000)
+
   t.equal(session.status, "voting")
   user1.score = 14
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
+
+  clock.tick(2000)
 
   t.equal(session.status, "end")
 
