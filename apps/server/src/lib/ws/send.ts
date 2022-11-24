@@ -17,85 +17,111 @@ export type Status =
   | "choosing"
   | "end"
   | "choosingbest"
-export type Vote = { text: string; userId: string; visible: boolean }
+  | "bestcardview"
+export type Vote = {
+  text: string
+  userId: string
+  visible: boolean
+  winner: boolean
+}
 
 export type Created = {
   type: "created"
   details: {
-    id: string
-    status: Status
-    users: User[]
-    userId: string
-    configuration: Configuration
+    changedState: {
+      id: string
+      status: Status
+      users: User[]
+      userId: string
+      configuration: Configuration
+    }
   }
 }
 
 export type Joined = {
   type: "joined"
   details: {
-    id: string
-    status: Status
-    users: User[]
-    userId: string
-    whiteCards: string[]
-    redCard: string | null
-    votingEndsAt: number | null
-    configuration: Configuration
+    changedState: {
+      id: string
+      status: Status
+      users: User[]
+      userId: string
+      whiteCards: string[]
+      redCard: string | null
+      votingEndsAt: number | null
+      configuration: Configuration
+    }
   }
 }
 
 export type UserJoined = {
   type: "userjoined"
   details: {
-    users: User[]
+    changedState: {
+      users: User[]
+    }
   }
 }
 
 export type UserDisconnected = {
   type: "userdisconnected"
-  details: { users: User[] }
+  details: { changedState: { users: User[] } }
 }
 
 export type Voted = {
   type: "voted"
-  details: { users: User[]; votes: Vote[]; whiteCards: string[] }
+  details: {
+    changedState: { users: User[]; votes: Vote[]; whiteCards: string[] }
+  }
 }
 
 export type GameStart = {
   type: "gamestart"
-  details: { status: Status }
+  details: { changedState: { status: Status } }
 }
 
 export type VotingStarted = {
   type: "votingstarted"
   details: {
-    status: Status
-    whiteCards: string[]
-    redCard: string
-    users: User[]
-    votes: Vote[]
-    votingEndsAt: number | null
+    changedState: {
+      status: Status
+      whiteCards: string[]
+      redCard: string
+      users: User[]
+      votes: Vote[]
+      votingEndsAt: number | null
+    }
   }
 }
 
 export type ChoosingStarted = {
   type: "choosingstarted"
-  details: { status: Status; votes: Vote[]; whiteCards: string[] }
+  details: {
+    changedState: { status: Status; votes: Vote[]; whiteCards: string[] }
+  }
 }
 
 export type Choose = {
   type: "choose"
-  details: { votes: Vote[] }
+  details: {
+    changedState: { votes: Vote[] }
+    choosedUserId: string
+  }
 }
 
 export type ChoosingBestStarted = {
   type: "choosingbeststarted"
-  details: { status: Status }
+  details: { changedState: { status: Status } }
+}
+
+export type ChooseBest = {
+  type: "choosebest"
+  details: { changedState: { status: Status; votes: Vote[]; users: User[] } }
 }
 
 export type GameEnd = {
   type: "gameend"
-  details: { status: Status; users: User[] }
+  details: { changedState: { status: Status; users: User[] } }
 }
 
 export type Error = {
@@ -109,7 +135,7 @@ export type Ping = {
 
 export type ConfigurationUpdated = {
   type: "configurationupdated"
-  details: { configuration: Configuration }
+  details: { changedState: { configuration: Configuration } }
 }
 
 export type Message =
@@ -123,6 +149,7 @@ export type Message =
   | ChoosingStarted
   | Choose
   | ChoosingBestStarted
+  | ChooseBest
   | GameEnd
   | Error
   | Ping

@@ -1,12 +1,12 @@
 import "../styles/globals.css"
-import { useAtom } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import Router from "next/router"
 
 import { gameStateAtom, soundsAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useSnackbar from "../components/snackbar/use"
 import mapErrorMessage from "../functions/map-error-message"
-import speak from "../functions/speak"
+import { processMessageAndPlayAudio } from "../audio"
 
 import type { AppType } from "next/dist/shared/lib/utils"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -15,7 +15,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 const MyApp: AppType = ({ Component, pageProps }) => {
   const { updateSnackbar, Snackbar } = useSnackbar()
   const [gameState, setGameState] = useAtom(gameStateAtom)
-  const sounds = useAtom(soundsAtom)
+  const sounds = useAtomValue(soundsAtom)
 
   const onClose = () => {
     setGameState(null)
@@ -25,45 +25,41 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       open: true
     })
   }
-  const onJsonMessage = (data: ReceiveMessage) => {
-    if (data.type == "error" && data.details) {
+  const onJsonMessage = (message: ReceiveMessage) => {
+    if (message.type == "error" && message.details) {
       updateSnackbar({
-        message: mapErrorMessage(data.details),
+        message: mapErrorMessage(message.details),
         open: true
       })
     }
 
-    if (data.type == "joined" || data.type == "created") {
+    if (message.type == "joined" || message.type == "created") {
       Router.push("/room", undefined, { shallow: true })
     }
 
     if (
-      data.type == "error" &&
-      data.details &&
-      data.details == "session not found"
+      message.type == "error" &&
+      message.details &&
+      message.details == "session not found"
     ) {
       Router.replace("/", undefined, { shallow: true })
     }
 
-    if (data.type == "votingstarted") {
-      if (gameState?.configuration.reader == "off" || !sounds) {
-        return
-      }
-
-      speak(data.details.redCard)
+    if (gameState?.configuration.reader == "on" && sounds) {
+      processMessageAndPlayAudio(message)
     }
 
-    switch (data.type) {
+    switch (message.type) {
       case "joined":
         setGameState({
-          ...data.details,
+          ...message.details.changedState,
           votes: [],
           winners: null
         })
         break
       case "created":
         setGameState({
-          ...data.details,
+          ...message.details.changedState,
           redCard: null,
           votes: [],
           whiteCards: [],
@@ -72,27 +68,30 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         })
         break
       case "votingstarted":
-        setGameState((prev) => ({ ...prev!, ...data.details }))
+        setGameState((prev) => ({ ...prev!, ...message.details.changedState }))
         break
       default:
-        if (data.type != "ping" && data.type != "error") {
+        if (message.type != "ping" && message.type != "error") {
           setGameState((prev) => {
             if (!prev) {
               return null
             }
 
             let winners = prev.winners
-            if (data.type == "gameend" && data.details.users.length >= 3) {
-              winners = [...data.details.users]
+            if (
+              message.type == "gameend" &&
+              message.details.changedState.users.length >= 3
+            ) {
+              winners = [...message.details.changedState.users]
                 .sort((a, b) => b.score - a.score)
                 .slice(0, 3)
             }
 
             return {
               ...prev,
-              ...data.details,
+              ...message.details.changedState,
               votingEndsAt:
-                data.type == "choosingstarted" ? null : prev.votingEndsAt,
+                message.type == "choosingstarted" ? null : prev.votingEndsAt,
               winners
             }
           })

@@ -50,7 +50,7 @@ class Game {
           session.getUserSender(user).send(
             stringify({
               type: "userdisconnected",
-              details: { users: session.users }
+              details: { changedState: { users: session.users } }
             })
           )
         }
@@ -77,11 +77,13 @@ class Game {
       stringify({
         type: "created",
         details: {
-          id: session.id,
-          status: session.status,
-          users: session.users,
-          userId: user.id,
-          configuration: session.configuration
+          changedState: {
+            id: session.id,
+            status: session.status,
+            users: session.users,
+            userId: user.id,
+            configuration: session.configuration
+          }
         }
       })
     )
@@ -105,7 +107,7 @@ class Game {
     let newUser: User
     if (previousUser) {
       if (!previousUser.disconnected) {
-        throw new Error("this user is playing right now")
+        throw new Error("nickname is taken")
       }
 
       session.reconnectUser(socket, previousUser, avatarId)
@@ -113,9 +115,6 @@ class Game {
     } else {
       if (!waitingState) {
         throw new Error("game is started already")
-      }
-      if (session.users.findIndex((user) => user.username == username) != -1) {
-        throw new Error("nickname is taken")
       }
 
       const user = session.addUser(socket, username, avatarId, false)
@@ -133,14 +132,17 @@ class Game {
           stringify({
             type: "joined",
             details: {
-              id: session.id,
-              status: session.status,
-              userId: newUser.id,
-              users: session.users,
-              whiteCards: session.getUserWhitecards(user),
-              redCard: session.redCard,
-              votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null,
-              configuration: session.configuration
+              changedState: {
+                id: session.id,
+                status: session.status,
+                userId: newUser.id,
+                users: session.users,
+                whiteCards: session.getUserWhitecards(user),
+                redCard: session.redCard,
+                votingEndsAt:
+                  session.getTimeoutDate("voting")?.getTime() ?? null,
+                configuration: session.configuration
+              }
             }
           })
         )
@@ -149,7 +151,7 @@ class Game {
           stringify({
             type: "userjoined",
             details: {
-              users: session.users
+              changedState: { users: session.users }
             }
           })
         )
@@ -180,7 +182,7 @@ class Game {
       session.getUserSender(user).send(
         stringify({
           type: "configurationupdated",
-          details: { configuration: session.configuration }
+          details: { changedState: { configuration: session.configuration } }
         })
       )
     )
@@ -216,9 +218,11 @@ class Game {
             stringify({
               type: "voted",
               details: {
-                users: session.users,
-                votes: session.votes,
-                whiteCards: session.getUserWhitecards(user)
+                changedState: {
+                  users: session.users,
+                  votes: session.votes,
+                  whiteCards: session.getUserWhitecards(user)
+                }
               }
             })
           )
@@ -245,7 +249,7 @@ class Game {
       throw new Error("game is started already")
     }
     if (session.users.length < minPlayersToStartGame) {
-      throw new Error(`need more players (${minPlayersToStartGame})`)
+      throw new Error("need more players")
     }
 
     session.eventBus.clearListeners()
@@ -258,7 +262,7 @@ class Game {
         session.getUserSender(user).send(
           stringify({
             type: "gamestart",
-            details: { status: session.status }
+            details: { changedState: { status: session.status } }
           })
         )
       })
@@ -277,12 +281,15 @@ class Game {
           stringify({
             type: "votingstarted",
             details: {
-              whiteCards: session.getUserWhitecards(user),
-              redCard: session.redCard,
-              users: session.users,
-              status: session.status,
-              votes: session.votes,
-              votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null
+              changedState: {
+                whiteCards: session.getUserWhitecards(user),
+                redCard: session.redCard,
+                users: session.users,
+                status: session.status,
+                votes: session.votes,
+                votingEndsAt:
+                  session.getTimeoutDate("voting")?.getTime() ?? null
+              }
             }
           })
         )
@@ -298,9 +305,11 @@ class Game {
           stringify({
             type: "choosingstarted",
             details: {
-              status: session.status,
-              votes: session.votes,
-              whiteCards: session.getUserWhitecards(user)
+              changedState: {
+                status: session.status,
+                votes: session.votes,
+                whiteCards: session.getUserWhitecards(user)
+              }
             }
           })
         )
@@ -315,7 +324,7 @@ class Game {
         session.getUserSender(user).send(
           stringify({
             type: "choosingbeststarted",
-            details: { status: session.status }
+            details: { changedState: { status: session.status } }
           })
         )
       })
@@ -329,7 +338,9 @@ class Game {
         session.getUserSender(user).send(
           stringify({
             type: "gameend",
-            details: { status: session.status, users: session.users }
+            details: {
+              changedState: { status: session.status, users: session.users }
+            }
           })
         )
       })
@@ -362,11 +373,15 @@ class Game {
             return
           }
 
-          session
-            .getUserSender(user)
-            .send(
-              stringify({ type: "choose", details: { votes: session.votes } })
-            )
+          session.getUserSender(user).send(
+            stringify({
+              type: "choose",
+              details: {
+                changedState: { votes: session.votes },
+                choosedUserId: userId
+              }
+            })
+          )
         })
       }
     })
@@ -389,7 +404,28 @@ class Game {
       throw new Error("only master can choose card to show")
     }
 
-    session.chooseBest(userId)
+    session.chooseBest(userId, {
+      onChooseBest() {
+        session.users.forEach((user) => {
+          if (user.disconnected) {
+            return
+          }
+
+          session.getUserSender(user).send(
+            stringify({
+              type: "choosebest",
+              details: {
+                changedState: {
+                  status: session.status,
+                  votes: session.votes,
+                  users: session.users
+                }
+              }
+            })
+          )
+        })
+      }
+    })
   }
 
   private onSessionEnd(session: Session) {

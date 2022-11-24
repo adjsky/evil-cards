@@ -1,7 +1,6 @@
-import React, { useRef } from "react"
+import React, { useRef, useEffect } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
-import { Transition } from "@headlessui/react"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
 import useSocket from "../../hooks/use-socket"
@@ -11,6 +10,7 @@ import useLeavePreventer from "../../hooks/use-leave-preventer"
 
 import UserList from "../../components/user-list"
 import Card from "../../components/card"
+import FadeIn from "../../components/fade-in"
 import styles from "./game.module.css"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
@@ -21,11 +21,6 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
-  const [cardsRef] = useAutoAnimate<HTMLDivElement>({
-    disrespectUserMotionPreference: true,
-    easing: "linear",
-    duration: 300
-  })
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor({
     ref: containerRef,
@@ -33,29 +28,12 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     py: 40,
     disableOnMobile: true
   })
-  const boardRef = useRef<HTMLDivElement>(null)
-  const boardStyles = useScreenFactor({
-    ref: boardRef,
-    px: 0,
-    py: 0,
-    stopAt: 639,
-    reduceScreenSizeBy: {
-      y: 235
-    }
-  })
   const timeBarStyles = useTimeBar(
     gameState.configuration.votingDuration,
     gameState.votingEndsAt
   )
 
-  const user = gameState.users.find((user) => user.id == gameState.userId)!
-  const availableCardDisabled =
-    gameState.status == "choosing" ||
-    gameState.status == "choosingbest" ||
-    user.master ||
-    user.voted
-
-  const handleTableCardClick = (userId: string) => {
+  const onBoardCardClick = (userId: string) => {
     if (gameState.status == "choosing") {
       sendJsonMessage({ type: "choose", details: { userId } })
     } else {
@@ -64,14 +42,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   }
 
   return (
-    <Transition
-      className="mx-auto h-screen sm:relative"
-      enter="transition-opacity duration-300"
-      enterTo="opacity-100"
-      enterFrom="opacity-0"
-      show
-      appear
-    >
+    <FadeIn className="mx-auto h-screen opacity-0 sm:relative">
       <div
         className="flex h-screen flex-col items-center sm:h-auto sm:justify-center sm:gap-3"
         style={screenStyles}
@@ -80,52 +51,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         <div className="w-full sm:hidden">
           <UserList users={gameState.users} variant="game" />
         </div>
-        <div
-          ref={cardsRef}
-          className="relative flex w-full flex-auto items-center justify-center"
-        >
-          <div
-            className={clsx(
-              "flex items-center justify-center",
-              gameState.votes.length > 0 && "sm:justify-between",
-              styles["board"]
-            )}
-            style={boardStyles}
-            ref={boardRef}
-          >
-            <div className={clsx("bg-red-500", styles["red-card"])}>
-              <Interweave
-                content={gameState.redCard}
-                className="whitespace-pre-line break-words text-[0.625rem] font-medium text-gray-100 sm:text-sm sm:leading-normal"
-              />
-            </div>
-            {gameState.votes.length > 0 && (
-              <div className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2">
-                {gameState.votes.map(({ text, userId, visible }, index) => (
-                  <div
-                    className={clsx(
-                      styles["voted-card"],
-                      styles[`card-${index + 1}`]
-                    )}
-                    key={text}
-                  >
-                    <Card
-                      text={visible ? text : undefined}
-                      disabled={
-                        !user.master ||
-                        (visible && gameState.status != "choosingbest") ||
-                        (!visible && gameState.status != "choosing")
-                      }
-                      onClick={() => {
-                        handleTableCardClick(userId)
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <Board gameState={gameState} onCardClick={onBoardCardClick} />
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden sm:block">
             <UserList users={gameState.users} variant="game" />
@@ -137,28 +63,160 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
                 style={timeBarStyles}
               />
             </div>
-            <div
-              className={clsx(
-                "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
-                "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
-              )}
-            >
-              {gameState.whiteCards.map((text) => (
-                <Card
-                  key={text}
-                  text={text}
-                  onClick={() =>
-                    sendJsonMessage({ type: "vote", details: { text } })
-                  }
-                  disabled={availableCardDisabled}
-                  lowerOpacity={availableCardDisabled}
-                />
-              ))}
-            </div>
+            <Cards
+              gameState={gameState}
+              onCardClick={(text) =>
+                sendJsonMessage({ type: "vote", details: { text } })
+              }
+            />
           </div>
         </div>
       </div>
-    </Transition>
+    </FadeIn>
+  )
+}
+
+const Board: React.FC<{
+  gameState: GameState
+  onCardClick?: (userId: string) => void
+}> = ({ gameState, onCardClick }) => {
+  const [boardRef, enable] = useAutoAnimate<HTMLDivElement>(
+    (element, action, oldCoords, newCoords) => {
+      let keyframes: Keyframe[] = []
+
+      if (action == "remain") {
+        const deltaX = (oldCoords?.left ?? 0) - (newCoords?.left ?? 0)
+
+        const start = { transform: `translateX(${deltaX}px)` }
+        const end = { transform: `translateX(0)` }
+
+        keyframes = [start, end]
+      }
+
+      if (action == "add") {
+        keyframes = [
+          { opacity: 0 },
+          { opacity: 0, offset: 0.5 },
+          { opacity: 1 }
+        ]
+      }
+
+      if (action == "remove") {
+        keyframes = [{ opacity: 0 }]
+      }
+
+      return new KeyframeEffect(element, keyframes, {
+        duration: action == "remove" ? 0 : action == "add" ? 500 : 300,
+        easing: "linear"
+      })
+    }
+  )
+  const boardStyles = useScreenFactor({
+    ref: boardRef,
+    px: 0,
+    py: 0,
+    stopAt: 639,
+    reduceScreenSizeBy: {
+      y: 235
+    }
+  })
+
+  useEffect(() => {
+    const callback = () => {
+      enable(window.innerWidth >= 640)
+    }
+
+    callback()
+
+    window.addEventListener("resize", callback)
+    return () => {
+      window.removeEventListener("resize", callback)
+    }
+  }, [enable])
+
+  const user = gameState.users.find((user) => user.id == gameState.userId)!
+
+  return (
+    <div className="relative flex w-full flex-auto items-center justify-center">
+      <div
+        className={clsx(
+          "flex items-center justify-center",
+          gameState.votes.length > 0 && "sm:justify-between",
+          styles["board"]
+        )}
+        style={boardStyles}
+        ref={boardRef}
+      >
+        <div className={clsx("bg-red-500", styles["red-card"])}>
+          <Interweave
+            content={gameState.redCard}
+            className="whitespace-pre-line break-words text-[0.625rem] font-medium text-gray-100 sm:text-sm sm:leading-normal"
+          />
+        </div>
+        {gameState.votes.length > 0 && (
+          <div className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2">
+            {gameState.votes.map(({ text, userId, visible, winner }, index) => (
+              <div
+                className={clsx(
+                  styles["voted-card"],
+                  styles[`card-${index + 1}`]
+                )}
+                key={text}
+              >
+                <Card
+                  text={visible ? text : undefined}
+                  author={
+                    winner
+                      ? gameState.users.find((user) => user.id == userId)
+                          ?.username
+                      : undefined
+                  }
+                  disabled={
+                    !user.master ||
+                    (visible && gameState.status != "choosingbest") ||
+                    (!visible && gameState.status != "choosing")
+                  }
+                  onClick={() => {
+                    onCardClick && onCardClick(userId)
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const Cards: React.FC<{
+  gameState: GameState
+  onCardClick?: (text: string) => void
+}> = ({ gameState, onCardClick }) => {
+  const user = gameState.users.find((user) => user.id == gameState.userId)!
+  const availableCardDisabled =
+    gameState.status == "choosing" ||
+    gameState.status == "choosingbest" ||
+    user.master ||
+    user.voted
+
+  return (
+    <div
+      className={clsx(
+        "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
+        "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
+      )}
+    >
+      {gameState.whiteCards.map((text) => (
+        <Card
+          key={text}
+          text={text}
+          onClick={() => onCardClick && onCardClick(text)}
+          disabled={availableCardDisabled}
+          lowerOpacity={availableCardDisabled}
+        />
+      ))}
+    </div>
   )
 }
 
