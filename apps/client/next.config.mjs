@@ -3,7 +3,14 @@ import {
   PHASE_PRODUCTION_BUILD,
   PHASE_DEVELOPMENT_SERVER
 } from "next/constants.js"
-import createBundleAnalyzer from "@next/bundle-analyzer"
+import path from "node:path"
+import url from "node:url"
+
+const workspaceRoot = path.resolve(
+  path.dirname(url.fileURLToPath(import.meta.url)),
+  "..",
+  ".."
+)
 
 /**
  * @param {string} phase
@@ -33,7 +40,14 @@ const config = async (phase) => {
     const serverEnv = (await import("./src/env/server.mjs")).env
 
     if (phase == PHASE_PRODUCTION_BUILD && serverEnv.BUILD_STANDALONE) {
-      nextConfig.output = "standalone"
+      nextConfig = {
+        ...nextConfig,
+        output: "standalone",
+        experimental: {
+          ...nextConfig.experimental,
+          outputFileTracingRoot: workspaceRoot
+        }
+      }
     }
   }
 
@@ -41,7 +55,9 @@ const config = async (phase) => {
     const serverEnv = (await import("./src/env/server.mjs")).env
 
     if (serverEnv.ANALYZE) {
-      const withBundleAnalyzer = createBundleAnalyzer()
+      const withBundleAnalyzer = (
+        await import("@next/bundle-analyzer")
+      ).default()
       nextConfig = withBundleAnalyzer(nextConfig)
     }
   }

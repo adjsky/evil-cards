@@ -1,0 +1,55 @@
+
+###################################################################
+# Stage 1: Install all workspaces dependencies                    #
+#          and generate node_modules folders                      #
+###################################################################
+
+FROM node:16-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /evil-cards
+
+COPY apps ./apps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN yarn global add pnpm && pnpm i --frozen-lockfile
+
+###################################################################
+# Stage 2: Build client                                           #
+###################################################################
+
+FROM node:16-alpine AS builder
+
+WORKDIR /evil-cards
+COPY . .
+COPY --from=deps /evil-cards/node_modules ./node_modules
+
+WORKDIR /evil-cards/apps/server
+COPY --from=deps /evil-cards/apps/server/node_modules ./node_modules
+
+WORKDIR /evil-cards/apps/client
+COPY --from=deps /evil-cards/apps/client/node_modules ./node_modules
+
+ENV BUILD_STANDALONE true
+RUN npm run build
+
+###################################################################
+# Stage 3: Extract minimal image from the build                   #
+###################################################################
+
+FROM node:16-alpine AS runner
+WORKDIR /evil-cards
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /evil-cards/apps/client/public ./apps/client/public
+COPY --from=builder --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+
+CMD ["node", "apps/client/server.js"]
