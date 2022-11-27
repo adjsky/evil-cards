@@ -41,6 +41,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
   animationDuration = 300,
   autoHideDuration = 5000,
   open = false,
+  infinite = false,
   message,
   severity = "information",
   onClose
@@ -59,7 +60,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
   const severityColor = getSeverityColor(severity)
   const icon = getIcon(severity)
 
-  const shouldAutoHide = autoHideDuration !== 0
+  const shouldAutoHide = !infinite && autoHideDuration !== 0
 
   const resetAnimation = () => {
     if (!containerRef.current) {
@@ -186,6 +187,10 @@ const Snackbar: React.FC<SnackbarProps> = ({
 
   useIsomorphicLayoutEffect(() => {
     if (!open) {
+      if (state.display) {
+        close()
+      }
+
       return
     }
 
@@ -222,19 +227,24 @@ const Snackbar: React.FC<SnackbarProps> = ({
       <span>{icon}</span>
       <span
         style={{ color: severityColor.fg }}
-        className="ml-2 mr-5 text-sm font-bold leading-tight sm:ml-5 sm:mr-8 sm:text-base"
+        className={clsx(
+          "ml-2 text-sm font-bold leading-tight sm:ml-5 sm:text-base",
+          !infinite && "mr-5 sm:mr-8"
+        )}
       >
         {message}
       </span>
-      <button
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-2"
-        onClick={close}
-        type="button"
-        tabIndex={0}
-        aria-label="Close"
-      >
-        <Close stroke={severityColor.fg} />
-      </button>
+      {!infinite && (
+        <button
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2"
+          onClick={close}
+          type="button"
+          tabIndex={0}
+          aria-label="Close"
+        >
+          <Close stroke={severityColor.fg} />
+        </button>
+      )}
     </div>,
     document.body
   )
