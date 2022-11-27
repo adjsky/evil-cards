@@ -22,14 +22,19 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     updateSnackbar({
       message: "Упс, пропало соединение. Пытаемся его восстановить",
       severity: "error",
-      open: true
+      open: true,
+      infinite: true
     })
+  }
+  const onOpen = () => {
+    updateSnackbar((prev) => ({ ...prev, open: false }))
   }
   const onJsonMessage = (message: ReceiveMessage) => {
     if (message.type == "error" && message.details) {
       updateSnackbar({
         message: mapErrorMessage(message.details),
-        open: true
+        open: true,
+        infinite: false
       })
     }
 
@@ -101,6 +106,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 
   useSocket<SendMessage, ReceiveMessage>({
     onClose,
+    onOpen,
     onJsonMessage
   })
 

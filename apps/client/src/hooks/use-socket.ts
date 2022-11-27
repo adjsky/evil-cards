@@ -7,11 +7,13 @@ type SharedWebsocket = {
   heartbeatTimeout: NodeJS.Timeout | null
   lastJsonMessage?: JsonLike
   messageQueue: unknown[]
+  nReconnects: number
 }
 const sharedWebsocket: SharedWebsocket = {
   instance: null,
   heartbeatTimeout: null,
-  messageQueue: []
+  messageQueue: [],
+  nReconnects: 0
 }
 type SocketOptions<T> = {
   onJsonMessage?: (data: T) => void
@@ -37,6 +39,8 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
         }, 60000 + 1000)
       }
       const handleOpen = () => {
+        sharedWebsocket.nReconnects = 0
+
         let message = sharedWebsocket.messageQueue.shift()
         while (message != undefined) {
           sharedWebsocket.instance?.send(JSON.stringify(message))
@@ -69,7 +73,14 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
         sharedWebsocket.instance?.removeEventListener("message", handleMessage)
         sharedWebsocket.instance?.removeEventListener("close", handleClose)
 
-        setTimeout(() => connect(true), 1000)
+        if (reconnecting) {
+          sharedWebsocket.nReconnects += 1
+        }
+
+        setTimeout(
+          () => connect(true),
+          (2 ** sharedWebsocket.nReconnects + 1) * 1000
+        )
       }
 
       sharedWebsocket.instance = new WebSocket(env.NEXT_PUBLIC_WS_HOST)

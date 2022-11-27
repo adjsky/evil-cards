@@ -4,9 +4,9 @@ import Snackbar from "./index"
 import type { SnackbarProps } from "./types"
 
 type Props = Omit<SnackbarProps, "message" | "open" | "severity">
-type State = Pick<SnackbarProps, "message" | "open" | "severity">
+type State = Pick<SnackbarProps, "message" | "open" | "severity" | "infinite">
 
-type UpdateFunction = (state: State) => void
+type UpdateFunction = (state: State | ((prev: State) => State)) => void
 type ReturnObject = {
   updateSnackbar: UpdateFunction
   Snackbar: JSX.Element
