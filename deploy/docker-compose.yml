@@ -1,0 +1,12 @@
+services:
+  client:
+    image: adjsky/evil-cards_client
+    ports:
+      - "3000:3000"
+    restart: on-failure
+  
+  server:
+    image: adjsky/evil-cards_server
+    ports:
+      - "8000:8000"
+    restart: on-failure

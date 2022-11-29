@@ -1,0 +1,32 @@
+# All node_modules directories
+**/node_modules
+
+# All secrets
+**/.env
+**/.env.example
+**/.env.development
+
+# By default all git files
+.git
+**/.gitignore
+
+# Stuff
+**/README.md
+LICENSE
+
+# Docker related
+.dockerignore
+deploy
+
+# IDE related
+**/.idea
+**/.vscode
+
+# CLIENT
+apps/client/.next
+
+# SERVER
+apps/server/coverage
+apps/server/dist
+apps/server/test
+apps/server/.nyc_output

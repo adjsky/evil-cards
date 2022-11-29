@@ -1,0 +1,46 @@
+
+###################################################################
+# Stage 1: Install server dependencies                            #
+###################################################################
+
+FROM node:16-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /evil-cards
+
+COPY apps/server apps/server
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN yarn global add pnpm && pnpm --filter=@evil-cards/server... --frozen-lockfile install
+
+###################################################################
+# Stage 2: Build server                                           #
+###################################################################
+
+FROM node:16-alpine AS builder
+
+WORKDIR /evil-cards
+COPY . .
+COPY --from=deps /evil-cards/node_modules ./node_modules
+
+WORKDIR /evil-cards/apps/server
+COPY --from=deps /evil-cards/apps/server/node_modules ./node_modules
+
+RUN npm run build
+
+###################################################################
+# Stage 3: Extract minimal image from the build                   #
+###################################################################
+
+FROM node:16-alpine AS runner
+
+WORKDIR /evil-cards
+COPY --from=builder /evil-cards/node_modules ./node_modules
+
+WORKDIR /evil-cards/apps/server
+COPY --from=builder /evil-cards/apps/server/node_modules ./node_modules
+COPY --from=builder /evil-cards/apps/server/dist ./dist
+COPY --from=builder /evil-cards/apps/server/package.json ./package.json
+
+EXPOSE 8000
+ENV PORT 8000
+
+CMD ["npm", "start"]
