@@ -1,0 +1,31 @@
+name: Branch pull request workflow
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test everything
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 7
+
+      - name: Install deps
+        run: pnpm --frozen-lockfile install
+
+      - name: Run tests
+        run: pnpm lerna run test --parallel
