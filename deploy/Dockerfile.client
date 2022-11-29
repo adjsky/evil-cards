@@ -9,7 +9,7 @@ WORKDIR /evil-cards
 
 COPY apps ./apps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN yarn global add pnpm && pnpm --frozen-lockfile install
+RUN yarn global add pnpm && pnpm --filter=@evil-cards/client... --frozen-lockfile install
 
 ###################################################################
 # Stage 2: Build client                                           #
