@@ -11,6 +11,7 @@ import formatErrors from "./format-errors.mjs"
 const clientEnv = {
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_WS_HOST: process.env.NEXT_PUBLIC_WS_HOST,
+  NEXT_PUBLIC_ANAL_KEY: process.env.NEXT_PUBLIC_ANAL_KEY,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   NEXT_PUBLIC_IS_PRODUCTION: process.env.NEXT_PUBLIC_IS_PRODUCTION == "true"
 }

@@ -1,18 +1,20 @@
 import "../styles/globals.css"
 import { useAtom, useAtomValue } from "jotai"
 import Router from "next/router"
+import { usePanelbear } from "@panelbear/panelbear-nextjs"
 
 import { gameStateAtom, soundsAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
 import useSnackbar from "../components/snackbar/use"
 import mapErrorMessage from "../functions/map-error-message"
 import { processMessageAndPlayAudio } from "../audio"
+import { env } from "../env/client.mjs"
 
 import type { AppType } from "next/dist/shared/lib/utils"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+const useSocketEvents = () => {
   const { updateSnackbar, Snackbar } = useSnackbar()
   const [gameState, setGameState] = useAtom(gameStateAtom)
   const sounds = useAtomValue(soundsAtom)
@@ -109,6 +111,15 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     onOpen,
     onJsonMessage
   })
+
+  return { Snackbar }
+}
+
+const MyApp: AppType = ({ Component, pageProps }) => {
+  usePanelbear(env.NEXT_PUBLIC_ANAL_KEY, {
+    enabled: env.NEXT_PUBLIC_IS_PRODUCTION
+  })
+  const { Snackbar } = useSocketEvents()
 
   return (
     <>
