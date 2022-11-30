@@ -87,8 +87,6 @@ const Entry: React.FC = () => {
                 avatarId
               }
             })
-
-            throw new Error("test")
           }}
           className="rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-red-500"
         >
