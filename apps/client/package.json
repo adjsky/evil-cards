@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "build:standalone": "cross-env BUILD_STANDALONE=true next build",
+    "build:production": "cross-env BUILD_STANDALONE=true NEXT_PUBLIC_IS_PRODUCTION=true next build",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
@@ -14,6 +14,7 @@
     "@formkit/auto-animate": "1.0.0-beta.3",
     "@headlessui/react": "^1.7.4",
     "@headlessui/tailwindcss": "^0.1.1",
+    "@sentry/nextjs": "^7.22.0",
     "clsx": "^1.2.1",
     "interweave": "^13.0.0",
     "jotai": "^1.9.1",
