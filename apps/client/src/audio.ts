@@ -5,7 +5,7 @@ export function processMessageAndPlayAudio(message: ReceiveMessage) {
     case "votingstarted":
       speak(message.details.changedState.redCard.replaceAll("_", ""))
       break
-    case "choose":
+    case "choose": {
       const voteText = message.details.changedState.votes.find(
         (vote) => vote.userId == message.details.choosedUserId
       )?.text
@@ -15,6 +15,7 @@ export function processMessageAndPlayAudio(message: ReceiveMessage) {
       }
 
       break
+    }
   }
 }
 

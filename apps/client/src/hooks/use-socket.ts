@@ -62,7 +62,9 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
           sharedWebsocket.lastJsonMessage = parsedData
           forceUpdate()
-        } catch (_) {}
+        } catch (_) {
+          //
+        }
       }
       const handleClose = () => {
         sharedWebsocket.heartbeatTimeout &&
@@ -129,7 +131,9 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
         if (options.onJsonMessage) {
           options.onJsonMessage(parsedData)
         }
-      } catch (_) {}
+      } catch (_) {
+        //
+      }
     }
 
     sharedWebsocket.instance.addEventListener("open", handleOpen)

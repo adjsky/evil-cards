@@ -1,0 +1,15 @@
+{
+  "name": "@evil-cards/eslint-config-monorepo",
+  "main": "index.js",
+  "type": "commonjs",
+  "dependencies": {
+    "prettier": "^2.7.1",
+    "eslint": "8.22.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.8.0"
+  }
+}

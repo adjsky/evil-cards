@@ -1,13 +1,3 @@
 {
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
-  "plugins": ["@typescript-eslint", "prettier"],
-  "rules": {
-    "prettier/prettier": "warn",
-    "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/no-non-null-assertion": "off"
-  },
-  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"]
+  "extends": ["@evil-cards/eslint-config-monorepo", "next/core-web-vitals"]
 }
