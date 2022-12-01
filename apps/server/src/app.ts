@@ -1,6 +1,6 @@
 import Fastify from "fastify"
 import websocketPlugin from "@fastify/websocket"
-import websocketRoutes from "./routes/ws"
+import websocketRoutes from './routes/ws'
 import { env } from "./env"
 
 const fastify = Fastify({ logger: true })
