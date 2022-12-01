@@ -1,12 +1,57 @@
 services:
-  client:
-    image: adjsky/evil-cards_client
+  mail:
+    image: bytemark/smtp
+    restart: always
+
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    env_file:
+      - ./envs/postgres.env
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:22.6-alpine
+    restart: always
+    volumes:
+      - event-data:/var/lib/clickhouse
+      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
+      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  plausible:
+    image: plausible/analytics:latest
+    restart: always
+    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run"
+    depends_on:
+      - postgres
+      - clickhouse
+      - mail
     ports:
-      - "3000:3000"
-    restart: on-failure
-  
+      - 8001:8001
+    env_file:
+      - ./envs/plausible.env
+
   server:
     image: adjsky/evil-cards_server
     ports:
-      - "8000:8000"
-    restart: on-failure
+      - 8000:8000
+    restart: always
+
+  client:
+    image: adjsky/evil-cards_client
+    ports:
+      - 3000:3000
+    restart: always
+    depends_on:
+      - plausible
+
+volumes:
+  db-data:
+    driver: local
+  event-data:
+    driver: local

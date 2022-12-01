@@ -28,7 +28,8 @@ export const clientSchema = z
     NEXT_PUBLIC_WS_HOST: z.string(),
     NEXT_PUBLIC_ANAL_KEY: z.string(),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
-    NEXT_PUBLIC_IS_PRODUCTION: z.boolean()
+    NEXT_PUBLIC_IS_PRODUCTION: z.boolean(),
+    NEXT_PUBLIC_PRODUCTION_HOST: z.string()
   })
   .refine(
     (args) =>

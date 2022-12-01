@@ -1,7 +1,7 @@
 import "../styles/globals.css"
 import { useAtom, useAtomValue } from "jotai"
 import Router from "next/router"
-import { usePanelbear } from "@panelbear/panelbear-nextjs"
+import PlausibleProvider from "next-plausible"
 
 import { gameStateAtom, soundsAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
@@ -116,16 +116,17 @@ const useSocketEvents = () => {
 }
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  usePanelbear(env.NEXT_PUBLIC_ANAL_KEY, {
-    enabled: env.NEXT_PUBLIC_IS_PRODUCTION
-  })
   const { Snackbar } = useSocketEvents()
 
   return (
-    <>
+    <PlausibleProvider
+      domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
+      enabled={env.NEXT_PUBLIC_IS_PRODUCTION}
+      customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
+    >
       {Snackbar}
       <Component {...pageProps} />
-    </>
+    </PlausibleProvider>
   )
 }
 

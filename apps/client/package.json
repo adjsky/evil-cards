@@ -14,12 +14,12 @@
     "@formkit/auto-animate": "1.0.0-beta.3",
     "@headlessui/react": "^1.7.4",
     "@headlessui/tailwindcss": "^0.1.1",
-    "@panelbear/panelbear-nextjs": "^1.0.5",
     "@sentry/nextjs": "^7.22.0",
     "clsx": "^1.2.1",
     "interweave": "^13.0.0",
     "jotai": "^1.9.1",
     "next": "^13.0.5",
+    "next-plausible": "^3.6.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "zod": "^3.18.0"
