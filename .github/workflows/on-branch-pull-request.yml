@@ -55,7 +55,6 @@ jobs:
         uses: tj-actions/eslint-changed-files@v14
         with:
           extra_args: "--max-warnings=0"
-          ignore_path: "packages/eslint-config-monorepo/**/*"
           file_extensions: |
             **/*.ts
             **/*.tsx
