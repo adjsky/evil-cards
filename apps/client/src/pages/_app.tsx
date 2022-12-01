@@ -123,6 +123,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
       enabled={env.NEXT_PUBLIC_IS_PRODUCTION}
       customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
+      selfHosted
     >
       {Snackbar}
       <Component {...pageProps} />
