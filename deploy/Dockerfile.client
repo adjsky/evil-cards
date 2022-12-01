@@ -27,6 +27,8 @@ COPY --from=deps /evil-cards/apps/server/node_modules ./node_modules
 WORKDIR /evil-cards/apps/client
 COPY --from=deps /evil-cards/apps/client/node_modules ./node_modules
 
+ENV BUILD_STANDALONE true
+
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
     export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
     npm run build:production

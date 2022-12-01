@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "build:production": "cross-env BUILD_STANDALONE=true NEXT_PUBLIC_IS_PRODUCTION=true next build",
+    "build:production": "cross-env NEXT_PUBLIC_IS_PRODUCTION=true next build",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
