@@ -26,7 +26,6 @@ export const clientSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]),
     NEXT_PUBLIC_WS_HOST: z.string(),
-    NEXT_PUBLIC_ANAL_KEY: z.string(),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_IS_PRODUCTION: z.boolean(),
     NEXT_PUBLIC_PRODUCTION_HOST: z.string()
