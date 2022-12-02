@@ -192,7 +192,7 @@ t.test("should not be able to reconnect a new user while playing", (t) => {
 
   session.startGame()
   session.disconnectUser(user2)
-  t.throw(() => session.reconnectUser(sender, { ...user2 }, 2))
+  t.throws(() => session.reconnectUser(sender, { ...user2 }, 2))
 
   session.endGame()
   t.end()
