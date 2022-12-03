@@ -22,6 +22,10 @@ type SocketOptions<T> = {
   onClose?: (event: WebSocketEventMap["close"]) => void
 }
 
+/**
+ * Connects to a `WebSocket`, reads URL from `NEXT_PUBLIC_WS_HOST`.
+ * Uses a single connection that is shared between all hook calls.
+ */
 const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   const [, updateState] = useState({})
   const forceUpdate = useCallback(() => updateState({}), [])
