@@ -24,3 +24,5 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_client:latest
           file: deploy/Dockerfile.client
           platforms: linux/amd64
+          secrets: |
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"

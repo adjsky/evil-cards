@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules/**/*"],
+  "include": ["**/*.ts", "**/*.cjs", "**/*.mjs"],
+  "exclude": ["node_modules/**/*", "dist/**/*"],
   "ts-node": { "esm": true, "files": true }
 }

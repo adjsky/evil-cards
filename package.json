@@ -2,8 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "build:apps": "lerna run build --parallel --scope=@evil-cards/client --scope=@evil-cards/server",
-    "start:apps": "lerna run start --parallel --scope=@evil-cards/client --scope=@evil-cards/server"
+    "test:ci": "lerna run test:ci --parallel"
   },
   "devDependencies": {
     "lerna": "^6.0.1"

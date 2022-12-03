@@ -1,10 +1,8 @@
 // @ts-check
-import {
-  PHASE_PRODUCTION_BUILD,
-  PHASE_DEVELOPMENT_SERVER
-} from "next/constants.js"
 import path from "node:path"
 import url from "node:url"
+
+import { withSentryConfig } from "@sentry/nextjs"
 
 const workspaceRoot = path.resolve(
   path.dirname(url.fileURLToPath(import.meta.url)),
@@ -14,8 +12,9 @@ const workspaceRoot = path.resolve(
 
 /**
  * @param {string} phase
+ * @param {{ defaultConfig: object }} defaults
  */
-const config = async (phase) => {
+const initializeConfig = async (phase, defaults) => {
   /** @type {import('next').NextConfig} */
   let nextConfig = {
     reactStrictMode: true,
@@ -32,37 +31,47 @@ const config = async (phase) => {
       })
 
       return config
+    },
+    sentry: {
+      hideSourceMaps: true
     }
   }
 
-  if (phase == PHASE_PRODUCTION_BUILD || phase == PHASE_DEVELOPMENT_SERVER) {
-    await import("./src/env/client.mjs")
-    const serverEnv = (await import("./src/env/server.mjs")).env
+  const clientEnv = (await import("./src/env/client.mjs")).env
+  const serverEnv = (await import("./src/env/server.mjs")).env
 
-    if (phase == PHASE_PRODUCTION_BUILD && serverEnv.BUILD_STANDALONE) {
-      nextConfig = {
-        ...nextConfig,
-        output: "standalone",
-        experimental: {
-          ...nextConfig.experimental,
-          outputFileTracingRoot: workspaceRoot
-        }
+  if (serverEnv.BUILD_STANDALONE) {
+    nextConfig = {
+      ...nextConfig,
+      output: "standalone",
+      experimental: {
+        ...nextConfig.experimental,
+        outputFileTracingRoot: workspaceRoot
       }
     }
   }
 
-  if (phase == PHASE_PRODUCTION_BUILD) {
-    const serverEnv = (await import("./src/env/server.mjs")).env
+  if (serverEnv.ANALYZE) {
+    const withBundleAnalyzer = (await import("@next/bundle-analyzer")).default()
+    nextConfig = withBundleAnalyzer(nextConfig)
+  }
 
-    if (serverEnv.ANALYZE) {
-      const withBundleAnalyzer = (
-        await import("@next/bundle-analyzer")
-      ).default()
-      nextConfig = withBundleAnalyzer(nextConfig)
+  if (clientEnv.NEXT_PUBLIC_IS_PRODUCTION) {
+    const nextConfigWithSentry = withSentryConfig(nextConfig, {
+      silent: true
+    })
+
+    if (typeof nextConfigWithSentry == "function") {
+      nextConfig = nextConfigWithSentry(phase, defaults)
+    } else {
+      nextConfig = nextConfigWithSentry
     }
+  } else {
+    // prevent warnings
+    delete nextConfig.sentry
   }
 
   return nextConfig
 }
 
-export default config
+export default initializeConfig
