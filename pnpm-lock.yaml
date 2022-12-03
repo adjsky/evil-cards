@@ -92,7 +92,6 @@ importers:
       '@evil-cards/eslint-config-monorepo': '*'
       '@fastify/websocket': ^7.1.0
       '@jest/globals': ^29.3.1
-      '@types/jest': ^29.2.3
       '@types/node': ^18.8.4
       '@types/websocket': ^1.0.5
       '@types/ws': ^8.5.3
@@ -123,7 +122,6 @@ importers:
     devDependencies:
       '@evil-cards/eslint-config-monorepo': link:../../packages/eslint-config-monorepo
       '@jest/globals': 29.3.1
-      '@types/jest': 29.2.3
       '@types/node': 18.11.3
       '@types/websocket': 1.0.5
       '@types/ws': 8.5.3
@@ -10195,7 +10193,7 @@ packages:
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 29.3.1_3jn5vyrmgj3hqy45c7z2afw6d4
+      jest: 29.3.1_@types+node@18.0.0
       jest-util: 29.3.1
       json5: 2.2.1
       lodash.memoize: 4.1.2
