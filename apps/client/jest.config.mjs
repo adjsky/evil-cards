@@ -14,7 +14,7 @@ const config = {
     ]
   },
   moduleNameMapper: {
-    "\\.svg$": "<rootDir>/tests/config/svgr-mock.tsx"
+    "\\.svg$": "<rootDir>/test/config/svgr-mock.tsx"
   }
 }
 
