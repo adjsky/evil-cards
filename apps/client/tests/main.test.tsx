@@ -13,7 +13,6 @@ jest.mock("../src/hooks/use-socket", () => {
 })
 jest.mock("next/navigation", () => {
   return {
-    __esModule: true,
     useSearchParams: () => ({
       has: () => true
     })

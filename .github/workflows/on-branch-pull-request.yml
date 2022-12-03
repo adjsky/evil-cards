@@ -28,7 +28,7 @@ jobs:
         run: pnpm --frozen-lockfile install
 
       - name: Run tests
-        run: pnpm lerna run test:ci --parallel
+        run: pnpm test:ci
 
   lint-changed-files:
     runs-on: ubuntu-latest

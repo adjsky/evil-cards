@@ -29,7 +29,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     disableOnMobile: true
   })
   const timeBarStyles = useTimeBar(
-    gameState.configuration.votingDuration,
+    gameState.configuration.votingDurationSeconds,
     gameState.votingEndsAt
   )
 

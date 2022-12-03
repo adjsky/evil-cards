@@ -1,6 +1,9 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "test:ci": "lerna run test:ci --parallel"
+  },
   "devDependencies": {
     "lerna": "^6.0.1"
   }

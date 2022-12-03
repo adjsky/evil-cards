@@ -41,10 +41,10 @@ const Configuration: React.FC<{
         <Row
           label="СКОРОСТЬ ИГРЫ"
           options={votingPeriodOptions}
-          value={configurationCopy["votingDuration"]}
+          value={configurationCopy["votingDurationSeconds"]}
           disabled={!host}
-          onChange={(votingDuration) =>
-            setConfigurationCopy((prev) => ({ ...prev, votingDuration }))
+          onChange={(votingDurationSeconds) =>
+            setConfigurationCopy((prev) => ({ ...prev, votingDurationSeconds }))
           }
         />
         <Row
