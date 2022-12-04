@@ -3,8 +3,8 @@ import { jest } from "@jest/globals"
 
 import Session from "../../src/game/session"
 import {
-  gameStartDelaySeconds,
-  bestCardViewDurationSeconds
+  msGameStartDelay,
+  msBestCardViewDuration
 } from "../../src/game/constants"
 
 let session: Session
@@ -31,7 +31,7 @@ it("processes gameplay as expected", () => {
   session.startGame()
   expect(session.status).toBe("starting")
 
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
   expect(session.status).toBe("voting")
 
   for (const user of session.users) {
@@ -67,7 +67,7 @@ it("processes gameplay as expected", () => {
   session.chooseBest(user2.id)
   expect(session.status).toBe("bestcardview")
 
-  jest.advanceTimersByTime(bestCardViewDurationSeconds * 1000)
+  jest.advanceTimersByTime(msBestCardViewDuration)
   expect(user2.score).toBe(1)
   expect(session.votes.length).toBe(0)
   for (const user of session.users) {
@@ -82,7 +82,7 @@ it("processes gameplay as expected", () => {
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
 
-  jest.advanceTimersByTime(bestCardViewDurationSeconds * 1000)
+  jest.advanceTimersByTime(msBestCardViewDuration)
 
   expect(session.status).toBe("end")
 })
@@ -117,7 +117,7 @@ it("emits all events", async () => {
   await session.startGame()
   expect(startingFake).toBeCalledTimes(1)
 
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
 
   jest.useRealTimers()
   await new Promise((resolve) => setTimeout(resolve, 0))
@@ -136,7 +136,7 @@ it("emits all events", async () => {
 
   jest.useFakeTimers()
   session.chooseBest(user2.id)
-  jest.advanceTimersByTime(bestCardViewDurationSeconds * 1000)
+  jest.advanceTimersByTime(msBestCardViewDuration)
   jest.useRealTimers()
   await new Promise((resolve) => setTimeout(resolve, 0))
 
@@ -152,7 +152,7 @@ it("calls callbacks when choose(), vote() and choosebest() are processed", async
   const user3 = session.addUser(sender, "qwe", 0, false)
 
   session.startGame()
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
 
   const onVoteFake = jest.fn()
   session.vote(user2, session.getUserWhitecards(user2)[0], {
@@ -179,7 +179,7 @@ it("automatically starts choosing", () => {
 
   session.startGame()
 
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
   expect(session.status).toBe("voting")
 
   jest.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
@@ -192,7 +192,7 @@ it("votes with a random card if user hasn't voted", () => {
   session.addUser(sender, "qwe", 0, false)
 
   session.startGame()
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
   jest.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
 
   expect(session.getUserWhitecards(user2).length).toBe(9)
@@ -206,7 +206,7 @@ it("throws if calling choose(), chooseBest(), vote() and getUserWhiteCards() wit
   const user3 = session.addUser(sender, "qwe", 0, false)
 
   session.startGame()
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
   expect(() =>
     session.vote(fakeUser, session.getUserWhitecards(user1)[0])
   ).toThrow()
@@ -228,7 +228,7 @@ it("doesn't master a disconnected user ", () => {
   session.startGame()
   session.disconnectUser(user1)
 
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
   expect(user2.master).toBeTruthy()
 
   session.reconnectUser(sender, user1, 1)
@@ -256,14 +256,14 @@ it("uses configuration", () => {
   expect(session.configuration).toEqual(configuration)
 
   session.startGame()
-  jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+  jest.advanceTimersByTime(msGameStartDelay)
 
   expect(dayjs(session.getTimeoutDate("voting")).diff(dayjs(), "s")).toBe(30)
 
   user1.score = 9
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
-  jest.advanceTimersByTime(bestCardViewDurationSeconds * 1000)
+  jest.advanceTimersByTime(msBestCardViewDuration)
   expect(session.status).toBe("end")
 
   session.updateConfiguration({
@@ -275,12 +275,12 @@ it("uses configuration", () => {
   user1.score = 9
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
-  jest.advanceTimersByTime(bestCardViewDurationSeconds * 1000)
+  jest.advanceTimersByTime(msBestCardViewDuration)
   expect(session.status).toBe("voting")
 
   user1.score = 14
   session.vote(user1, session.getUserWhitecards(user1)[0])
   session.chooseBest(session.votes[0].userId)
-  jest.advanceTimersByTime(bestCardViewDurationSeconds * 1000)
+  jest.advanceTimersByTime(msBestCardViewDuration)
   expect(session.status).toBe("end")
 })

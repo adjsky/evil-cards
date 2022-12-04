@@ -3,6 +3,7 @@ import Emittery from "emittery"
 
 import { messageSchema } from "../lib/ws/receive"
 import stringify from "../lib/ws/stringify"
+import { msAliveCheckInterval } from "./constants"
 
 import type { WebSocket } from "ws"
 import type { ControllerEventBus } from "./types"
@@ -26,7 +27,7 @@ class Controller {
 
       socket.alive = false
       socket.send(stringify({ type: "ping" }))
-    }, 60000)
+    }, msAliveCheckInterval)
 
     socket.on("message", async (rawData) => {
       try {
