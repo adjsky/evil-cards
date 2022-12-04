@@ -2,6 +2,7 @@ import React, { useRef } from "react"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { useAtom } from "jotai"
+import clsx from "clsx"
 
 import { usernameAtom, avatarAtom } from "../atoms"
 import useSocket from "../hooks/use-socket"
@@ -21,7 +22,10 @@ const Entry: React.FC = () => {
     px: 40,
     py: 40
   })
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
+  const { sendJsonMessage, connected } = useSocket<
+    SendMessage,
+    ReceiveMessage
+  >()
   const [username, setUsername] = useAtom(usernameAtom)
   const [avatarId, setAvatarId] = useAtom(avatarAtom)
   const searchParams = useSearchParams()
@@ -86,7 +90,12 @@ const Entry: React.FC = () => {
               })
             }
           }}
-          className="rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-red-500"
+          className={clsx(
+            "rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100",
+            "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
+            "disabled:opacity-50"
+          )}
+          disabled={!connected}
         >
           {joining ? "ВОЙТИ" : "НАЧАТЬ"}
         </button>
