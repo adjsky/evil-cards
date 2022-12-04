@@ -8,6 +8,7 @@ function getMemoryLogger(logger: FastifyBaseLogger) {
     const memoryData = process.memoryUsage()
 
     const memoryUsage = {
+      msg: "Memory stats",
       rss: `${formatMemoryUsage(
         memoryData.rss
       )} => Resident Set Size - total memory allocated for the process execution`,
@@ -17,7 +18,7 @@ function getMemoryLogger(logger: FastifyBaseLogger) {
       heapUsed: `${formatMemoryUsage(
         memoryData.heapUsed
       )} => actual memory used during the execution`,
-      external: `${formatMemoryUsage(memoryData.external)} -> external memory`
+      external: `${formatMemoryUsage(memoryData.external)} => external memory`
     }
 
     logger.info(memoryUsage)
@@ -27,7 +28,7 @@ function getMemoryLogger(logger: FastifyBaseLogger) {
 const memoryLogPlugin: FastifyPluginCallback<{
   intervalInSeconds?: number
   enabled?: boolean
-}> = (fastify, { intervalInSeconds = 30, enabled }, done) => {
+}> = (fastify, { intervalInSeconds = 15, enabled }, done) => {
   const logMemory = getMemoryLogger(fastify.log)
 
   if (enabled) {
