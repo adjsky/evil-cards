@@ -15,7 +15,8 @@ const config = {
   },
   moduleNameMapper: {
     "\\.svg$": "<rootDir>/test/config/svgr-mock.tsx",
-    "^@/(.*)$": "<rootDir>/src/$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "\\.css$": "identity-obj-proxy"
   }
 }
 

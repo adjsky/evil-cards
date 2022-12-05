@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import { Transition } from "@headlessui/react"
-import { useSetAtom, useAtom } from "jotai"
+import { useAtom } from "jotai"
 
 import useSocket from "@/hooks/use-socket"
 import useToggle from "@/hooks/use-toggle"
@@ -10,7 +10,7 @@ import useCountdown from "@/hooks/use-countdown"
 import useScreenFactor from "@/hooks/use-screen-factor"
 import useLeavePreventer from "@/hooks/use-leave-preventer"
 import getScoreLabel from "@/functions/get-score-label"
-import { gameStateAtom, soundsAtom } from "@/atoms"
+import { soundsAtom } from "@/atoms"
 
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
@@ -30,12 +30,12 @@ import type {
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { GameState } from "@/atoms"
 
-const heightPerScore = 29
-
-const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+const Waiting: React.FC<{
+  gameState: GameState
+  onGameStateUpdate?: (gameState: GameState | null) => void
+}> = ({ gameState, onGameStateUpdate }) => {
   useLeavePreventer()
   const [configurationVisible, toggleConfiguration] = useToggle()
-  const setGameState = useSetAtom(gameStateAtom)
 
   const { start, secondsLeft } = useCountdown()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
@@ -78,7 +78,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   }
 
   const onBack = () => {
-    setGameState(null)
+    onGameStateUpdate && onGameStateUpdate(null)
     sendJsonMessage({ type: "leavesession" })
   }
 
@@ -264,6 +264,8 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
     </div>
   )
 }
+
+const heightPerScore = 29
 
 const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
   const [show, setShow] = useState(true)

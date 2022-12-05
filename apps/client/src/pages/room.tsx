@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useAtomValue } from "jotai"
+import { useAtom } from "jotai"
 import Router from "next/router"
 
 import { gameStateAtom } from "@/atoms"
@@ -11,7 +11,7 @@ import ClientOnly from "@/components/client-only"
 import type { NextPage } from "next"
 
 const Room: NextPage = () => {
-  const gameState = useAtomValue(gameStateAtom)
+  const [gameState, setGameState] = useAtom(gameStateAtom)
 
   useEffect(() => {
     if (!gameState) {
@@ -30,7 +30,9 @@ const Room: NextPage = () => {
 
   return (
     <ClientOnly>
-      {gameState && waiting && <Waiting gameState={gameState} />}
+      {gameState && waiting && (
+        <Waiting gameState={gameState} onGameStateUpdate={setGameState} />
+      )}
       {gameState && playing && <Game gameState={gameState} />}
     </ClientOnly>
   )
