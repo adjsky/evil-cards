@@ -4,13 +4,13 @@ import { useSearchParams } from "next/navigation"
 import { useAtom } from "jotai"
 import clsx from "clsx"
 
-import { usernameAtom, avatarAtom } from "../atoms"
-import useSocket from "../hooks/use-socket"
-import useScreenFactor from "../hooks/use-screen-factor"
+import { usernameAtom, avatarAtom } from "@/atoms"
+import useSocket from "@/hooks/use-socket"
+import useScreenFactor from "@/hooks/use-screen-factor"
 
-import UsernameInput from "../components/username-input"
-import Arrow from "../assets/arrow.svg"
-import Logo from "../components/logo"
+import UsernameInput from "@/components/username-input"
+import Arrow from "@/assets/arrow.svg"
+import Logo from "@/components/logo"
 
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
@@ -26,10 +26,35 @@ const Entry: React.FC = () => {
     SendMessage,
     ReceiveMessage
   >()
+
   const [username, setUsername] = useAtom(usernameAtom)
   const [avatarId, setAvatarId] = useAtom(avatarAtom)
+
   const searchParams = useSearchParams()
   const joining = searchParams.has("s")
+
+  const handleStart = () => {
+    const s = searchParams.get("s")
+
+    if (s) {
+      sendJsonMessage({
+        type: "joinsession",
+        details: {
+          username,
+          sessionId: s,
+          avatarId
+        }
+      })
+    } else {
+      sendJsonMessage({
+        type: "createsession",
+        details: {
+          username,
+          avatarId
+        }
+      })
+    }
+  }
 
   return (
     <main className="h-screen">
@@ -69,27 +94,7 @@ const Entry: React.FC = () => {
           <UsernameInput value={username} onChange={setUsername} />
         </div>
         <button
-          onClick={() => {
-            const s = searchParams.get("s")
-            if (s) {
-              sendJsonMessage({
-                type: "joinsession",
-                details: {
-                  username,
-                  sessionId: s,
-                  avatarId
-                }
-              })
-            } else {
-              sendJsonMessage({
-                type: "createsession",
-                details: {
-                  username,
-                  avatarId
-                }
-              })
-            }
-          }}
+          onClick={handleStart}
           className={clsx(
             "rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100",
             "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",

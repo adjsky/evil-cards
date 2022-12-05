@@ -1,11 +1,11 @@
 import React from "react"
 import Image from "next/image"
 
-import getScoreLabel from "../../functions/get-score-label"
+import getScoreLabel from "@/functions/get-score-label"
 
-import CheckMark from "../../assets/check-mark.svg"
-import Crown from "../../assets/crown.svg"
-import Question from "../../assets/question.svg"
+import CheckMark from "@/assets/check-mark.svg"
+import Crown from "@/assets/crown.svg"
+import Question from "@/assets/question.svg"
 
 import type { User } from "@evil-cards/server/src/lib/ws/send"
 

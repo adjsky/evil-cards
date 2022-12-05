@@ -1,13 +1,14 @@
 import { render } from "@testing-library/react"
-import Entry from "../src/screens/entry"
+import Entry from "@/screens/entry"
 
-jest.mock("../src/hooks/use-socket", () => {
+jest.mock("@/hooks/use-socket", () => {
   return {
     __esModule: true,
     default: () => ({
       sendJsonMessage() {
         //
-      }
+      },
+      connected: true
     })
   }
 })

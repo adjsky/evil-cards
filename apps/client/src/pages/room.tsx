@@ -2,11 +2,11 @@ import { useEffect } from "react"
 import { useAtomValue } from "jotai"
 import Router from "next/router"
 
-import { gameStateAtom } from "../atoms"
+import { gameStateAtom } from "@/atoms"
 
-import Game from "../screens/game"
-import Waiting from "../screens/waiting"
-import ClientOnly from "../components/client-only"
+import Game from "@/screens/game"
+import Waiting from "@/screens/waiting"
+import ClientOnly from "@/components/client-only"
 
 import type { NextPage } from "next"
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import clsx from "clsx"
 import { Listbox, Transition } from "@headlessui/react"
-import ArrowDown from "../assets/arrow-down.svg"
+import ArrowDown from "@/assets/arrow-down.svg"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/receive"
 

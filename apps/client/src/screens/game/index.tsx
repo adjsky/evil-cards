@@ -3,19 +3,19 @@ import clsx from "clsx"
 import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
-import useSocket from "../../hooks/use-socket"
-import useScreenFactor from "../../hooks/use-screen-factor"
-import useTimeBar from "../../hooks/use-time-bar"
-import useLeavePreventer from "../../hooks/use-leave-preventer"
+import useSocket from "@/hooks/use-socket"
+import useScreenFactor from "@/hooks/use-screen-factor"
+import useTimeBar from "@/hooks/use-time-bar"
+import useLeavePreventer from "@/hooks/use-leave-preventer"
 
-import UserList from "../../components/user-list"
-import Card from "../../components/card"
-import FadeIn from "../../components/fade-in"
+import UserList from "@/components/user-list"
+import Card from "@/components/card"
+import FadeIn from "@/components/fade-in"
 import styles from "./game.module.css"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { GameState } from "../../atoms"
+import type { GameState } from "@/atoms"
 
 const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
