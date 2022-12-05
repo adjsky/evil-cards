@@ -2,7 +2,7 @@ const tsConfigFile = "./tsconfig.jest.json"
 
 /** @type {import('jest').Config} */
 const config = {
-  setupFilesAfterEnv: ["@testing-library/jest-dom/extend-expect"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.mjs"],
   testEnvironment: "jsdom",
   rootDir: "./",
   transform: {
