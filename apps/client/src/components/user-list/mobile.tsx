@@ -7,17 +7,17 @@ import CheckMark from "@/assets/check-mark.svg"
 import Crown from "@/assets/crown.svg"
 import Question from "@/assets/question.svg"
 
-import type { User } from "@evil-cards/server/src/lib/ws/send"
+import type { User as UserType } from "@evil-cards/server/src/lib/ws/send"
 
 const MobileUserList: React.FC<{
-  users: User[]
+  users: UserType[]
   variant: "game" | "waiting"
 }> = ({ users, variant }) => {
   const filteredUsers = users.filter((user) => user.disconnected == false)
 
   return (
     <div className="w-full overflow-x-auto sm:hidden">
-      <div className="flex">
+      <div className="flex" data-testid="user-list">
         {filteredUsers.map((user) => (
           <User key={user.id} user={user} variant={variant} />
         ))}
@@ -30,7 +30,7 @@ const MobileUserList: React.FC<{
   )
 }
 
-const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
+const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
   user,
   variant
 }) => {

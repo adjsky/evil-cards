@@ -10,6 +10,7 @@ import useCountdown from "@/hooks/use-countdown"
 import useScreenFactor from "@/hooks/use-screen-factor"
 import useLeavePreventer from "@/hooks/use-leave-preventer"
 import getScoreLabel from "@/functions/get-score-label"
+import copyText from "@/functions/copy-text"
 import { soundsAtom } from "@/atoms"
 
 import FadeIn from "@/components/fade-in"
@@ -67,6 +68,9 @@ const Waiting: React.FC<{
       <button
         className="absolute top-3 right-3 p-1"
         onClick={toggleConfiguration}
+        data-testid={
+          configurationVisible ? "close-configuration" : "show-configuration"
+        }
       >
         {configurationVisible ? <Close /> : <Gear />}
       </button>
@@ -174,7 +178,10 @@ const DesktopView: React.FC<{
           <div className="invisible">
             <Logo />
           </div>
-          <button onClick={() => setSounds(!sounds)}>
+          <button
+            onClick={() => setSounds(!sounds)}
+            data-testid={sounds ? "disable-sounds" : "enable-sounds"}
+          >
             {sounds ? <SoundOn /> : <SoundOff />}
           </button>
         </div>
@@ -216,6 +223,7 @@ const StartButton: React.FC<{
         lowerOpacity && "opacity-50"
       )}
       disabled={disabled}
+      data-testid="start-game"
     >
       {withCountdown ? secondsLeft : "НАЧАТЬ"}
     </button>
@@ -242,14 +250,11 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
-          try {
-            await navigator.clipboard.writeText(url)
-          } catch (error) {
-            alert(url)
-          }
+          await copyText(url)
 
           !copied && toggleCopied()
         }}
+        data-testid="invite-player"
       >
         ПРИГЛАСИТЬ
       </button>
@@ -265,7 +270,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
   )
 }
 
-const heightPerScore = 29
+const HEIGHT_PER_SCORE = 29
 
 const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
   const [show, setShow] = useState(true)
@@ -293,7 +298,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
         alt=""
       />
       <div
-        style={{ minHeight: 100, height: user.score * heightPerScore }}
+        style={{ minHeight: 100, height: user.score * HEIGHT_PER_SCORE }}
         className={clsx(
           "flex w-56 flex-col items-center justify-end p-4",
           place == 1 && "bg-gold-300",
@@ -336,7 +341,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
             {getScoreLabel(winners[0].score)}
           </p>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-end" data-testid="winners">
           {renderUserPlace(winners[1], 2)}
           {renderUserPlace(winners[0], 1)}
           {renderUserPlace(winners[2], 3)}
