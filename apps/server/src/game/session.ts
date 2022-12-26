@@ -7,11 +7,11 @@ import getRandomInt from "../functions/get-random-int"
 import shuffleArray from "../functions/shuffle-array"
 import { setDateTimeout } from "../lib/date-timeout"
 import {
-  msGameStartDelay,
-  msBestCardViewDuration,
-  userIdSize,
-  sessionIdSize,
-  minPlayersToStartGame
+  BEST_CARD_VIEW_DURATION_MS,
+  GAME_START_DELAY_MS,
+  MIN_PLAYERS_TO_START_GAME,
+  SESSION_ID_SIZE,
+  USER_ID_SIZE
 } from "./constants"
 
 import type { Status, User, Vote, Configuration } from "../lib/ws/send"
@@ -47,7 +47,7 @@ class Session<T = string> {
   private _id: string
 
   constructor() {
-    const id = nanoid(sessionIdSize)
+    const id = nanoid(SESSION_ID_SIZE)
     this._id = id
 
     this._configuration = {
@@ -85,7 +85,7 @@ class Session<T = string> {
     avatarId: number,
     host: boolean
   ) {
-    const id = nanoid(userIdSize)
+    const id = nanoid(USER_ID_SIZE)
     const user: User = {
       id,
       avatarId,
@@ -171,7 +171,7 @@ class Session<T = string> {
 
     if (
       this._status != "waiting" &&
-      connectedUsers.length < minPlayersToStartGame
+      connectedUsers.length < MIN_PLAYERS_TO_START_GAME
     ) {
       this.endGame()
     }
@@ -185,7 +185,7 @@ class Session<T = string> {
     this._timeouts.starting = setDateTimeout(() => {
       this._timeouts.starting = null
       this.startVoting()
-    }, dayjs().add(msGameStartDelay, "ms").toDate())
+    }, dayjs().add(GAME_START_DELAY_MS, "ms").toDate())
 
     await this._eventBus.emit("starting")
   }
@@ -257,7 +257,7 @@ class Session<T = string> {
       } else {
         this.startVoting()
       }
-    }, dayjs().add(msBestCardViewDuration, "ms").toDate())
+    }, dayjs().add(BEST_CARD_VIEW_DURATION_MS, "ms").toDate())
   }
 
   public async endGame() {

@@ -1,7 +1,7 @@
-export const minPlayersToStartGame = 3
-export const userIdSize = 5
-export const sessionIdSize = 5
+export const MIN_PLAYERS_TO_START_GAME = 3
+export const USER_ID_SIZE = 5
+export const SESSION_ID_SIZE = 5
 
-export const msGameStartDelay = 3 * 1000
-export const msBestCardViewDuration = 2 * 1000
-export const msAliveCheckInterval = 60 * 1000
+export const GAME_START_DELAY_MS = 3 * 1000
+export const BEST_CARD_VIEW_DURATION_MS = 2 * 1000
+export const ALIVE_CHECK_INTERVAL_MS = 60 * 1000

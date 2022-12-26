@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals"
-import { msAliveCheckInterval } from "../../src/game/constants"
+import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants"
 
 jest.unstable_mockModule(
   "ws",
@@ -17,9 +17,9 @@ it("terminates connection after two failed pings", () => {
 
   controller.handleConnection(socket)
 
-  jest.advanceTimersByTime(msAliveCheckInterval)
+  jest.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
   expect(socket.terminate).not.toBeCalled()
 
-  jest.advanceTimersByTime(msAliveCheckInterval)
+  jest.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
   expect(socket.terminate).toBeCalled()
 })

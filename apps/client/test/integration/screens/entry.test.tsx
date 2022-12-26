@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { useSearchParams } from "next/navigation"
 
 import Entry from "@/screens/entry"
-import { availableAvatars } from "@/data/constants"
+import { AVAILABLE_AVATARS } from "@/data/constants"
 
 const mockSendJsonMessage = jest.fn()
 jest.mock("@/hooks/use-socket", () => {
@@ -48,7 +48,7 @@ it("changes and renders avatar", async () => {
   await user.click(prevAvatar)
   checkAvatar(1)
   await user.click(prevAvatar)
-  checkAvatar(availableAvatars)
+  checkAvatar(AVAILABLE_AVATARS)
   await user.click(nextAvatar)
   checkAvatar(1)
 })

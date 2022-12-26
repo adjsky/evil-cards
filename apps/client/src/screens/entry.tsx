@@ -7,7 +7,7 @@ import clsx from "clsx"
 import { usernameAtom, avatarAtom } from "@/atoms"
 import useSocket from "@/hooks/use-socket"
 import useScreenFactor from "@/hooks/use-screen-factor"
-import { availableAvatars } from "@/data/constants"
+import { AVAILABLE_AVATARS } from "@/data/constants"
 
 import UsernameInput from "@/components/username-input"
 import Arrow from "@/assets/arrow.svg"
@@ -93,7 +93,7 @@ const UserCard: React.FC = () => {
         <div className="relative">
           <button
             onClick={() =>
-              setAvatarId((prev) => (prev == availableAvatars ? 1 : prev + 1))
+              setAvatarId((prev) => (prev == AVAILABLE_AVATARS ? 1 : prev + 1))
             }
             className="absolute -right-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center rounded-full bg-gray-900"
             data-testid="avatar-next"
@@ -109,7 +109,7 @@ const UserCard: React.FC = () => {
           />
           <button
             onClick={() =>
-              setAvatarId((prev) => (prev == 1 ? availableAvatars : prev - 1))
+              setAvatarId((prev) => (prev == 1 ? AVAILABLE_AVATARS : prev - 1))
             }
             className="absolute -left-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center rounded-full bg-gray-900"
             data-testid="avatar-prev"

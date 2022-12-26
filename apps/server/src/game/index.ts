@@ -1,7 +1,7 @@
 import stringify from "../lib/ws/stringify"
 import Controller from "./controller"
 import Session from "./session"
-import { minPlayersToStartGame } from "./constants"
+import { MIN_PLAYERS_TO_START_GAME } from "./constants"
 
 import type { ServerEvent } from "./types"
 import type { User } from "../lib/ws/send"
@@ -256,7 +256,7 @@ class Game {
     if (session.status != "waiting" && session.status != "end") {
       throw new Error("game is started already")
     }
-    if (session.users.length < minPlayersToStartGame) {
+    if (session.users.length < MIN_PLAYERS_TO_START_GAME) {
       throw new Error("need more players")
     }
 
