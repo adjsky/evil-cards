@@ -154,8 +154,7 @@ const DesktopView: React.FC<{
   const { lastJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40
   })
@@ -283,8 +282,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
   }, [])
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40
   })

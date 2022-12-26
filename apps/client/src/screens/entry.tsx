@@ -18,8 +18,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 
 const Entry: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40
   })

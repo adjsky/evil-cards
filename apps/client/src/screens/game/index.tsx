@@ -22,8 +22,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40,
     disableOnMobile: true
@@ -111,8 +110,7 @@ const Board: React.FC<{
       })
     }
   )
-  const boardStyles = useScreenFactor({
-    ref: boardRef,
+  const boardStyles = useScreenFactor(boardRef, {
     px: 0,
     py: 0,
     stopAt: 639,
