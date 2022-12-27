@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 
 /**
- * Listen to beforeunload event to display
+ * Listen for beforeunload event to display
  * a pop-up warning when closing a tab.
  */
 const useLeavePreventer = () => {
