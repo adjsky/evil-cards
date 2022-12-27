@@ -145,14 +145,20 @@ const Board: React.FC<{
         style={boardStyles}
         ref={boardRef}
       >
-        <div className={clsx("bg-red-500", styles["red-card"])}>
+        <div
+          className={clsx("bg-red-500", styles["red-card"])}
+          data-testid="red-card"
+        >
           <Interweave
             content={gameState.redCard}
             className="whitespace-pre-line break-words text-[0.625rem] font-medium text-gray-100 sm:text-sm sm:leading-normal"
           />
         </div>
         {gameState.votes.length > 0 && (
-          <div className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2">
+          <div
+            className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2"
+            data-testid="votes"
+          >
             {gameState.votes.map(({ text, userId, visible, winner }, index) => (
               <div
                 className={clsx(
@@ -204,6 +210,7 @@ const Cards: React.FC<{
         "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
         "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
       )}
+      data-testid="cards"
     >
       {gameState.whiteCards.map((text) => (
         <Card

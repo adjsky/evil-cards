@@ -53,7 +53,7 @@ it("changes and renders avatar", async () => {
   checkAvatar(1)
 })
 
-it("toggles username button and writes to input", async () => {
+it("toggles the username button and writes to the input", async () => {
   const user = userEvent.setup()
   render(<Entry />)
 
@@ -63,7 +63,7 @@ it("toggles username button and writes to input", async () => {
   expect(screen.getByTestId("username-input")).toHaveValue("username")
 })
 
-it("sends join request if 's' query param is provided", async () => {
+it("sends a join request if 's' query param is provided", async () => {
   const user = userEvent.setup()
   render(<Entry />)
 
@@ -74,7 +74,7 @@ it("sends join request if 's' query param is provided", async () => {
   )
 })
 
-it("sends create request if 's' query param is not provided", async () => {
+it("sends a create request if 's' query param is not provided", async () => {
   const mockUseSearchParams = useSearchParams as jest.Mock
   mockUseSearchParams.mockImplementation(() => ({
     has: () => false,

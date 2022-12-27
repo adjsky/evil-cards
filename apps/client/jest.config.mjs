@@ -16,7 +16,8 @@ const config = {
   moduleNameMapper: {
     "\\.svg$": "<rootDir>/test/config/svgr-mock.tsx",
     "^@/(.*)$": "<rootDir>/src/$1",
-    "\\.css$": "identity-obj-proxy"
+    "\\.css$": "identity-obj-proxy",
+    "@formkit/auto-animate/react": "<rootDir>/test/config/auto-animate.ts"
   }
 }
 
