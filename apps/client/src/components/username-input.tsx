@@ -1,7 +1,7 @@
 import React from "react"
-import useToggle from "../hooks/use-toggle"
+import useToggle from "@/hooks/use-toggle"
 
-import Pencil from "../assets/pencil.svg"
+import Pencil from "@/assets/pencil.svg"
 
 const UsernameInput: React.FC<{
   value?: string
@@ -29,13 +29,18 @@ const UsernameInput: React.FC<{
           onBlur={toggle}
           onKeyDown={(event) => event.code == "Enter" && toggle()}
           className="flex w-full rounded-lg border-2 border-gray-900 bg-transparent py-1 text-center text-lg font-medium text-gray-900 focus:outline-none"
+          data-testid="username-input"
         />
       </div>
     )
   }
 
   return (
-    <button className="flex h-10 items-center px-1" onClick={toggle}>
+    <button
+      className="flex h-10 items-center px-1"
+      onClick={toggle}
+      data-testid="username-toggle"
+    >
       <span className="flex items-baseline gap-2">
         <span className="text-center text-lg font-medium text-gray-900">
           {value}

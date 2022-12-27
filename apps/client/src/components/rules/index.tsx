@@ -1,10 +1,10 @@
 import React, { useState } from "react"
 
-import FirstRulePreview from "../../assets/rules/1.svg"
-import SecondRulePreview from "../../assets/rules/2.svg"
-import ThirdRulePreview from "../../assets/rules/3.svg"
-import FourthRulePreview from "../../assets/rules/4.svg"
-import FifthRulePreview from "../../assets/rules/5.svg"
+import FirstRulePreview from "@/assets/rules/1.svg"
+import SecondRulePreview from "@/assets/rules/2.svg"
+import ThirdRulePreview from "@/assets/rules/3.svg"
+import FourthRulePreview from "@/assets/rules/4.svg"
+import FifthRulePreview from "@/assets/rules/5.svg"
 import styles from "./rules.module.css"
 
 const rules = [

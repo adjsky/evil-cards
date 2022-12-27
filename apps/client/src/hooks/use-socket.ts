@@ -1,6 +1,8 @@
 import { useEffect, useCallback, useState } from "react"
 import { env } from "../env/client.mjs"
 
+const browser = typeof window != "undefined"
+
 type JsonLike = Record<string, unknown>
 type SharedWebsocket = {
   instance: WebSocket | null
@@ -171,7 +173,10 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   return {
     getInstance,
     sendJsonMessage,
-    lastJsonMessage: sharedWebsocket.lastJsonMessage as R | undefined
+    lastJsonMessage: sharedWebsocket.lastJsonMessage as R | undefined,
+    connected: browser
+      ? sharedWebsocket.instance?.readyState == WebSocket.OPEN
+      : false
   }
 }
 

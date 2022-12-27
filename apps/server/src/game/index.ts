@@ -1,7 +1,7 @@
 import stringify from "../lib/ws/stringify"
 import Controller from "./controller"
 import Session from "./session"
-import { minPlayersToStartGame } from "./constants"
+import { MIN_PLAYERS_TO_START_GAME } from "./constants"
 
 import type { ServerEvent } from "./types"
 import type { User } from "../lib/ws/send"
@@ -66,6 +66,10 @@ class Game {
     username,
     avatarId
   }: ServerEvent["createsession"]) {
+    if (socket.session) {
+      throw new Error("you are already connected to a session")
+    }
+
     const session = new Session()
     const user = session.addUser(socket, username, avatarId, true)
 
@@ -97,6 +101,10 @@ class Game {
     username,
     avatarId
   }: ServerEvent["joinsession"]) {
+    if (socket.session) {
+      throw new Error("you are already connected to a session")
+    }
+
     const session = this.sessions.get(sessionId)
     if (!session) {
       throw new Error("session not found")
@@ -248,7 +256,7 @@ class Game {
     if (session.status != "waiting" && session.status != "end") {
       throw new Error("game is started already")
     }
-    if (session.users.length < minPlayersToStartGame) {
+    if (session.users.length < MIN_PLAYERS_TO_START_GAME) {
       throw new Error("need more players")
     }
 

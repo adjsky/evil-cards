@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import clsx from "clsx"
 import { Listbox, Transition } from "@headlessui/react"
-import ArrowDown from "../assets/arrow-down.svg"
+import ArrowDown from "@/assets/arrow-down.svg"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/receive"
 
@@ -70,6 +70,7 @@ const Configuration: React.FC<{
         <button
           className="rounded-lg border border-gray-100 bg-gray-100 px-4 py-4 text-base leading-none text-gray-900 transition-colors hover:bg-gray-900 hover:text-gray-100 sm:px-5 sm:text-xl sm:leading-none"
           onClick={() => onSave && onSave(configurationCopy)}
+          data-testid="save-configuration"
         >
           СОХРАНИТЬ
         </button>

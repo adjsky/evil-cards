@@ -2,40 +2,41 @@ import React, { useEffect, useState, useRef } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import { Transition } from "@headlessui/react"
-import { useSetAtom, useAtom } from "jotai"
+import { useAtom } from "jotai"
 
-import useSocket from "../hooks/use-socket"
-import useToggle from "../hooks/use-toggle"
-import useCountdown from "../hooks/use-countdown"
-import useScreenFactor from "../hooks/use-screen-factor"
-import useLeavePreventer from "../hooks/use-leave-preventer"
-import getScoreLabel from "../functions/get-score-label"
-import { gameStateAtom, soundsAtom } from "../atoms"
+import useSocket from "@/hooks/use-socket"
+import useToggle from "@/hooks/use-toggle"
+import useCountdown from "@/hooks/use-countdown"
+import useScreenFactor from "@/hooks/use-screen-factor"
+import useLeavePreventer from "@/hooks/use-leave-preventer"
+import getScoreLabel from "@/functions/get-score-label"
+import copyText from "@/functions/copy-text"
+import { soundsAtom } from "@/atoms"
 
-import FadeIn from "../components/fade-in"
-import Logo from "../components/logo"
-import BackButton from "../components/back-button"
-import UserList from "../components/user-list"
-import Rules from "../components/rules"
-import Configuration from "../components/configuration"
-import SoundOn from "../assets/sound-on.svg"
-import SoundOff from "../assets/sound-off.svg"
-import Gear from "../assets/gear.svg"
-import Close from "../assets/configuration-close.svg"
+import FadeIn from "@/components/fade-in"
+import Logo from "@/components/logo"
+import BackButton from "@/components/back-button"
+import UserList from "@/components/user-list"
+import Rules from "@/components/rules"
+import Configuration from "@/components/configuration"
+import SoundOn from "@/assets/sound-on.svg"
+import SoundOff from "@/assets/sound-off.svg"
+import Gear from "@/assets/gear.svg"
+import Close from "@/assets/configuration-close.svg"
 
 import type {
   Message as ReceiveMessage,
   User
 } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { GameState } from "../atoms"
+import type { GameState } from "@/atoms"
 
-const heightPerScore = 29
-
-const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+const Waiting: React.FC<{
+  gameState: GameState
+  onGameStateUpdate?: (gameState: GameState | null) => void
+}> = ({ gameState, onGameStateUpdate }) => {
   useLeavePreventer()
   const [configurationVisible, toggleConfiguration] = useToggle()
-  const setGameState = useSetAtom(gameStateAtom)
 
   const { start, secondsLeft } = useCountdown()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
@@ -67,6 +68,9 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
       <button
         className="absolute top-3 right-3 p-1"
         onClick={toggleConfiguration}
+        data-testid={
+          configurationVisible ? "close-configuration" : "show-configuration"
+        }
       >
         {configurationVisible ? <Close /> : <Gear />}
       </button>
@@ -78,7 +82,7 @@ const Waiting: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   }
 
   const onBack = () => {
-    setGameState(null)
+    onGameStateUpdate && onGameStateUpdate(null)
     sendJsonMessage({ type: "leavesession" })
   }
 
@@ -150,8 +154,7 @@ const DesktopView: React.FC<{
   const { lastJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40
   })
@@ -174,7 +177,10 @@ const DesktopView: React.FC<{
           <div className="invisible">
             <Logo />
           </div>
-          <button onClick={() => setSounds(!sounds)}>
+          <button
+            onClick={() => setSounds(!sounds)}
+            data-testid={sounds ? "disable-sounds" : "enable-sounds"}
+          >
             {sounds ? <SoundOn /> : <SoundOff />}
           </button>
         </div>
@@ -216,6 +222,7 @@ const StartButton: React.FC<{
         lowerOpacity && "opacity-50"
       )}
       disabled={disabled}
+      data-testid="start-game"
     >
       {withCountdown ? secondsLeft : "НАЧАТЬ"}
     </button>
@@ -242,14 +249,11 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
-          try {
-            await navigator.clipboard.writeText(url)
-          } catch (error) {
-            alert(url)
-          }
+          await copyText(url)
 
           !copied && toggleCopied()
         }}
+        data-testid="invite-player"
       >
         ПРИГЛАСИТЬ
       </button>
@@ -265,6 +269,8 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
   )
 }
 
+const HEIGHT_PER_SCORE = 29
+
 const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
   const [show, setShow] = useState(true)
   useEffect(() => {
@@ -276,8 +282,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
   }, [])
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40
   })
@@ -291,7 +296,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
         alt=""
       />
       <div
-        style={{ minHeight: 100, height: user.score * heightPerScore }}
+        style={{ minHeight: 100, height: user.score * HEIGHT_PER_SCORE }}
         className={clsx(
           "flex w-56 flex-col items-center justify-end p-4",
           place == 1 && "bg-gold-300",
@@ -334,7 +339,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
             {getScoreLabel(winners[0].score)}
           </p>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-end" data-testid="winners">
           {renderUserPlace(winners[1], 2)}
           {renderUserPlace(winners[0], 1)}
           {renderUserPlace(winners[2], 3)}

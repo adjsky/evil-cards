@@ -2,22 +2,25 @@ import React from "react"
 import Image from "next/image"
 import clsx from "clsx"
 
-import getScoreLabel from "../../functions/get-score-label"
+import getScoreLabel from "@/functions/get-score-label"
 
-import CheckMark from "../../assets/check-mark.svg"
-import Crown from "../../assets/crown.svg"
-import Question from "../../assets/question.svg"
+import CheckMark from "@/assets/check-mark.svg"
+import Crown from "@/assets/crown.svg"
+import Question from "@/assets/question.svg"
 
-import type { User } from "@evil-cards/server/src/lib/ws/send"
+import type { User as UserType } from "@evil-cards/server/src/lib/ws/send"
 
 const DesktopUserList: React.FC<{
-  users: User[]
+  users: UserType[]
   variant: "game" | "waiting"
 }> = ({ users, variant }) => {
   const filteredUsers = users.filter((user) => user.disconnected == false)
 
   return (
-    <div className="scrollable  hidden h-full flex-col gap-2 pr-2 sm:flex">
+    <div
+      className="scrollable hidden h-full flex-col gap-2 pr-2 sm:flex"
+      data-testid="user-list"
+    >
       {filteredUsers.map((user) => (
         <User key={user.id} user={user} variant={variant} />
       ))}
@@ -29,7 +32,7 @@ const DesktopUserList: React.FC<{
   )
 }
 
-const User: React.FC<{ user?: User; variant: "game" | "waiting" }> = ({
+const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
   user,
   variant
 }) => {

@@ -1,7 +1,7 @@
 import { jest } from "@jest/globals"
 
 import Session from "../../src/game/session"
-import { gameStartDelaySeconds } from "../../src/game/constants"
+import { GAME_START_DELAY_MS } from "../../src/game/constants"
 
 const sender = {
   send() {
@@ -91,7 +91,7 @@ describe("disconnectUser()", () => {
 
     jest.useFakeTimers()
     session.startGame()
-    jest.advanceTimersByTime(gameStartDelaySeconds * 1000)
+    jest.advanceTimersByTime(GAME_START_DELAY_MS)
     jest.useRealTimers()
 
     session.disconnectUser(user1)

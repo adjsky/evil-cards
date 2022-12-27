@@ -3,27 +3,26 @@ import clsx from "clsx"
 import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
-import useSocket from "../../hooks/use-socket"
-import useScreenFactor from "../../hooks/use-screen-factor"
-import useTimeBar from "../../hooks/use-time-bar"
-import useLeavePreventer from "../../hooks/use-leave-preventer"
+import useSocket from "@/hooks/use-socket"
+import useScreenFactor from "@/hooks/use-screen-factor"
+import useTimeBar from "@/hooks/use-time-bar"
+import useLeavePreventer from "@/hooks/use-leave-preventer"
 
-import UserList from "../../components/user-list"
-import Card from "../../components/card"
-import FadeIn from "../../components/fade-in"
+import UserList from "@/components/user-list"
+import Card from "@/components/card"
+import FadeIn from "@/components/fade-in"
 import styles from "./game.module.css"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { GameState } from "../../atoms"
+import type { GameState } from "@/atoms"
 
 const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor({
-    ref: containerRef,
+  const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40,
     disableOnMobile: true
@@ -111,8 +110,7 @@ const Board: React.FC<{
       })
     }
   )
-  const boardStyles = useScreenFactor({
-    ref: boardRef,
+  const boardStyles = useScreenFactor(boardRef, {
     px: 0,
     py: 0,
     stopAt: 639,
@@ -147,14 +145,20 @@ const Board: React.FC<{
         style={boardStyles}
         ref={boardRef}
       >
-        <div className={clsx("bg-red-500", styles["red-card"])}>
+        <div
+          className={clsx("bg-red-500", styles["red-card"])}
+          data-testid="red-card"
+        >
           <Interweave
             content={gameState.redCard}
             className="whitespace-pre-line break-words text-[0.625rem] font-medium text-gray-100 sm:text-sm sm:leading-normal"
           />
         </div>
         {gameState.votes.length > 0 && (
-          <div className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2">
+          <div
+            className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2"
+            data-testid="votes"
+          >
             {gameState.votes.map(({ text, userId, visible, winner }, index) => (
               <div
                 className={clsx(
@@ -206,6 +210,7 @@ const Cards: React.FC<{
         "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
         "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
       )}
+      data-testid="cards"
     >
       {gameState.whiteCards.map((text) => (
         <Card

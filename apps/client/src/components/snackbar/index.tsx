@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import clsx from "clsx"
 
-import useIsomorphicLayoutEffect from "../../hooks/use-isomorphic-layout-effect"
+import useIsomorphicLayoutEffect from "@/hooks/use-isomorphic-layout-effect"
 
-import Close from "../../assets/close.svg"
-import CrossMark from "../../assets/cross-mark.svg"
-import ExclamationMark from "../../assets/exclamation-mark.svg"
+import Close from "@/assets/close.svg"
+import CrossMark from "@/assets/cross-mark.svg"
+import ExclamationMark from "@/assets/exclamation-mark.svg"
 import styles from "./snackbar.module.css"
 
 import type { SnackbarProps, Severity, Colors } from "./types"

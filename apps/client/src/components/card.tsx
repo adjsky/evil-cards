@@ -2,7 +2,7 @@ import React from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 
-import Cat from "../assets/cat.svg"
+import Cat from "@/assets/cat.svg"
 
 const Card: React.FC<{
   author?: string

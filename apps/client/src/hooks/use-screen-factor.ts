@@ -2,26 +2,48 @@ import React, { useState, useEffect, useCallback } from "react"
 import useIsomorphicLayoutEffect from "./use-isomorphic-layout-effect"
 import type { RefObject } from "react"
 
-type UseScreenFactorProps = {
-  ref: RefObject<HTMLElement>
+type UseScreenFactorOptions = {
+  // Reduce screen size in one or both dimensions.
+  // Useful when you have some other content next to your container.
   reduceScreenSizeBy?: {
     x?: number
     y?: number
   }
+
+  // Horizontal padding.
   px?: number
+
+  // Vertical padding.
   py?: number
+
+  // Reset styles if screen width <= 640px.
   disableOnMobile?: boolean
+
+  // Reset styles if screen width >= stopAt.
   stopAt?: number
 }
 
-const useScreenFactor = ({
-  ref,
-  reduceScreenSizeBy,
-  px = 0,
-  py = 0,
-  disableOnMobile,
-  stopAt
-}: UseScreenFactorProps) => {
+/**
+ * Accepts HTMLElement `ref` and returns styles
+ * to match the screen width (and height).
+ *
+ * The `ref` element should have fixed width and height
+ * to properly compute the ending styles.
+ *
+ * **NOTE** the element using the returned styles will have an absolute position.
+ */
+const useScreenFactor = (
+  ref: RefObject<HTMLElement>,
+  options?: UseScreenFactorOptions
+) => {
+  const {
+    reduceScreenSizeBy,
+    px = 0,
+    py = 0,
+    disableOnMobile,
+    stopAt
+  } = options || {}
+
   const computeScale = useCallback(() => {
     if (!ref.current) {
       return 1
