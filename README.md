@@ -7,10 +7,6 @@
 </h1>
 
 <p align="center">
-  A funny Game
-</p>
-
-<p align="center">
   <a rel="noopener noreferrer" target="_blank" href="#">Play now</a>
 </p>
 
