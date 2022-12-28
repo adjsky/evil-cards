@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">
-  500 Evil Cards Online
+  500 Evil cards Online
 </h1>
 
 <p align="center">
