@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React from "react"
 import { Transition } from "@headlessui/react"
 import clsx from "clsx"
 
@@ -6,34 +6,12 @@ const FadeIn: React.FC<
   React.PropsWithChildren<{
     className?: string
     enter?: string
-    effect?: boolean
-    animate?: boolean
   }>
-> = ({ enter, className, effect, animate, children }) => {
-  const [show, setShow] = useState(!animate)
-  useEffect(() => {
-    if (!effect || !animate) {
-      return
-    }
-
-    setShow(true)
-  }, [effect, animate])
-
-  if (effect) {
-    return (
-      <Transition
-        className={className}
-        enter={clsx(enter, "transition-opacity duration-300")}
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        show={show}
-      >
-        {children}
-      </Transition>
-    )
-  }
-
+> = ({ enter, className, children }) => {
   return (
+    // here we have to apply opacity-0 in className due to some strange bug
+    // should've been fixed in https://github.com/tailwindlabs/headlessui/issues/2012
+    // some cases were fixed but when switching to waiting screen the bug still appears
     <Transition
       className={clsx(className, "opacity-0")}
       enter={clsx(enter, "transition-opacity duration-300")}

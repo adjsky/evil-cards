@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@formkit/auto-animate": "1.0.0-beta.3",
-    "@headlessui/react": "^1.7.4",
+    "@headlessui/react": "^1.7.7",
     "@headlessui/tailwindcss": "^0.1.1",
     "@sentry/nextjs": "^7.22.0",
     "clsx": "^1.2.1",
