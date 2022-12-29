@@ -1,6 +1,5 @@
 import React, { useRef } from "react"
 import Image from "next/image"
-import { useSearchParams } from "next/navigation"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 
@@ -30,7 +29,7 @@ const Entry: React.FC = () => {
   const username = useAtomValue(usernameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
-  const searchParams = useSearchParams()
+  const searchParams = new URLSearchParams(window.location.search)
   const joining = searchParams.has("s")
 
   const handleStart = () => {

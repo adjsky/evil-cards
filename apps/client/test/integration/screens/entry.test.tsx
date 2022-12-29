@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { useSearchParams } from "next/navigation"
 
 import Entry from "@/screens/entry"
 import { AVAILABLE_AVATARS } from "@/data/constants"
+import mockLocation from "../../helpers/mock-location"
+
+const { changeURL, resetLocationMock } = mockLocation("http://localhost")
 
 const mockSendJsonMessage = jest.fn()
 jest.mock("@/hooks/use-socket", () => {
@@ -15,17 +17,10 @@ jest.mock("@/hooks/use-socket", () => {
     })
   }
 })
-jest.mock("next/navigation", () => {
-  return {
-    useSearchParams: jest.fn(() => ({
-      has: (param: string) => param == "s",
-      get: (param: string) => (param == "s" ? "testid" : null)
-    }))
-  }
-})
 
-beforeEach(() => {
+afterEach(() => {
   mockSendJsonMessage.mockClear()
+  resetLocationMock()
 })
 
 it("changes and renders avatar", async () => {
@@ -64,6 +59,8 @@ it("toggles the username button and writes to the input", async () => {
 })
 
 it("sends a join request if 's' query param is provided", async () => {
+  changeURL("http://localhost?s=asd")
+
   const user = userEvent.setup()
   render(<Entry />)
 
@@ -75,12 +72,6 @@ it("sends a join request if 's' query param is provided", async () => {
 })
 
 it("sends a create request if 's' query param is not provided", async () => {
-  const mockUseSearchParams = useSearchParams as jest.Mock
-  mockUseSearchParams.mockImplementation(() => ({
-    has: () => false,
-    get: () => null
-  }))
-
   const user = userEvent.setup()
   render(<Entry />)
 

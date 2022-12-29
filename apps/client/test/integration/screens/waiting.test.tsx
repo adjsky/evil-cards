@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event"
 import Waiting from "@/screens/waiting"
 import copyText from "@/functions/copy-text"
 import { getFakeMasterGameState } from "../../helpers/get-fake-game-state"
+import mockLocation from "../../helpers/mock-location"
 
 import type { GameState } from "@/atoms"
 
@@ -30,6 +31,9 @@ jest.mock("@/functions/copy-text", () => {
     default: jest.fn()
   }
 })
+
+const url = "http://localhost"
+mockLocation(url)
 
 beforeEach(() => {
   mockSendJsonMessage.mockClear()
@@ -81,7 +85,7 @@ it("copies invite link", async () => {
   )
 
   await user.click(screen.getAllByTestId("invite-player")[0])
-  expect(copyText).toBeCalledWith(`http://localhost?s=${gameState.id}`)
+  expect(copyText).toBeCalledWith(`${url}?s=${gameState.id}`)
 })
 
 it("sends a start message when the start button is clicked", async () => {

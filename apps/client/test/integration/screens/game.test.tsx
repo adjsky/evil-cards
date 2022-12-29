@@ -150,3 +150,9 @@ describe("voted cards", () => {
     }
   })
 })
+
+describe("edge cases", () => {
+  it("gay", () => {
+    //
+  })
+})
