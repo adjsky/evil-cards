@@ -7,7 +7,6 @@ import useIsomorphicLayoutEffect from "@/hooks/use-isomorphic-layout-effect"
 import Close from "@/assets/close.svg"
 import CrossMark from "@/assets/cross-mark.svg"
 import ExclamationMark from "@/assets/exclamation-mark.svg"
-import styles from "./snackbar.module.css"
 
 import type { SnackbarProps, Severity, Colors } from "./types"
 
@@ -54,28 +53,11 @@ const Snackbar: React.FC<SnackbarProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null)
   const autoHideTimeout = useRef<NodeJS.Timeout | null>(null)
-  const closeTimeout = useRef<NodeJS.Timeout | null>(null)
-  const showTimeout = useRef<NodeJS.Timeout | null>(null)
 
   const severityColor = getSeverityColor(severity)
   const icon = getIcon(severity)
 
   const shouldAutoHide = !infinite && autoHideDuration !== 0
-
-  const resetAnimation = () => {
-    if (!containerRef.current) {
-      return
-    }
-
-    containerRef.current.style.animation = "none"
-
-    // start reflow
-    containerRef.current.offsetHeight
-
-    containerRef.current.style.removeProperty("animation")
-    containerRef.current.style.animationDuration =
-      animationDuration / 1000 + "s"
-  }
 
   const stopAutoHide = () => {
     if (autoHideTimeout.current != null) {
@@ -84,18 +66,10 @@ const Snackbar: React.FC<SnackbarProps> = ({
     }
   }
 
-  const stopClosing = () => {
-    if (closeTimeout.current != null) {
-      clearTimeout(closeTimeout.current)
-      closeTimeout.current = null
-    }
-  }
-
-  const stopShowing = () => {
-    if (showTimeout.current != null) {
-      clearTimeout(showTimeout.current)
-      showTimeout.current = null
-    }
+  const cancelPreviousAnimations = () => {
+    containerRef.current
+      ?.getAnimations()
+      .forEach((animation) => animation.cancel())
   }
 
   const triggerAutoHide = (duration: number) => {
@@ -110,15 +84,8 @@ const Snackbar: React.FC<SnackbarProps> = ({
 
   const show = () => {
     if (state.openAnimation || state.closeAnimation) {
-      resetAnimation()
+      cancelPreviousAnimations()
     }
-    if (state.openAnimation) {
-      stopShowing()
-    }
-    if (state.closeAnimation) {
-      stopClosing()
-    }
-
     stopAutoHide()
 
     if (shouldAutoHide) {
@@ -130,60 +97,63 @@ const Snackbar: React.FC<SnackbarProps> = ({
       openAnimation: true,
       closeAnimation: false
     })
-
-    const timeout = setTimeout(() => {
-      showTimeout.current = null
-
-      setState({
-        display: true,
-        openAnimation: false,
-        closeAnimation: false
-      })
-    }, animationDuration)
-
-    showTimeout.current = timeout
   }
 
   const close = () => {
     if (state.closeAnimation) {
       return
     }
-
-    stopAutoHide()
-
     if (state.openAnimation) {
-      resetAnimation()
-      stopShowing()
+      cancelPreviousAnimations()
     }
+    stopAutoHide()
 
     setState({
       display: true,
       openAnimation: false,
       closeAnimation: true
     })
-
-    const timeout = setTimeout(() => {
-      closeTimeout.current = null
-
-      setState({
-        display: false,
-        openAnimation: false,
-        closeAnimation: false
-      })
-
-      onClose && onClose()
-    }, animationDuration)
-
-    closeTimeout.current = timeout
   }
 
   useEffect(() => {
     return () => {
       stopAutoHide()
-      stopClosing()
-      stopShowing()
+      cancelPreviousAnimations()
     }
   }, [])
+
+  useIsomorphicLayoutEffect(() => {
+    if (
+      !containerRef.current ||
+      (!state.closeAnimation && !state.openAnimation)
+    ) {
+      return
+    }
+
+    const animation = containerRef.current.animate(
+      state.closeAnimation
+        ? [{ opacity: 1 }, { opacity: 0 }]
+        : [{ opacity: 0 }, { opacity: 1 }],
+      {
+        duration: animationDuration,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        fill: "forwards",
+        id: state.closeAnimation ? "fade-out" : "fade-in"
+      }
+    )
+
+    animation.onfinish = () => {
+      setState({
+        display: state.openAnimation,
+        openAnimation: false,
+        closeAnimation: false
+      })
+
+      if (state.closeAnimation && onClose) {
+        onClose()
+      }
+    }
+  }, [state])
 
   useIsomorphicLayoutEffect(() => {
     if (!open) {
@@ -212,11 +182,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
         borderStyle: "solid",
         borderColor: severityColor.fg
       }}
-      className={clsx(
-        "fixed top-3 left-1/2 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]",
-        state.openAnimation && styles["fade-open"],
-        state.closeAnimation && styles["fade-close"]
-      )}
+      className="fixed top-3 left-1/2 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]"
       onMouseEnter={() => !state.closeAnimation && stopAutoHide()}
       onMouseLeave={() =>
         !state.closeAnimation &&

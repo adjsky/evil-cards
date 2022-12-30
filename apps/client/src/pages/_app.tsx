@@ -47,7 +47,7 @@ const useSocketEvents = () => {
     if (
       message.type == "error" &&
       message.details &&
-      message.details == "session not found"
+      message.details == "game is started already"
     ) {
       Router.replace("/", undefined, { shallow: true })
     }

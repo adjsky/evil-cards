@@ -60,6 +60,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
               <div
                 className="absolute left-0 top-0 h-full rounded-lg bg-red-500"
                 style={timeBarStyles}
+                data-testid="timebar"
               />
             </div>
             <Cards
