@@ -151,8 +151,25 @@ describe("voted cards", () => {
   })
 })
 
-describe("edge cases", () => {
-  it("gay", () => {
-    //
+describe("timebar", () => {
+  it("progresses according to configuration and votingEndsAt", () => {
+    const dateNowSpy = jest.spyOn(Date, "now").mockImplementation(() => 1000)
+
+    const gameState = getFakeMasterGameState("voting")
+    gameState.configuration.votingDurationSeconds = 60
+    gameState.votingEndsAt =
+      Date.now() + gameState.configuration.votingDurationSeconds * 1000
+
+    const { rerender } = render(<Game gameState={gameState} />)
+
+    expect(screen.getByTestId("timebar")).toHaveStyle({ width: "0%" })
+
+    gameState.votingEndsAt =
+      Date.now() + (gameState.configuration.votingDurationSeconds * 1000) / 2
+    rerender(<Game gameState={gameState} />)
+
+    expect(screen.getByTestId("timebar")).toHaveStyle({ width: "50%" })
+
+    dateNowSpy.mockRestore()
   })
 })
