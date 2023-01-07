@@ -37,9 +37,20 @@ const Waiting: React.FC<{
 }> = ({ gameState, onGameStateUpdate }) => {
   useLeavePreventer()
   const [configurationVisible, toggleConfiguration] = useToggle()
+  const [sounds, setSounds] = useAtom(soundsAtom)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const screenStyles = useScreenFactor(containerRef, {
+    px: 40,
+    py: 40,
+    disableOnMobile: true
+  })
 
   const { start, secondsLeft } = useCountdown()
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
+  const { lastJsonMessage, sendJsonMessage } = useSocket<
+    SendMessage,
+    ReceiveMessage
+  >({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
@@ -48,34 +59,8 @@ const Waiting: React.FC<{
   })
 
   const user = gameState.users.find((user) => user.id == gameState.userId)!
-
-  const renderMainFrame = () => (
-    <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
-      {!configurationVisible && <Rules />}
-      {configurationVisible && (
-        <Configuration
-          configuration={gameState.configuration}
-          host={user.host}
-          onSave={(configuration) => {
-            sendJsonMessage({
-              type: "updateconfiguration",
-              details: configuration
-            })
-            toggleConfiguration()
-          }}
-        />
-      )}
-      <button
-        className="absolute top-3 right-3 p-1"
-        onClick={toggleConfiguration}
-        data-testid={
-          configurationVisible ? "close-configuration" : "show-configuration"
-        }
-      >
-        {configurationVisible ? <Close /> : <Gear />}
-      </button>
-    </div>
-  )
+  const lowerButtonOpacity =
+    !user.host && (gameState.status == "waiting" || gameState.status == "end")
 
   const onStart = () => {
     sendJsonMessage({ type: "startgame" })
@@ -91,119 +76,74 @@ const Waiting: React.FC<{
       {gameState.status == "end" && gameState.winners && (
         <Winners winners={gameState.winners} />
       )}
-      <MobileView
-        gameState={gameState}
-        secondsLeft={secondsLeft}
-        user={user}
-        renderMainFrame={renderMainFrame}
-        onStart={onStart}
-      />
-      <DesktopView
-        gameState={gameState}
-        secondsLeft={secondsLeft}
-        user={user}
-        renderMainFrame={renderMainFrame}
-        onBack={onBack}
-        onStart={onStart}
-      />
-    </FadeIn>
-  )
-}
-
-const MobileView: React.FC<{
-  gameState: GameState
-  secondsLeft: number
-  user: User
-  renderMainFrame: () => JSX.Element
-  onStart?: () => void
-}> = ({ gameState, secondsLeft, user, renderMainFrame, onStart }) => {
-  const { lastJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
-
-  const lowerButtonOpacity =
-    !user.host && (gameState.status == "waiting" || gameState.status == "end")
-
-  return (
-    <div className="flex h-screen flex-col sm:hidden">
-      <UserList users={gameState.users} variant="waiting" />
-      <div className="flex flex-auto flex-col gap-3 p-2 pb-12">
-        {renderMainFrame()}
-        <div className="flex justify-center gap-2">
-          <InviteButton id={gameState.id} />
-          <StartButton
-            lowerOpacity={lowerButtonOpacity}
-            onClick={onStart}
-            disabled={lastJsonMessage?.type == "gamestart" || !user.host}
-            secondsLeft={secondsLeft}
-            withCountdown={lastJsonMessage?.type == "gamestart"}
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const DesktopView: React.FC<{
-  gameState: GameState
-  secondsLeft: number
-  user: User
-  renderMainFrame: () => JSX.Element
-  onBack?: () => void
-  onStart?: () => void
-}> = ({ gameState, secondsLeft, user, renderMainFrame, onBack, onStart }) => {
-  const [sounds, setSounds] = useAtom(soundsAtom)
-  const { lastJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
-
-  const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor(containerRef, {
-    px: 40,
-    py: 40
-  })
-
-  const lowerButtonOpacity =
-    !user.host && (gameState.status == "waiting" || gameState.status == "end")
-
-  return (
-    <div className="relative hidden h-screen sm:block">
-      <div
-        ref={containerRef}
-        style={screenStyles}
-        className="flex w-[850px] flex-col items-center justify-center gap-6"
-      >
-        <div className="relative flex w-full items-end justify-between">
-          <BackButton onClick={onBack} />
-          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
-            <Logo />
+      <div className="relative h-screen">
+        <div
+          ref={containerRef}
+          style={screenStyles}
+          className="flex h-full flex-col items-center justify-center gap-6 sm:h-auto sm:w-[850px]"
+        >
+          <div className="relative hidden w-full items-end justify-between sm:flex">
+            <BackButton onClick={onBack} />
+            <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
+              <Logo />
+            </div>
+            <div className="invisible">
+              <Logo />
+            </div>
+            <button
+              onClick={() => setSounds(!sounds)}
+              data-testid={sounds ? "disable-sounds" : "enable-sounds"}
+            >
+              {sounds ? <SoundOn /> : <SoundOff />}
+            </button>
           </div>
-          <div className="invisible">
-            <Logo />
-          </div>
-          <button
-            onClick={() => setSounds(!sounds)}
-            data-testid={sounds ? "disable-sounds" : "enable-sounds"}
-          >
-            {sounds ? <SoundOn /> : <SoundOff />}
-          </button>
-        </div>
-        <div className="flex w-full gap-4">
-          <div className="h-[500px]">
-            <UserList users={gameState.users} variant="waiting" />
-          </div>
-          <div className="flex w-full flex-col gap-6">
-            {renderMainFrame()}
-            <div className="flex w-full justify-center gap-6">
-              <InviteButton id={gameState.id} />
-              <StartButton
-                lowerOpacity={lowerButtonOpacity}
-                onClick={onStart}
-                disabled={lastJsonMessage?.type == "gamestart" || !user.host}
-                secondsLeft={secondsLeft}
-                withCountdown={lastJsonMessage?.type == "gamestart"}
-              />
+          <div className="flex h-full w-full flex-col sm:flex-row sm:gap-4">
+            <div className="sm:h-[500px]">
+              <UserList users={gameState.users} variant="waiting" />
+            </div>
+            <div className="flex w-full flex-1 flex-col gap-3 p-2 pb-12 sm:gap-6 sm:p-0">
+              <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
+                {!configurationVisible && <Rules />}
+                {configurationVisible && (
+                  <Configuration
+                    configuration={gameState.configuration}
+                    host={user.host}
+                    onSave={(configuration) => {
+                      sendJsonMessage({
+                        type: "updateconfiguration",
+                        details: configuration
+                      })
+                      toggleConfiguration()
+                    }}
+                  />
+                )}
+                <button
+                  className="absolute top-3 right-3 p-1"
+                  onClick={toggleConfiguration}
+                  data-testid={
+                    configurationVisible
+                      ? "close-configuration"
+                      : "show-configuration"
+                  }
+                >
+                  {configurationVisible ? <Close /> : <Gear />}
+                </button>
+              </div>
+              <div className="flex w-full justify-center gap-2 sm:gap-6">
+                <InviteButton id={gameState.id} />
+                <StartButton
+                  lowerOpacity={lowerButtonOpacity}
+                  onClick={onStart}
+                  disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+                  secondsLeft={secondsLeft}
+                  withCountdown={lastJsonMessage?.type == "gamestart"}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </FadeIn>
   )
 }
 

@@ -121,7 +121,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <PlausibleProvider
       domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
-      enabled={env.NEXT_PUBLIC_IS_PRODUCTION}
+      enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
       customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
       selfHosted
     >
