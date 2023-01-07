@@ -50,7 +50,7 @@ it("sets gameState to null and send leave message when the back button is clicke
     />
   )
 
-  await user.click(screen.getAllByTestId("back-button")[0])
+  await user.click(screen.getByTestId("back-button"))
   expect(fakeGameStateUpdateHandler).toBeCalledWith(null)
   expect(mockSendJsonMessage).toBeCalledWith({ type: "leavesession" })
 })
@@ -84,7 +84,7 @@ it("copies invite link", async () => {
     />
   )
 
-  await user.click(screen.getAllByTestId("invite-player")[0])
+  await user.click(screen.getByTestId("invite-player"))
   expect(copyText).toBeCalledWith(`${url}?s=${gameState.id}`)
 })
 
@@ -98,7 +98,7 @@ it("sends a start message when the start button is clicked", async () => {
     />
   )
 
-  const startGameButton = screen.getAllByTestId("start-game")[0]
+  const startGameButton = screen.getByTestId("start-game")
   expect(startGameButton).toBeEnabled()
 
   await user.click(startGameButton)
@@ -115,8 +115,8 @@ it("hides the save configuration button for users who is not the host", async ()
     />
   )
 
-  await user.click(screen.getAllByTestId("show-configuration")[0])
-  expect(screen.getAllByTestId("save-configuration")[0]).toBeEnabled()
+  await user.click(screen.getByTestId("show-configuration"))
+  expect(screen.getByTestId("save-configuration")).toBeEnabled()
 
   gameState.users[0].host = false
   unmount()
@@ -127,7 +127,7 @@ it("hides the save configuration button for users who is not the host", async ()
     />
   )
 
-  await user.click(screen.getAllByTestId("show-configuration")[0])
+  await user.click(screen.getByTestId("show-configuration"))
   expect(screen.queryByTestId("save-configuration")).not.toBeInTheDocument()
 })
 
