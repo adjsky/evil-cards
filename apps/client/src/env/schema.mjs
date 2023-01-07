@@ -26,16 +26,15 @@ export const clientSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]),
     NEXT_PUBLIC_WS_HOST: z.string(),
+    NEXT_PUBLIC_PRODUCTION_HOST: z.string(),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
-    NEXT_PUBLIC_IS_PRODUCTION: z.boolean(),
-    NEXT_PUBLIC_PRODUCTION_HOST: z.string()
+    NEXT_PUBLIC_WITH_SENTRY: z.boolean(),
+    NEXT_PUBLIC_WITH_ANALYTICS: z.boolean()
   })
   .refine(
-    (args) =>
-      (args.NEXT_PUBLIC_IS_PRODUCTION && args.NEXT_PUBLIC_SENTRY_DSN) ||
-      !args.NEXT_PUBLIC_IS_PRODUCTION,
+    (args) => !args.NEXT_PUBLIC_WITH_SENTRY || args.NEXT_PUBLIC_SENTRY_DSN,
     {
       message:
-        "NEXT_PUBLIC_SENTRY_DSN must be provided in production environment"
+        "NEXT_PUBLIC_SENTRY_DSN must be provided in when sentry is enabled"
     }
   )

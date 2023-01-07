@@ -3,5 +3,6 @@ import { env } from "./src/env/client.mjs"
 
 Sentry.init({
   dsn: env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0
+  tracesSampleRate: 0.1,
+  sampleRate: 0.5
 })
