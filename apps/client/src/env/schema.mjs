@@ -34,7 +34,6 @@ export const clientSchema = z
   .refine(
     (args) => !args.NEXT_PUBLIC_WITH_SENTRY || args.NEXT_PUBLIC_SENTRY_DSN,
     {
-      message:
-        "NEXT_PUBLIC_SENTRY_DSN must be provided in when sentry is enabled"
+      message: "NEXT_PUBLIC_SENTRY_DSN must be provided when sentry is enabled"
     }
   )
