@@ -1,8 +1,10 @@
 import "@/styles/globals.css"
+import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
-import Router from "next/router"
+import Router, { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
 
+import getMetaTags from "@/seo"
 import { gameStateAtom, soundsAtom } from "@/atoms"
 import useSocket from "@/hooks/use-socket"
 import useSnackbar from "@/components/snackbar/use"
@@ -117,17 +119,21 @@ const useSocketEvents = () => {
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const { Snackbar } = useSocketEvents()
+  const router = useRouter()
 
   return (
-    <PlausibleProvider
-      domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
-      enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
-      customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
-      selfHosted
-    >
-      {Snackbar}
-      <Component {...pageProps} />
-    </PlausibleProvider>
+    <>
+      <Head>{getMetaTags(router.asPath)}</Head>
+      <PlausibleProvider
+        domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
+        enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
+        customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
+        selfHosted
+      >
+        {Snackbar}
+        <Component {...pageProps} />
+      </PlausibleProvider>
+    </>
   )
 }
 
