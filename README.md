@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./apps/client/public/og-preview.svg" width="422" alt="Cat Eyes" />
+  <img src="./apps/client/public/icons/og-preview.svg" width="422" alt="Cat Eyes" />
 </p>
 
 <h1 align="center">
