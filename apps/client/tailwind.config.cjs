@@ -43,6 +43,12 @@ module.exports = {
           "Comfortaa",
           ...require("tailwindcss/defaultTheme").fontFamily.sans
         ]
+      },
+      animation: {
+        "fade-in": "fade-in .3s cubic-bezier(0.4, 0, 0.2, 1)"
+      },
+      keyframes: {
+        "fade-in": { from: { opacity: 0 }, to: { opacity: 1 } }
       }
     }
   },

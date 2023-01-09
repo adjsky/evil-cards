@@ -41,7 +41,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   }
 
   return (
-    <FadeIn className="mx-auto h-screen opacity-0 sm:relative">
+    <FadeIn className="mx-auto h-screen sm:relative">
       <div
         className="flex h-screen flex-col items-center sm:h-auto sm:justify-center sm:gap-3"
         style={screenStyles}
@@ -184,6 +184,7 @@ const Board: React.FC<{
                   onClick={() => {
                     onCardClick && onCardClick(userId)
                   }}
+                  flipable
                 />
               </div>
             ))}

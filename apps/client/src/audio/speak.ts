@@ -1,6 +1,6 @@
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
-export function processMessageAndPlayAudio(message: ReceiveMessage) {
+export function processMessageAndSpeak(message: ReceiveMessage) {
   switch (message.type) {
     case "votingstarted":
       speak(message.details.changedState.redCard.replaceAll("_", ""))

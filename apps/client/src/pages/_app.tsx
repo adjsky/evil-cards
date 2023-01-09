@@ -9,7 +9,8 @@ import { gameStateAtom, soundsAtom } from "@/atoms"
 import useSocket from "@/hooks/use-socket"
 import useSnackbar from "@/components/snackbar/use"
 import mapErrorMessage from "@/functions/map-error-message"
-import { processMessageAndPlayAudio } from "@/audio"
+import { processMessageAndSpeak } from "@/audio/speak"
+import { processMessageAndPlaySound, preloadSounds } from "@/audio/sounds"
 import { env } from "@/env/client.mjs"
 
 import type { AppType } from "next/dist/shared/lib/utils"
@@ -43,6 +44,7 @@ const useSocketEvents = () => {
     }
 
     if (message.type == "joined" || message.type == "created") {
+      preloadSounds()
       Router.push("/room", undefined, { shallow: true })
     }
 
@@ -54,8 +56,12 @@ const useSocketEvents = () => {
       Router.replace("/", undefined, { shallow: true })
     }
 
-    if (gameState?.configuration.reader == "on" && sounds) {
-      processMessageAndPlayAudio(message)
+    if (sounds) {
+      if (gameState?.configuration.reader == "on") {
+        processMessageAndSpeak(message)
+      }
+
+      processMessageAndPlaySound(message)
     }
 
     switch (message.type) {
