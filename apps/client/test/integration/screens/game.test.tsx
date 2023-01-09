@@ -1,5 +1,6 @@
 import { screen, render } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { mockAnimationsApi } from "jsdom-testing-mocks"
 
 import Game from "@/screens/game"
 import {
@@ -18,6 +19,7 @@ jest.mock("@/hooks/use-socket", () => {
     })
   }
 })
+mockAnimationsApi()
 
 beforeEach(() => {
   mockSendJsonMessage.mockClear()
