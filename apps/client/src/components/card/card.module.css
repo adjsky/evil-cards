@@ -1,0 +1,22 @@
+.flipable-container {
+  perspective: 500px;
+  background-color: transparent;
+}
+
+.flipable-card {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.flipable-author {
+  transform: rotateY(180deg);
+}
+
+.back,
+.front {
+  backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+}

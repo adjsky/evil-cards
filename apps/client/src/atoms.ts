@@ -23,4 +23,4 @@ export type GameState = {
 export const gameStateAtom = atom<GameState | null>(null)
 export const usernameAtom = atomWithStorage("username", "Игрок")
 export const avatarAtom = atomWithStorage("avatar", 1)
-export const soundsAtom = atom(true)
+export const soundsAtom = atomWithStorage("sounds", true)
