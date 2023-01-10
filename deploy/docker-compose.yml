@@ -24,7 +24,7 @@ services:
         hard: 262144
 
   plausible:
-    image: plausible/analytics:latest
+    image: plausible/analytics:v1
     restart: always
     command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run"
     depends_on:
@@ -46,13 +46,13 @@ services:
     restart: always
 
   server:
-    image: adjsky/evil-cards_server
+    image: adjsky/evil-cards_server:latest
     ports:
       - 8000:8000
     restart: always
 
   client:
-    image: adjsky/evil-cards_client
+    image: adjsky/evil-cards_client:latest
     ports:
       - 3000:3000
     restart: always
