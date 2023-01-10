@@ -5,13 +5,17 @@ const description =
   "Онлайн версия игры «500 злобных карт»! Сыграй в эту весёлую игру бесплатно"
 
 function getMetaTags(route: string /* router.asPath */) {
+  const path = route.split("?")[0]
+
   return (
     <>
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta
         property="og:url"
-        content={`${env.NEXT_PUBLIC_PRODUCTION_HOST}${route.split("?")[0]}`}
+        content={`https://${env.NEXT_PUBLIC_PRODUCTION_HOST}${
+          path == "/" ? "" : path
+        }`}
       />
       <meta property="og:site_name" content={title} />
       <meta property="og:type" content="website" />
@@ -19,7 +23,7 @@ function getMetaTags(route: string /* router.asPath */) {
       <meta property="og:description" content={description} />
       <meta
         property="og:image"
-        content={`${env.NEXT_PUBLIC_PRODUCTION_HOST}/icons/og-preview.svg`}
+        content={`https://${env.NEXT_PUBLIC_PRODUCTION_HOST}/icons/og-preview.svg`}
       />
       <link rel="apple-touch-icon" href="/icons/apple-touch.png" />
       <link rel="icon" sizes="any" href="/favicon.ico" />
