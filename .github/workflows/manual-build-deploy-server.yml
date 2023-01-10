@@ -31,4 +31,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          script: docker-compose -f /app/deploy/docker-compose.yml up --no-deps -d server
+          script: |
+            cd /app/deploy
+            docker-compose pull && docker-compose up --no-deps -d server
