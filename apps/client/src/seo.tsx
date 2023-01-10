@@ -23,7 +23,7 @@ function getMetaTags(route: string /* router.asPath */) {
       <meta property="og:description" content={description} />
       <meta
         property="og:image"
-        content={`https://${env.NEXT_PUBLIC_PRODUCTION_HOST}/icons/og-preview.svg`}
+        content={`https://${env.NEXT_PUBLIC_PRODUCTION_HOST}/icons/og-preview.png`}
       />
       <link rel="apple-touch-icon" href="/icons/apple-touch.png" />
       <link rel="icon" sizes="any" href="/favicon.ico" />
