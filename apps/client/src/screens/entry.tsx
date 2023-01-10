@@ -1,5 +1,4 @@
-import React, { useRef } from "react"
-import Image from "next/image"
+import React, { useRef, useState } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 
@@ -11,20 +10,26 @@ import { AVAILABLE_AVATARS } from "@/data/constants"
 import UsernameInput from "@/components/username-input"
 import Arrow from "@/assets/arrow.svg"
 import Logo from "@/components/logo"
+import Loader from "@/components/loader"
 
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
 const Entry: React.FC = () => {
+  const [waiting, setWaiting] = useState(false)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor(containerRef, {
     px: 40,
     py: 40
   })
-  const { sendJsonMessage, connected } = useSocket<
-    SendMessage,
-    ReceiveMessage
-  >()
+  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
+    onJsonMessage(message) {
+      if (message.type == "error" && waiting) {
+        setWaiting(false)
+      }
+    }
+  })
 
   const username = useAtomValue(usernameAtom)
   const avatarId = useAtomValue(avatarAtom)
@@ -34,6 +39,8 @@ const Entry: React.FC = () => {
 
   const handleStart = () => {
     const s = searchParams.get("s")
+
+    setWaiting(true)
 
     if (s) {
       sendJsonMessage({
@@ -67,14 +74,14 @@ const Entry: React.FC = () => {
         <button
           onClick={handleStart}
           className={clsx(
-            "rounded-lg bg-red-500 px-5 py-4 text-xl leading-none text-gray-100",
+            "flex h-12 w-32 items-center justify-center rounded-lg bg-red-500 text-xl leading-none text-gray-100",
             "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
-            "disabled:opacity-50"
+            waiting && "opacity-80"
           )}
-          disabled={!connected}
+          disabled={waiting}
           data-testid="connect-session"
         >
-          {joining ? "ВОЙТИ" : "НАЧАТЬ"}
+          {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}
         </button>
       </div>
     </main>
@@ -98,11 +105,14 @@ const UserCard: React.FC = () => {
           >
             <Arrow className="rotate-180" />
           </button>
-          <Image
-            src={`/avatars/${avatarId}.svg`}
-            width={120}
-            height={120}
-            alt=""
+          <div
+            style={{
+              width: 120,
+              height: 120,
+              backgroundImage: `url(/avatars/${avatarId}.svg)`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover"
+            }}
             data-testid="avatar"
           />
           <button
