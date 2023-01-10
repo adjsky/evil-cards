@@ -97,7 +97,7 @@ const Waiting: React.FC<{
               {sounds ? <SoundOn /> : <SoundOff />}
             </button>
           </div>
-          <div className="flex h-full w-full flex-col sm:flex-row sm:gap-4">
+          <div className="flex h-screen w-full flex-col sm:h-full sm:flex-row sm:gap-4">
             <div className="sm:h-[500px]">
               <UserList users={gameState.users} variant="waiting" />
             </div>
