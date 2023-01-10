@@ -7,7 +7,7 @@
 </h1>
 
 <p align="center">
-  <a rel="noopener noreferrer" target="_blank" href="#">Play now</a>
+  <a rel="noopener noreferrer" target="_blank" href="https://evilcards.online">Play now</a>
 </p>
 
 <p align="center">
