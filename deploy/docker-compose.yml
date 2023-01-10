@@ -36,15 +36,6 @@ services:
     env_file:
       - ./envs/plausible.env
 
-  nginx:
-    image: nginx:1.23
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-    ports:
-      - 80:80
-      - 443:443
-    restart: always
-
   server:
     image: adjsky/evil-cards_server:latest
     ports:
@@ -58,6 +49,20 @@ services:
     restart: always
     depends_on:
       - plausible
+
+  nginx:
+    image: nginx:1.23
+    volumes:
+      - /etc/ssl:/etc/ssl:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    depends_on:
+      - plausible
+      - client
+      - server
 
 volumes:
   db-data:
