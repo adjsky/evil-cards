@@ -35,4 +35,4 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             cd /app/deploy
-            docker-compose up --no-deps -d client
+            docker-compose pull && docker-compose up --no-deps -d client
