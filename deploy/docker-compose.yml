@@ -24,7 +24,7 @@ services:
         hard: 262144
 
   plausible:
-    image: plausible/analytics:latest
+    image: plausible/analytics:v1
     restart: always
     command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run"
     depends_on:
@@ -36,14 +36,23 @@ services:
     env_file:
       - ./envs/plausible.env
 
+  nginx:
+    image: nginx:1.23
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+
   server:
-    image: adjsky/evil-cards_server
+    image: adjsky/evil-cards_server:latest
     ports:
       - 8000:8000
     restart: always
 
   client:
-    image: adjsky/evil-cards_client
+    image: adjsky/evil-cards_client:latest
     ports:
       - 3000:3000
     restart: always

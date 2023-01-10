@@ -26,3 +26,11 @@ jobs:
           platforms: linux/amd64
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+
+      - name: Deploy changes
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+        script: docker-compose -f /app/deploy/docker-compose.yml up --no-deps -d client

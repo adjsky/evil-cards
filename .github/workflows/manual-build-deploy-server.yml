@@ -24,3 +24,11 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_server:latest
           file: deploy/Dockerfile.server
           platforms: linux/amd64
+
+      - name: Deploy changes
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+        script: docker-compose -f /app/deploy/docker-compose.yml up --no-deps -d server
