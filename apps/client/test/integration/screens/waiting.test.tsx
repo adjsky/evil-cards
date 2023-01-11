@@ -16,6 +16,11 @@ beforeEach(() => {
 
 const fakeGameStateUpdateHandler = jest.fn()
 const mockSendJsonMessage = jest.fn()
+beforeEach(() => {
+  mockSendJsonMessage.mockClear()
+  fakeGameStateUpdateHandler.mockClear()
+})
+
 jest.mock("@/hooks/use-socket", () => {
   return {
     __esModule: true,
@@ -35,9 +40,9 @@ jest.mock("@/functions/copy-text", () => {
 const url = "http://localhost"
 mockLocation(url)
 
-beforeEach(() => {
-  mockSendJsonMessage.mockClear()
-  fakeGameStateUpdateHandler.mockClear()
+Object.defineProperty(navigator, "canShare", {
+  value: () => false,
+  writable: false
 })
 
 it("sets gameState to null and send leave message when the back button is clicked", async () => {

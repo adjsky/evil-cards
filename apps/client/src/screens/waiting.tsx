@@ -189,9 +189,12 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
-          await copyText(url)
-
-          !copied && toggleCopied()
+          if (navigator.canShare()) {
+            navigator.share({ url })
+          } else {
+            await copyText(url)
+            !copied && toggleCopied()
+          }
         }}
         data-testid="invite-player"
       >
