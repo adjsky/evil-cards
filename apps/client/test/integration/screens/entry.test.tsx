@@ -31,9 +31,8 @@ it("changes and renders avatar", async () => {
   const prevAvatar = screen.getByTestId("avatar-prev")
 
   const checkAvatar = (id: number) => {
-    expect(screen.getByTestId("avatar")).toHaveAttribute(
-      "src",
-      `/avatars/${id}.svg`
+    expect(screen.getByTestId("avatar")).toHaveStyle(
+      `background-image: url(/avatars/${id}.svg)`
     )
   }
 
