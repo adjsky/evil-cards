@@ -31,6 +31,4 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          script: |
-            cd /app/deploy
-            docker-compose pull && docker-compose up --no-deps -d server
+          script: /app/scripts/deploy-server.sh
