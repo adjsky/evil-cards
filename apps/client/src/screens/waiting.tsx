@@ -189,7 +189,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
-          if (navigator.canShare()) {
+          if (navigator.canShare && navigator.canShare({ url })) {
             navigator.share({ url })
           } else {
             await copyText(url)

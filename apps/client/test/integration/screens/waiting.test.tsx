@@ -40,11 +40,6 @@ jest.mock("@/functions/copy-text", () => {
 const url = "http://localhost"
 mockLocation(url)
 
-Object.defineProperty(navigator, "canShare", {
-  value: () => false,
-  writable: false
-})
-
 it("sets gameState to null and send leave message when the back button is clicked", async () => {
   const user = userEvent.setup()
 
