@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useCallback } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import { Transition } from "@headlessui/react"
 import { useAtom } from "jotai"
+import { useRouter } from "next/router"
 
 import useSocket from "@/hooks/use-socket"
 import useToggle from "@/hooks/use-toggle"
@@ -66,10 +67,25 @@ const Waiting: React.FC<{
     sendJsonMessage({ type: "startgame" })
   }
 
-  const onBack = () => {
+  const onBack = useCallback(() => {
     onGameStateUpdate && onGameStateUpdate(null)
     sendJsonMessage({ type: "leavesession" })
-  }
+  }, [onGameStateUpdate, sendJsonMessage])
+
+  const router = useRouter()
+  useEffect(() => {
+    router.beforePopState(({ as }) => {
+      if (as !== router.asPath) {
+        onBack()
+      }
+
+      return true
+    })
+
+    return () => {
+      router.beforePopState(() => true)
+    }
+  }, [router, onBack])
 
   return (
     <FadeIn className="h-full">

@@ -21,21 +21,24 @@ beforeEach(() => {
   fakeGameStateUpdateHandler.mockClear()
 })
 
-jest.mock("@/hooks/use-socket", () => {
-  return {
-    __esModule: true,
-    default: () => ({
-      sendJsonMessage: mockSendJsonMessage,
-      connected: true
-    })
-  }
-})
-jest.mock("@/functions/copy-text", () => {
-  return {
-    __esModule: true,
-    default: jest.fn()
-  }
-})
+jest.mock("@/hooks/use-socket", () => ({
+  __esModule: true,
+  default: () => ({
+    sendJsonMessage: mockSendJsonMessage,
+    connected: true
+  })
+}))
+jest.mock("@/functions/copy-text", () => ({
+  __esModule: true,
+  default: jest.fn()
+}))
+jest.mock("next/router", () => ({
+  useRouter: () => ({
+    beforePopState() {
+      //
+    }
+  })
+}))
 
 const url = "http://localhost"
 mockLocation(url)
