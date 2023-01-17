@@ -21,7 +21,8 @@ const Entry: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor(containerRef, {
     px: 40,
-    py: 40
+    py: 40,
+    disableOnMobile: true
   })
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
     onJsonMessage(message) {
@@ -63,11 +64,11 @@ const Entry: React.FC = () => {
   }
 
   return (
-    <main className="h-screen">
+    <main className="flex h-full items-center justify-center">
       <div
         ref={containerRef}
         style={screenStyles}
-        className="flex w-[20.625rem] flex-col items-center justify-center gap-8"
+        className="flex flex-col items-center justify-center gap-8 sm:w-[20.625rem]"
       >
         <Logo />
         <UserCard />
