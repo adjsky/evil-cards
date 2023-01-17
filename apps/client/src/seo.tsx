@@ -28,6 +28,8 @@ function getMetaTags(route: string /* router.asPath */) {
       <link rel="apple-touch-icon" href="/icons/apple-touch.png" />
       <link rel="icon" sizes="any" href="/favicon.ico" />
       <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+
+      <meta name="viewport" content="width=device-width, user-scalable=no" />
     </>
   )
 }

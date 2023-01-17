@@ -41,9 +41,9 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   }
 
   return (
-    <FadeIn className="mx-auto h-screen sm:relative">
+    <FadeIn className="mx-auto h-full sm:relative">
       <div
-        className="flex h-screen flex-col items-center sm:h-auto sm:justify-center sm:gap-3"
+        className="flex h-full flex-col items-center sm:h-auto sm:justify-center sm:gap-3"
         style={screenStyles}
         ref={containerRef}
       >

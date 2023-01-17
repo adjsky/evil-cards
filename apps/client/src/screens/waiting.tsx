@@ -72,11 +72,11 @@ const Waiting: React.FC<{
   }
 
   return (
-    <FadeIn>
+    <FadeIn className="h-full">
       {gameState.status == "end" && gameState.winners && (
         <Winners winners={gameState.winners} />
       )}
-      <div className="relative h-screen">
+      <div className="relative h-full">
         <div
           ref={containerRef}
           style={screenStyles}
@@ -97,7 +97,7 @@ const Waiting: React.FC<{
               {sounds ? <SoundOn /> : <SoundOff />}
             </button>
           </div>
-          <div className="flex h-screen w-full flex-col sm:h-full sm:flex-row sm:gap-4">
+          <div className="flex h-full w-full flex-col sm:h-full sm:flex-row sm:gap-4">
             <div className="sm:h-[500px]">
               <UserList users={gameState.users} variant="waiting" />
             </div>
@@ -261,7 +261,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
 
   return (
     <Transition
-      className="fixed top-0 left-0 z-50 flex h-screen w-full items-center justify-center bg-gray-900"
+      className="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-gray-900"
       show={show}
       enterFrom="opacity-0"
       enterTo="opacity-100"
