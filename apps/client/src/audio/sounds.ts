@@ -22,7 +22,11 @@ export function processMessageAndPlaySound(message: ReceiveMessage) {
     const audio = new Audio(messageSound)
     cachedSounds[message.type] = audio
 
-    audio.play()
+    try {
+      audio.play()
+    } catch (_) {
+      //
+    }
 
     return
   }
