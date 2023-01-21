@@ -8,7 +8,9 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /evil-cards
 
 COPY apps ./apps
+COPY packages ./packages
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
 RUN yarn global add pnpm && pnpm --frozen-lockfile install
 
 ###################################################################
@@ -23,6 +25,9 @@ COPY --from=deps /evil-cards/node_modules ./node_modules
 
 WORKDIR /evil-cards/apps/server
 COPY --from=deps /evil-cards/apps/server/node_modules ./node_modules
+
+WORKDIR /evil-cards/packages/eslint-config-monorepo
+COPY --from=deps /evil-cards/packages/eslint-config-monorepo/node_modules ./node_modules
 
 WORKDIR /evil-cards/apps/client
 COPY --from=deps /evil-cards/apps/client/node_modules ./node_modules

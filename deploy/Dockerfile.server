@@ -8,8 +8,10 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /evil-cards
 
 COPY apps/server apps/server
+COPY packages ./packages
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN yarn global add pnpm && pnpm --frozen-lockfile install
+
+RUN yarn global add pnpm && pnpm --filter=@evil-cards/server... --frozen-lockfile install
 
 ###################################################################
 # Stage 2: Build server                                           #
