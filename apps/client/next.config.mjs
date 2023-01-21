@@ -4,16 +4,42 @@ import url from "node:url"
 
 import { withSentryConfig } from "@sentry/nextjs"
 import getWithBundleAnalyzer from "@next/bundle-analyzer"
+// @ts-expect-error @types/next-pwa are broken, due to that we have to suppress TS error
+import getWithPWA from "next-pwa"
 
 const clientEnv = (await import("./src/env/client.mjs")).env
 const serverEnv = (await import("./src/env/server.mjs")).env
-const withBundleAnalyzer = getWithBundleAnalyzer({ enabled: serverEnv.ANALYZE })
 
 const workspaceRoot = path.resolve(
   path.dirname(url.fileURLToPath(import.meta.url)),
   "..",
   ".."
 )
+
+/**
+ *
+ * @param {boolean} enabled
+ */
+function getWithStandaloneBuild(enabled) {
+  /**
+   * @param {import('next').NextConfig} nextConfig
+   */
+  return (nextConfig) => {
+    if (!enabled) {
+      return nextConfig
+    }
+
+    return {
+      ...nextConfig,
+      output: "standalone",
+      experimental: {
+        ...nextConfig.experimental,
+        outputFileTracingRoot: workspaceRoot
+      }
+    }
+  }
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -36,31 +62,12 @@ const nextConfig = {
   }
 }
 
-/**
- *
- * @param {import('next').NextConfig} nextConfig
- * @param {boolean} enabled
- */
-function withStandaloneBuild(nextConfig, enabled) {
-  if (!enabled) {
-    return nextConfig
-  }
-
-  return {
-    ...nextConfig,
-    output: "standalone",
-    experimental: {
-      ...nextConfig.experimental,
-      outputFileTracingRoot: workspaceRoot
-    }
-  }
-}
+const withBundleAnalyzer = getWithBundleAnalyzer({ enabled: serverEnv.ANALYZE })
+const withPWA = getWithPWA({ dest: "public", disable: !serverEnv.WITH_PWA })
+const withStandaloneBuild = getWithStandaloneBuild(serverEnv.BUILD_STANDALONE)
 
 export default withSentryConfig(
-  withStandaloneBuild(
-    withBundleAnalyzer(nextConfig),
-    serverEnv.BUILD_STANDALONE
-  ),
+  withPWA(withStandaloneBuild(withBundleAnalyzer(nextConfig))),
   {
     silent: true,
     dryRun: !clientEnv.NEXT_PUBLIC_WITH_SENTRY

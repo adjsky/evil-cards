@@ -14,6 +14,8 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#2A2A2A" />
       </Head>
       <body className="bg-gray-900">
         <Main />

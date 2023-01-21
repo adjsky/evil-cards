@@ -1,0 +1,13 @@
+{
+  "name": "500 ЗЛОБНЫХ Карт Онлайн",
+  "short_name": "500 ЗЛОБНЫХ Карт",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2A2A2A",
+  "theme_color": "#2A2A2A",
+  "description": "Онлайн версия игры «500 злобных карт»! Сыграй в эту весёлую игру бесплатно",
+  "icons": [
+    { "src": "/icons/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icons/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}
