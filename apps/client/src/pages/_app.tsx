@@ -10,7 +10,7 @@ import useSocket from "@/hooks/use-socket"
 import useSnackbar from "@/components/snackbar/use"
 import mapErrorMessage from "@/functions/map-error-message"
 import { processMessageAndSpeak } from "@/audio/speak"
-import { processMessageAndPlaySound, preloadSounds } from "@/audio/sounds"
+import { processMessageAndPlaySound } from "@/audio/sounds"
 import { env } from "@/env/client.mjs"
 
 import type { AppType } from "next/dist/shared/lib/utils"
@@ -44,7 +44,6 @@ const useSocketEvents = () => {
     }
 
     if (message.type == "joined" || message.type == "created") {
-      preloadSounds()
       Router.push("/room", undefined, { shallow: true })
     }
 

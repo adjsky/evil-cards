@@ -14,7 +14,8 @@ const zodTransformBoolean = () =>
 export const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   BUILD_STANDALONE: zodTransformBoolean(),
-  ANALYZE: zodTransformBoolean()
+  ANALYZE: zodTransformBoolean(),
+  WITH_PWA: zodTransformBoolean()
 })
 
 /**
