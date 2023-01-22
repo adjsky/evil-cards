@@ -1,4 +1,4 @@
-import type { GameState } from "@/atoms"
+import type { GameState } from "@/lib/atoms"
 import type { Status } from "@evil-cards/server/src/lib/ws/send"
 
 const redCard = "redcard"

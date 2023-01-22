@@ -1,4 +1,5 @@
 import React from "react"
+
 type LoaderProps = {
   width?: number
   height?: number

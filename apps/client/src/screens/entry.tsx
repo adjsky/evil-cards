@@ -2,12 +2,13 @@ import React, { useRef, useState } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 
-import { usernameAtom, avatarAtom } from "@/atoms"
-import useSocket from "@/hooks/use-socket"
-import useScreenFactor from "@/hooks/use-screen-factor"
-import { AVAILABLE_AVATARS } from "@/data/constants"
+import { usernameAtom, avatarAtom } from "@/lib/atoms"
+import { useSocket, useScreenFactor } from "@/lib/hooks"
+import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
+import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 
 import UsernameInput from "@/components/username-input"
+import FadeIn from "@/components/fade-in"
 import Arrow from "@/assets/arrow.svg"
 import Logo from "@/components/logo"
 import Loader from "@/components/loader"
@@ -31,6 +32,8 @@ const Entry: React.FC = () => {
       }
     }
   })
+
+  const previousPathname = usePreviousPathname()
 
   const username = useAtomValue(usernameAtom)
   const avatarId = useAtomValue(avatarAtom)
@@ -64,7 +67,11 @@ const Entry: React.FC = () => {
   }
 
   return (
-    <main className="flex h-full items-center justify-center">
+    <FadeIn
+      className="flex h-full items-center justify-center"
+      disabled={previousPathname != "/room"}
+      duration={150}
+    >
       <div
         ref={containerRef}
         style={screenStyles}
@@ -85,7 +92,7 @@ const Entry: React.FC = () => {
           {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}
         </button>
       </div>
-    </main>
+    </FadeIn>
   )
 }
 

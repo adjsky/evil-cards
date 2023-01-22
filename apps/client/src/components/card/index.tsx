@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 
-import usePrevious from "@/hooks/use-previous"
+import { usePrevious } from "@/lib/hooks"
 
 import Cat from "@/assets/cat.svg"
 import styles from "./card.module.css"

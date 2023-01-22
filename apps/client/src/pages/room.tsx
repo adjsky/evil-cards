@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useAtom } from "jotai"
 import Router from "next/router"
 
-import { gameStateAtom } from "@/atoms"
+import { gameStateAtom } from "@/lib/atoms"
 
 import Game from "@/screens/game"
 import Waiting from "@/screens/waiting"

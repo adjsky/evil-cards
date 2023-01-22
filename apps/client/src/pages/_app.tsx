@@ -4,18 +4,40 @@ import { useAtom, useAtomValue } from "jotai"
 import Router, { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
 
-import getMetaTags from "@/seo"
-import { gameStateAtom, soundsAtom } from "@/atoms"
-import useSocket from "@/hooks/use-socket"
+import getMetaTags from "@/lib/seo"
+import { gameStateAtom, soundsAtom } from "@/lib/atoms"
+import { useSocket } from "@/lib/hooks"
+import { PreviousPathnameProvider } from "@/lib/contexts/previous-pathname"
 import useSnackbar from "@/components/snackbar/use"
-import mapErrorMessage from "@/functions/map-error-message"
-import { processMessageAndSpeak } from "@/audio/speak"
-import { processMessageAndPlaySound } from "@/audio/sounds"
-import { env } from "@/env/client.mjs"
+import { mapErrorMessage } from "@/lib/functions"
+import { processMessageAndSpeak, processMessageAndPlaySound } from "@/lib/audio"
+import { env } from "@/lib/env/client.mjs"
 
 import type { AppType } from "next/dist/shared/lib/utils"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+
+const MyApp: AppType = ({ Component, pageProps }) => {
+  const { Snackbar } = useSocketEvents()
+  const router = useRouter()
+
+  return (
+    <>
+      <Head>{getMetaTags(router.asPath)}</Head>
+      <PlausibleProvider
+        domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
+        enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
+        customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
+        selfHosted
+      >
+        <PreviousPathnameProvider>
+          {Snackbar}
+          <Component {...pageProps} />
+        </PreviousPathnameProvider>
+      </PlausibleProvider>
+    </>
+  )
+}
 
 const useSocketEvents = () => {
   const { updateSnackbar, Snackbar } = useSnackbar()
@@ -120,26 +142,6 @@ const useSocketEvents = () => {
   })
 
   return { Snackbar }
-}
-
-const MyApp: AppType = ({ Component, pageProps }) => {
-  const { Snackbar } = useSocketEvents()
-  const router = useRouter()
-
-  return (
-    <>
-      <Head>{getMetaTags(router.asPath)}</Head>
-      <PlausibleProvider
-        domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
-        enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
-        customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
-        selfHosted
-      >
-        {Snackbar}
-        <Component {...pageProps} />
-      </PlausibleProvider>
-    </>
-  )
 }
 
 export default MyApp

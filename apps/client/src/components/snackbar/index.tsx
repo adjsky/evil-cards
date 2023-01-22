@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import clsx from "clsx"
 
-import useIsomorphicLayoutEffect from "@/hooks/use-isomorphic-layout-effect"
+import { useIsomorphicLayoutEffect } from "@/lib/hooks"
 
 import Close from "@/assets/close.svg"
 import CrossMark from "@/assets/cross-mark.svg"

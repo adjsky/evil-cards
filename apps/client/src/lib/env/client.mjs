@@ -11,10 +11,9 @@ import formatErrors from "./format-errors.mjs"
 const clientEnv = {
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_WS_HOST: process.env.NEXT_PUBLIC_WS_HOST,
-  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   NEXT_PUBLIC_PRODUCTION_HOST: process.env.NEXT_PUBLIC_PRODUCTION_HOST,
-  NEXT_PUBLIC_WITH_SENTRY: process.env.NEXT_PUBLIC_WITH_SENTRY == "true",
-  NEXT_PUBLIC_WITH_ANALYTICS: process.env.NEXT_PUBLIC_WITH_ANALYTICS == "true"
+  NEXT_PUBLIC_WITH_ANALYTICS: process.env.NEXT_PUBLIC_WITH_ANALYTICS == "true",
+  NEXT_PUBLIC_WITH_SENTRY: process.env.NEXT_PUBLIC_WITH_SENTRY == "true"
 }
 
 const _clientEnv = clientSchema.safeParse(clientEnv)

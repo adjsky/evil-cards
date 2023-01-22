@@ -2,24 +2,24 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import Entry from "@/screens/entry"
-import { AVAILABLE_AVATARS } from "@/data/constants"
+import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import mockLocation from "../../helpers/mock-location"
 
 const { changeURL, resetLocationMock } = mockLocation("http://localhost")
 
-const mockSendJsonMessage = jest.fn()
-jest.mock("@/hooks/use-socket", () => {
+const sendJsonMessageMock = jest.fn()
+jest.mock("@/lib/hooks/use-socket", () => {
   return {
     __esModule: true,
     default: () => ({
-      sendJsonMessage: mockSendJsonMessage,
+      sendJsonMessage: sendJsonMessageMock,
       connected: true
     })
   }
 })
 
 afterEach(() => {
-  mockSendJsonMessage.mockClear()
+  sendJsonMessageMock.mockClear()
   resetLocationMock()
 })
 
@@ -65,7 +65,7 @@ it("sends a join request if 's' query param is provided", async () => {
 
   await user.click(screen.getByTestId("connect-session"))
 
-  expect(mockSendJsonMessage).toHaveBeenCalledWith(
+  expect(sendJsonMessageMock).toHaveBeenCalledWith(
     expect.objectContaining({ type: "joinsession" })
   )
 })
@@ -76,7 +76,7 @@ it("sends a create request if 's' query param is not provided", async () => {
 
   await user.click(screen.getByTestId("connect-session"))
 
-  expect(mockSendJsonMessage).toHaveBeenCalledWith(
+  expect(sendJsonMessageMock).toHaveBeenCalledWith(
     expect.objectContaining({ type: "createsession" })
   )
 })
