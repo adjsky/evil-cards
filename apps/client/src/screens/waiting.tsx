@@ -5,14 +5,15 @@ import { Transition } from "@headlessui/react"
 import { useAtom } from "jotai"
 import { useRouter } from "next/router"
 
-import useSocket from "@/hooks/use-socket"
-import useToggle from "@/hooks/use-toggle"
-import useCountdown from "@/hooks/use-countdown"
-import useScreenFactor from "@/hooks/use-screen-factor"
-import useLeavePreventer from "@/hooks/use-leave-preventer"
-import getScoreLabel from "@/functions/get-score-label"
-import copyText from "@/functions/copy-text"
-import { soundsAtom } from "@/atoms"
+import {
+  useSocket,
+  useToggle,
+  useCountdown,
+  useScreenFactor,
+  useLeavePreventer
+} from "@/lib/hooks"
+import { getScoreLabel, copyText } from "@/lib/functions"
+import { soundsAtom } from "@/lib/atoms"
 
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
@@ -30,7 +31,7 @@ import type {
   User
 } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { GameState } from "@/atoms"
+import type { GameState } from "@/lib/atoms"
 
 const Waiting: React.FC<{
   gameState: GameState
@@ -39,6 +40,9 @@ const Waiting: React.FC<{
   useLeavePreventer()
   const [configurationVisible, toggleConfiguration] = useToggle()
   const [sounds, setSounds] = useAtom(soundsAtom)
+
+  const screenRef = useRef<HTMLDivElement>(null)
+  const leaving = useRef(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const screenStyles = useScreenFactor(containerRef, {
@@ -68,8 +72,31 @@ const Waiting: React.FC<{
   }
 
   const onBack = useCallback(() => {
-    onGameStateUpdate && onGameStateUpdate(null)
-    sendJsonMessage({ type: "leavesession" })
+    if (leaving.current) {
+      return
+    }
+
+    const handleAnimationFinish = () => {
+      onGameStateUpdate && onGameStateUpdate(null)
+      sendJsonMessage({ type: "leavesession" })
+    }
+
+    leaving.current = true
+
+    const animation = screenRef.current?.animate(
+      [{ opacity: 1 }, { opacity: 0 }],
+      {
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        duration: 150,
+        fill: "forwards"
+      }
+    )
+
+    if (animation) {
+      animation.onfinish = handleAnimationFinish
+    } else {
+      handleAnimationFinish()
+    }
   }, [onGameStateUpdate, sendJsonMessage])
 
   const router = useRouter()
@@ -88,7 +115,7 @@ const Waiting: React.FC<{
   }, [router, onBack])
 
   return (
-    <FadeIn className="h-full">
+    <FadeIn className="h-full" ref={screenRef}>
       {gameState.status == "end" && gameState.winners && (
         <Winners winners={gameState.winners} />
       )}

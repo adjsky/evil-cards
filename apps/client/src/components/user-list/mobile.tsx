@@ -1,7 +1,7 @@
 import React from "react"
 import Image from "next/image"
 
-import getScoreLabel from "@/functions/get-score-label"
+import { getScoreLabel } from "@/lib/functions"
 
 import CheckMark from "@/assets/check-mark.svg"
 import Crown from "@/assets/crown.svg"

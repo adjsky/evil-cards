@@ -1,5 +1,5 @@
 import React from "react"
-import useToggle from "@/hooks/use-toggle"
+import { useToggle } from "@/lib/hooks"
 
 import Pencil from "@/assets/pencil.svg"
 

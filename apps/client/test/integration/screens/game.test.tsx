@@ -9,12 +9,12 @@ import {
 } from "../../helpers/get-fake-game-state"
 
 const fakeGameStateUpdateHandler = jest.fn()
-const mockSendJsonMessage = jest.fn()
-jest.mock("@/hooks/use-socket", () => {
+const sendJsonMessageMock = jest.fn()
+jest.mock("@/lib/hooks/use-socket", () => {
   return {
     __esModule: true,
     default: () => ({
-      sendJsonMessage: mockSendJsonMessage,
+      sendJsonMessage: sendJsonMessageMock,
       connected: true
     })
   }
@@ -22,7 +22,7 @@ jest.mock("@/hooks/use-socket", () => {
 mockAnimationsApi()
 
 beforeEach(() => {
-  mockSendJsonMessage.mockClear()
+  sendJsonMessageMock.mockClear()
   fakeGameStateUpdateHandler.mockClear()
 })
 
@@ -54,7 +54,7 @@ describe("white cards", () => {
     const firstWhiteCard = screen.getByTestId("cards").children[0]
     await user.click(firstWhiteCard)
 
-    expect(mockSendJsonMessage).toBeCalledWith({
+    expect(sendJsonMessageMock).toBeCalledWith({
       type: "vote",
       details: { text: firstWhiteCard.textContent }
     })

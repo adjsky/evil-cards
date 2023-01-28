@@ -1,12 +1,13 @@
-import { screen, render } from "@testing-library/react"
+import { screen, render, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { mockAnimationsApi } from "jsdom-testing-mocks"
 
 import Waiting from "@/screens/waiting"
-import copyText from "@/functions/copy-text"
+import copyText from "@/lib/functions/copy-text"
 import { getFakeMasterGameState } from "../../helpers/get-fake-game-state"
 import mockLocation from "../../helpers/mock-location"
 
-import type { GameState } from "@/atoms"
+import type { GameState } from "@/lib/atoms"
 
 let gameState: GameState
 beforeEach(() => {
@@ -15,20 +16,20 @@ beforeEach(() => {
 })
 
 const fakeGameStateUpdateHandler = jest.fn()
-const mockSendJsonMessage = jest.fn()
+const sendJsonMessageMock = jest.fn()
 beforeEach(() => {
-  mockSendJsonMessage.mockClear()
+  sendJsonMessageMock.mockClear()
   fakeGameStateUpdateHandler.mockClear()
 })
 
-jest.mock("@/hooks/use-socket", () => ({
+jest.mock("@/lib/hooks/use-socket", () => ({
   __esModule: true,
   default: () => ({
-    sendJsonMessage: mockSendJsonMessage,
+    sendJsonMessage: sendJsonMessageMock,
     connected: true
   })
 }))
-jest.mock("@/functions/copy-text", () => ({
+jest.mock("@/lib/functions/copy-text", () => ({
   __esModule: true,
   default: jest.fn()
 }))
@@ -40,12 +41,13 @@ jest.mock("next/router", () => ({
   })
 }))
 
+mockAnimationsApi()
+
 const url = "http://localhost"
 mockLocation(url)
 
-it("sets gameState to null and send leave message when the back button is clicked", async () => {
+it("sets gameState to null and sends a leave message when the back button is clicked", async () => {
   const user = userEvent.setup()
-
   render(
     <Waiting
       gameState={gameState}
@@ -54,11 +56,14 @@ it("sets gameState to null and send leave message when the back button is clicke
   )
 
   await user.click(screen.getByTestId("back-button"))
-  expect(fakeGameStateUpdateHandler).toBeCalledWith(null)
-  expect(mockSendJsonMessage).toBeCalledWith({ type: "leavesession" })
+
+  waitFor(() => expect(fakeGameStateUpdateHandler).toBeCalledWith(null))
+  waitFor(() =>
+    expect(sendJsonMessageMock).toBeCalledWith({ type: "leavesession" })
+  )
 })
 
-it("renders connected users and display extra empty spots", () => {
+it("renders connected users and displays extra empty spots", () => {
   render(
     <Waiting
       gameState={gameState}
@@ -105,7 +110,7 @@ it("sends a start message when the start button is clicked", async () => {
   expect(startGameButton).toBeEnabled()
 
   await user.click(startGameButton)
-  expect(mockSendJsonMessage).toBeCalledWith({ type: "startgame" })
+  expect(sendJsonMessageMock).toBeCalledWith({ type: "startgame" })
 })
 
 it("hides the save configuration button for users who is not the host", async () => {

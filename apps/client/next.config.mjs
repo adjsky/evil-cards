@@ -7,8 +7,8 @@ import getWithBundleAnalyzer from "@next/bundle-analyzer"
 // @ts-expect-error @types/next-pwa are broken, due to that we have to suppress TS error
 import getWithPWA from "next-pwa"
 
-const clientEnv = (await import("./src/env/client.mjs")).env
-const serverEnv = (await import("./src/env/server.mjs")).env
+const clientEnv = (await import("./src/lib/env/client.mjs")).env
+const serverEnv = (await import("./src/lib/env/server.mjs")).env
 
 const workspaceRoot = path.resolve(
   path.dirname(url.fileURLToPath(import.meta.url)),
