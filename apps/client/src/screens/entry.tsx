@@ -70,7 +70,7 @@ const Entry: React.FC = () => {
     <FadeIn
       className="flex h-full items-center justify-center"
       disabled={previousPathname != "/room"}
-      duration={150}
+      duration={100}
     >
       <div
         ref={containerRef}

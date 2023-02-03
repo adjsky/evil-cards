@@ -86,8 +86,8 @@ const Waiting: React.FC<{
     const animation = screenRef.current?.animate(
       [{ opacity: 1 }, { opacity: 0 }],
       {
-        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-        duration: 150,
+        easing: "ease-in",
+        duration: 100,
         fill: "forwards"
       }
     )

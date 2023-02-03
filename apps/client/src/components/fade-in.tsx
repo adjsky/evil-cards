@@ -9,7 +9,7 @@ const FadeIn = forwardRef<
     duration?: number
     disabled?: boolean
   }>
->(({ className, children, duration = 300, disabled }, ref) => {
+>(({ className, children, duration = 400, disabled }, ref) => {
   return (
     <div
       ref={ref}

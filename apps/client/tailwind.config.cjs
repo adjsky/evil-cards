@@ -45,7 +45,7 @@ module.exports = {
         ]
       },
       animation: {
-        "fade-in": "fade-in .3s cubic-bezier(0.4, 0, 0.2, 1)"
+        "fade-in": "fade-in .4s ease-out"
       },
       keyframes: {
         "fade-in": { from: { opacity: 0 }, to: { opacity: 1 } }
