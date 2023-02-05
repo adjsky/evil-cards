@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "postbuild": "next-sitemap --config next-sitemap.config.mjs",
     "build:production": "cross-env WITH_PWA=true NEXT_PUBLIC_WITH_ANALYTICS=true NEXT_PUBLIC_WITH_SENTRY=true next build",
     "dev": "next dev",
     "lint": "next lint",
@@ -32,6 +33,7 @@
     "@evil-cards/eslint-config-monorepo": "*",
     "@evil-cards/server": "*",
     "@next/bundle-analyzer": "^13.0.2",
+    "@next/env": "^13.1.6",
     "@svgr/webpack": "^6.5.0",
     "@testing-library/dom": "^8.19.0",
     "@testing-library/jest-dom": "^5.16.5",
@@ -52,6 +54,7 @@
     "jest": "^29.3.1",
     "jest-environment-jsdom": "^29.3.1",
     "jsdom-testing-mocks": "^1.6.0",
+    "next-sitemap": "^3.1.49",
     "postcss": "^8.4.14",
     "prettier": "^2.8.0",
     "prettier-plugin-tailwindcss": "^0.1.13",
