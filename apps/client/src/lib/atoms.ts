@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { atomWithStorage } from "jotai/utils"
+import { atomWithSafeStorage } from "@/core/atom-with-safe-storage"
 import type {
   Vote,
   User,
@@ -21,6 +21,6 @@ export type GameState = {
 }
 
 export const gameStateAtom = atom<GameState | null>(null)
-export const usernameAtom = atomWithStorage("username", "Игрок")
-export const avatarAtom = atomWithStorage("avatar", 1)
-export const soundsAtom = atomWithStorage("sounds", true)
+export const usernameAtom = atomWithSafeStorage("username", "Игрок")
+export const avatarAtom = atomWithSafeStorage("avatar", 1)
+export const soundsAtom = atomWithSafeStorage("sounds", true)
