@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "postbuild": "next-sitemap --config next-sitemap.config.mjs",
     "build:production": "cross-env WITH_PWA=true NEXT_PUBLIC_WITH_ANALYTICS=true NEXT_PUBLIC_WITH_SENTRY=true next build",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
     "analyze": "cross-env ANALYZE=true next build",
     "test": "jest --watch",
-    "test:ci": "c8 jest --ci"
+    "test:ci": "c8 jest --ci",
+    "generate-sitemap": "next-sitemap --config next-sitemap.config.mjs"
   },
   "dependencies": {
     "@formkit/auto-animate": "1.0.0-beta.3",
