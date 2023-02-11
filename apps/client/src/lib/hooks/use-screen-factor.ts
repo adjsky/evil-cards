@@ -62,16 +62,7 @@ const useScreenFactor = (
     }
 
     return reducedScreenHeight / computedHeight
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    ref,
-    ref.current?.offsetWidth,
-    ref.current?.offsetHeight,
-    px,
-    py,
-    reduceScreenSizeBy?.x,
-    reduceScreenSizeBy?.y
-  ])
+  }, [ref, px, py, reduceScreenSizeBy?.x, reduceScreenSizeBy?.y])
 
   const [scaleFactor, setScaleFactor] = useState(1)
   useIsomorphicLayoutEffect(() => {
