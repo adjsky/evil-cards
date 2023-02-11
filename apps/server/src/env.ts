@@ -1,24 +1,14 @@
 import z from "zod"
 import type { ZodFormattedError } from "zod"
 
-const zodTransformBoolean = () =>
-  z
-    .string()
-    .optional()
-    .transform((v) => v == "true")
-
 /**
  * Specify your environment variables schema here.
  * This way you can ensure the app isn't built with invalid env vars.
  */
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
-  PORT: z
-    .string()
-    .regex(/\d+/)
-    .optional()
-    .transform((value) => (value ? Number(value) : 8000)),
-  LOG_MEMORY: zodTransformBoolean()
+  PORT: z.coerce.number().default(8000),
+  LOG_MEMORY: z.coerce.boolean()
 })
 
 const formatErrors = (errors: ZodFormattedError<Map<string, string>, string>) =>
