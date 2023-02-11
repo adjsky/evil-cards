@@ -6,14 +6,14 @@ import formatErrors from "./format-errors.mjs"
  * You can't destruct `process.env` as a regular object, so you have to do
  * it manually here. This is because Next.js evaluates this at build time,
  * and only used environment variables are included in the build.
- * @type {{ [k in keyof import("zod").z.infer<typeof clientSchema>]: import("zod").z.infer<typeof clientSchema>[k] | undefined }}
+ * @type {{ [k in keyof import("zod").z.infer<typeof clientSchema>]: string | undefined }}
  */
 const clientEnv = {
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_WS_HOST: process.env.NEXT_PUBLIC_WS_HOST,
   NEXT_PUBLIC_PRODUCTION_HOST: process.env.NEXT_PUBLIC_PRODUCTION_HOST,
-  NEXT_PUBLIC_WITH_ANALYTICS: process.env.NEXT_PUBLIC_WITH_ANALYTICS == "true",
-  NEXT_PUBLIC_WITH_SENTRY: process.env.NEXT_PUBLIC_WITH_SENTRY == "true"
+  NEXT_PUBLIC_WITH_ANALYTICS: process.env.NEXT_PUBLIC_WITH_ANALYTICS,
+  NEXT_PUBLIC_WITH_SENTRY: process.env.NEXT_PUBLIC_WITH_SENTRY
 }
 
 const _clientEnv = clientSchema.safeParse(clientEnv)
