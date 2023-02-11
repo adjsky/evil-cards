@@ -13,7 +13,7 @@ importers:
       '@babel/core': ^7.20.12
       '@evil-cards/eslint-config-monorepo': '*'
       '@evil-cards/server': '*'
-      '@formkit/auto-animate': 1.0.0-beta.3
+      '@formkit/auto-animate': 1.0.0-beta.6
       '@headlessui/react': ^1.7.7
       '@headlessui/tailwindcss': ^0.1.1
       '@next/bundle-analyzer': ^13.0.2
@@ -58,7 +58,7 @@ importers:
       webpack: ^5.75.0
       zod: ^3.18.0
     dependencies:
-      '@formkit/auto-animate': 1.0.0-beta.3
+      '@formkit/auto-animate': 1.0.0-beta.6
       '@headlessui/react': 1.7.7_biqbaboplfbrettd7655fr4n2y
       '@headlessui/tailwindcss': 0.1.1_tailwindcss@3.2.2
       '@sentry/nextjs': 7.22.0_2cq33iptvuz7xxvba6r2epidty
@@ -1468,8 +1468,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@formkit/auto-animate/1.0.0-beta.3:
-    resolution: {integrity: sha512-glsi+ytwQpxT/Ctr9GtcIfVr4dO6mJ04mQbNU8MFSdCdqMopHtyfU5Fib0+9lNFIeR0luY4/0NW95/2R5pKsag==}
+  /@formkit/auto-animate/1.0.0-beta.6:
+    resolution: {integrity: sha512-PVDhLAlr+B4Xb7e+1wozBUWmXa6BFU8xUPR/W/E+TsQhPS1qkAdAsJ25keEnFrcePSnXHrOsh3tiFbEToOzV9w==}
     dev: false
 
   /@gar/promisify/1.1.3:
