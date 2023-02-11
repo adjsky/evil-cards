@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react"
+import React, { useState } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 
@@ -19,8 +19,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 const Entry: React.FC = () => {
   const [waiting, setWaiting] = useState(false)
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor(containerRef, {
+  const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
     py: 40,
     disableOnMobile: true

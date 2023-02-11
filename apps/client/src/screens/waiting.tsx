@@ -44,8 +44,7 @@ const Waiting: React.FC<{
   const screenRef = useRef<HTMLDivElement>(null)
   const leaving = useRef(false)
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor(containerRef, {
+  const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
     py: 40,
     disableOnMobile: true
@@ -267,8 +266,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
     }
   }, [])
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor(containerRef, {
+  const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
     py: 40
   })

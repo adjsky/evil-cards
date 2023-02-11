@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react"
-import useIsomorphicLayoutEffect from "./use-isomorphic-layout-effect"
-import type { RefObject } from "react"
+import { useState, useCallback, useEffect } from "react"
+import type { RefCallback, CSSProperties } from "react"
 
 type UseScreenFactorOptions = {
   // Reduce screen size in one or both dimensions.
@@ -32,10 +31,9 @@ type UseScreenFactorOptions = {
  *
  * **NOTE** the element using the returned styles will have an absolute position.
  */
-const useScreenFactor = (
-  ref: RefObject<HTMLElement>,
+const useScreenFactor = <T extends HTMLElement>(
   options?: UseScreenFactorOptions
-) => {
+): [CSSProperties, RefCallback<T>] => {
   const {
     reduceScreenSizeBy,
     px = 0,
@@ -44,57 +42,70 @@ const useScreenFactor = (
     stopAt
   } = options || {}
 
-  const computeScale = useCallback(() => {
-    if (!ref.current) {
-      return 1
-    }
-
-    const reducedScreenWidth = window.innerWidth - (reduceScreenSizeBy?.x ?? 0)
-    const reducedScreenHeight =
-      window.innerHeight - (reduceScreenSizeBy?.y ?? 0)
-
-    const computedWidth = ref.current.offsetWidth + px * 2
-    const computedHeight = ref.current.offsetHeight + py * 2
-    const scaledWidth = (computedWidth * reducedScreenHeight) / computedHeight
-
-    if (scaledWidth > reducedScreenWidth) {
-      return reducedScreenWidth / computedWidth
-    }
-
-    return reducedScreenHeight / computedHeight
-  }, [ref, px, py, reduceScreenSizeBy?.x, reduceScreenSizeBy?.y])
-
   const [scaleFactor, setScaleFactor] = useState(1)
-  useIsomorphicLayoutEffect(() => {
-    setScaleFactor(computeScale())
-  }, [computeScale])
+  const [node, setNode] = useState<T | null>(null)
+
+  const computeScale = useCallback(
+    (node: T) => {
+      const reducedScreenWidth =
+        window.innerWidth - (reduceScreenSizeBy?.x ?? 0)
+      const reducedScreenHeight =
+        window.innerHeight - (reduceScreenSizeBy?.y ?? 0)
+
+      const computedWidth = node.offsetWidth + px * 2
+      const computedHeight = node.offsetHeight + py * 2
+      const scaledWidth = (computedWidth * reducedScreenHeight) / computedHeight
+
+      if (scaledWidth > reducedScreenWidth) {
+        return reducedScreenWidth / computedWidth
+      }
+
+      return reducedScreenHeight / computedHeight
+    },
+    [px, py, reduceScreenSizeBy?.x, reduceScreenSizeBy?.y]
+  )
+
+  const refCallback = useCallback(
+    (node: T | null) => {
+      setNode(node)
+
+      if (node) {
+        setScaleFactor(computeScale(node))
+      }
+    },
+    [computeScale]
+  )
 
   useEffect(() => {
-    const callback = () => {
-      setScaleFactor(computeScale())
+    if (!node) {
+      return
     }
 
-    window.addEventListener("resize", callback)
+    const updateScaleFactor = () => {
+      setScaleFactor(computeScale(node))
+    }
+
+    window.addEventListener("resize", updateScaleFactor)
     return () => {
-      window.removeEventListener("resize", callback)
+      window.removeEventListener("resize", updateScaleFactor)
     }
-  }, [computeScale])
+  }, [node, computeScale])
 
-  const styles: React.CSSProperties =
-    !ref.current ||
+  const styles: CSSProperties =
+    node == null ||
     (disableOnMobile && window.innerWidth <= 640) ||
     (stopAt && window.innerWidth > stopAt)
       ? {}
       : {
           transform: `scale(${scaleFactor})`,
-          marginLeft: -ref.current.offsetWidth / 2,
-          marginTop: -ref.current.offsetHeight / 2,
+          marginLeft: -node.offsetWidth / 2,
+          marginTop: -node.offsetHeight / 2,
           position: "absolute",
           top: "50%",
           left: "50%"
         }
 
-  return styles
+  return [styles, refCallback]
 }
 
 export default useScreenFactor

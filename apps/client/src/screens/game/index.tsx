@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react"
+import React, { useEffect, useCallback } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
@@ -23,8 +23,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
   const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const screenStyles = useScreenFactor(containerRef, {
+  const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
     py: 40,
     disableOnMobile: true
@@ -82,7 +81,7 @@ const Board: React.FC<{
   gameState: GameState
   onCardClick?: (userId: string) => void
 }> = ({ gameState, onCardClick }) => {
-  const [boardRef, enable] = useAutoAnimate<HTMLDivElement>(
+  const [boardRefAnimate, enable] = useAutoAnimate(
     (element, action, oldCoords, newCoords) => {
       let keyframes: Keyframe[] = []
 
@@ -113,7 +112,7 @@ const Board: React.FC<{
       })
     }
   )
-  const boardStyles = useScreenFactor(boardRef, {
+  const [boardStyles, boardRefScreenFactor] = useScreenFactor({
     px: 0,
     py: 0,
     stopAt: 639,
@@ -121,6 +120,13 @@ const Board: React.FC<{
       y: 235
     }
   })
+  const boardRefCallback = useCallback(
+    (node: HTMLElement | null) => {
+      boardRefAnimate(node)
+      boardRefScreenFactor(node)
+    },
+    [boardRefAnimate, boardRefScreenFactor]
+  )
 
   useEffect(() => {
     const callback = () => {
@@ -146,7 +152,7 @@ const Board: React.FC<{
           styles["board"]
         )}
         style={boardStyles}
-        ref={boardRef}
+        ref={boardRefCallback}
       >
         <div
           className={clsx("bg-red-500", styles["red-card"])}
