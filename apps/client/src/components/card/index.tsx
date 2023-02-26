@@ -66,7 +66,7 @@ const Card: React.FC<{
         {author && (
           <span
             className={clsx(
-              "text-right",
+              "block overflow-hidden text-ellipsis whitespace-nowrap text-right",
               flipable && styles["flipable-author"]
             )}
           >
