@@ -52,7 +52,7 @@ class Session<T = string> {
 
     this._configuration = {
       maxScore: 10,
-      reader: "off",
+      reader: "on",
       votingDurationSeconds: 60
     }
   }
