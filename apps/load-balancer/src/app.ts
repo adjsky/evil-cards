@@ -25,8 +25,6 @@ const fastify = Fastify({
 const redis = createClient({ url: env.REDIS_URL })
 await redis.connect()
 
-const serversSchema = z.array(z.string())
-
 async function getServersFromRedis() {
   const rawServers = await redis.get("servers")
 
@@ -34,7 +32,7 @@ async function getServersFromRedis() {
     throw new Error("received empty servers from redis")
   }
 
-  return serversSchema.parse(rawServers)
+  return rawServers.split(" ")
 }
 
 const serversRoundRobin = new SequentialRoundRobin(await getServersFromRedis())
