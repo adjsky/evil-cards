@@ -36,11 +36,26 @@ services:
     env_file:
       - ./envs/plausible.env
 
+  redis:
+    image: redis:7.0.9
+    restart: always
+
   server:
     image: adjsky/evil-cards_server:latest
-    ports:
-      - 8000:8000
     restart: always
+    deploy:
+      replicas: 2
+
+  load-balancer:
+    image: adjsky/evil-cards_load-balancer:latest
+    restart: always
+    env_file:
+      - ./envs/load-balancer.env
+    ports:
+      - 1337:1337
+    depends_on:
+      - redis
+      - server
 
   client:
     image: adjsky/evil-cards_client:latest
@@ -63,6 +78,7 @@ services:
       - plausible
       - client
       - server
+      - load-balancer
 
 volumes:
   db-data:

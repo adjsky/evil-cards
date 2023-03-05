@@ -63,7 +63,7 @@ fastify.get("/", async (req, res) => {
     const sessionServer = await redis.get(`sessionserver:${sessionId}`)
 
     if (!sessionServer) {
-      return res.status(400).send({ message: "could not find session server" })
+      return res.status(404).send({ message: "could not find session server" })
     }
 
     return res.send({ host: sessionServer, message: "ok" })
