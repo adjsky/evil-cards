@@ -1,0 +1,22 @@
+name: Manual services start
+
+on: [workflow_dispatch]
+
+jobs:
+  start-services:
+    runs-on: ubuntu-latest
+    name: Start services
+
+    steps:
+      - name: Start services
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          envs:
+            REPOSITORY: ${{ github.repository }}
+            APP_PATH: /app
+          script: |
+            git clone https://github.com/$REPOSTORY.git $APP_PATH/source
+            $APP_PATH/source/deploy/start-services.sh

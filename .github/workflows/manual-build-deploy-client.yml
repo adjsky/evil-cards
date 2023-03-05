@@ -27,10 +27,15 @@ jobs:
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
-      - name: Deploy changes
+      - name: Deploy changes on remote server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          script: /app/scripts/deploy-client.sh
+          envs:
+            REPOSITORY: ${{ github.repository }}
+            APP_PATH: /app
+          script: |
+            git clone https://github.com/$REPOSTORY $APP_PATH/source
+            $APP_PATH/source/deploy/update-client.sh
