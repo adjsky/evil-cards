@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -rf $APP_PATH/source
+rm -rf $APP_PATH/$SOURCE_DIR

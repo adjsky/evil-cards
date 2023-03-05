@@ -34,6 +34,7 @@ jobs:
           envs:
             REPOSITORY: ${{ github.repository }}
             APP_PATH: /app
+            SOURCE_DIR: source-load-balancer
           script: |
-            git clone https://github.com/$REPOSTORY $APP_PATH/source
-            $APP_PATH/source/deploy/update-load-balancer.sh
+            git clone https://github.com/$REPOSTORY $APP_PATH/$SOURCE_DIR
+            $APP_PATH/$SOURCE_DIR/deploy/update-load-balancer.sh

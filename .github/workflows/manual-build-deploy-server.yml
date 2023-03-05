@@ -34,6 +34,7 @@ jobs:
           envs:
             REPOSITORY: ${{ github.repository }}
             APP_PATH: /app
+            SOURCE_DIR: source-server
           script: |
-            git clone https://github.com/$REPOSTORY.git $APP_PATH/source
-            $APP_PATH/source/deploy/update-server.sh
+            git clone https://github.com/$REPOSTORY.git $APP_PATH/$SOURCE_DIR
+            $APP_PATH/$SOURCE_DIR/deploy/update-server.sh
