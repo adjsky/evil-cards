@@ -25,7 +25,7 @@ jobs:
           file: deploy/Dockerfile.server
           platforms: linux/amd64
 
-      - name: Update changes on remote server
+      - name: Reflect changes on remote server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}

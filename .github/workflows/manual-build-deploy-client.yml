@@ -27,7 +27,7 @@ jobs:
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
-      - name: Deploy changes on remote server
+      - name: Reflect changes on remote server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
