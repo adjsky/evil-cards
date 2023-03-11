@@ -24,10 +24,10 @@ AVAILABLE_SERVERS=()
 
 for CONTAINER in $(docker-compose -f $COMPOSE_PATH ps server | tail -n +3 | awk '{ print $1 }'); do
   if [[ ! " ${CURRENT_RUNNING_SERVERS[@]} " =~ " $CONTAINER " ]]; then
-    AVAILABLE_SERVERS+=($CONTAINER)
+    AVAILABLE_SERVERS+=($(echo $CONTAINER | grep -o -E '[0-9]+'))
   fi
 done
 
-docker exec deploy_redis redis-cli -n 0 SET servers "${AVAILABLE_SERVERS[*]}"
+docker-compose -f $COMPOSE_PATH exec redis redis-cli -n 0 SET servers "${AVAILABLE_SERVERS[*]}"
 
 $APP_PATH/$SOURCE_DIR/deploy/scripts/cleanup.sh

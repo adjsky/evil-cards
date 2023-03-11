@@ -8,7 +8,8 @@ import type { ZodFormattedError } from "zod"
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   PORT: z.coerce.number().default(8000),
-  LOG_MEMORY: z.coerce.boolean()
+  LOG_MEMORY: z.coerce.boolean(),
+  SERVER_NUMBER: z.coerce.number().optional()
 })
 
 const formatErrors = (errors: ZodFormattedError<Map<string, string>, string>) =>

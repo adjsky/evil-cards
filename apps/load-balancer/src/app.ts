@@ -23,22 +23,34 @@ const fastify = Fastify({
 })
 
 const redis = createClient({ url: env.REDIS_URL })
-await redis.connect()
+const subscriber = redis.duplicate()
 
-async function getServersFromRedis() {
+await Promise.all([redis.connect(), subscriber.connect()])
+
+async function getServerNumbersFromRedis() {
   const rawServers = await redis.get("servers")
 
-  if (!rawServers) {
-    throw new Error("received empty servers from redis")
+  let parsedServerNumbers = ["1", "2"]
+
+  if (rawServers) {
+    parsedServerNumbers = rawServers.split(" ")
   }
 
-  return rawServers.split(" ")
+  return parsedServerNumbers.map((parsedServerNumber) =>
+    makeURLFromServer(parsedServerNumber)
+  )
 }
 
-const serversRoundRobin = new SequentialRoundRobin(await getServersFromRedis())
+function makeURLFromServer(serverNumber: string) {
+  return `${env.PROTOCOL}://sv-${serverNumber}.${env.HOST}`
+}
 
-await redis.pSubscribe("__keyspace@*__:servers", async () => {
-  const servers = await getServersFromRedis()
+const serversRoundRobin = new SequentialRoundRobin(
+  await getServerNumbersFromRedis()
+)
+
+await subscriber.pSubscribe("__keyspace@*__:servers", async () => {
+  const servers = await getServerNumbersFromRedis()
 
   serversRoundRobin.clear()
   servers.forEach((server) => serversRoundRobin.add(server))
@@ -64,7 +76,7 @@ fastify.get("/", async (req, res) => {
       return res.status(404).send({ message: "could not find session server" })
     }
 
-    return res.send({ host: sessionServer, message: "ok" })
+    return res.send({ host: makeURLFromServer(sessionServer), message: "ok" })
   }
 
   const server = serversRoundRobin.next()

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "cross-env": "^7.0.3",
+    "dotenv": "^16.0.3",
     "fastify": "^4.8.1",
     "redis": "^4.6.5",
     "round-robin-js": "^3.0.5",

@@ -1,35 +1,38 @@
 import { useState } from "react"
 import Snackbar from "./index"
+import { createEventBus } from "@/core/event-bus"
 
 import type { SnackbarProps } from "./types"
 
 type Props = Omit<SnackbarProps, "message" | "open" | "severity">
 type State = Pick<SnackbarProps, "message" | "open" | "severity" | "infinite">
 
-type UpdateFunction = (state: State | ((prev: State) => State)) => void
-type ReturnObject = {
-  updateSnackbar: UpdateFunction
-  Snackbar: JSX.Element
+type Events = {
+  update: Partial<State>
 }
+const eventBus = createEventBus<Events>()
 
-const useSnackbar = (props?: Props): ReturnObject => {
+export const useSnackbar = (props?: Props) => {
   const checkedProps = props || {}
 
   const [state, setState] = useState<State>({})
 
-  return {
-    updateSnackbar: setState,
-    Snackbar: (
-      <Snackbar
-        {...checkedProps}
-        {...state}
-        onClose={() => {
-          setState((prev) => ({ ...prev, open: false }))
-          checkedProps?.onClose && checkedProps.onClose()
-        }}
-      />
-    )
-  }
+  eventBus.useSubscription("update", (data) =>
+    setState((prev) => ({ ...prev, ...data }))
+  )
+
+  return (
+    <Snackbar
+      {...checkedProps}
+      {...state}
+      onClose={() => {
+        setState((prev) => ({ ...prev, open: false }))
+        checkedProps?.onClose && checkedProps.onClose()
+      }}
+    />
+  )
 }
 
-export default useSnackbar
+export function updateSnackbar(data: Partial<State>) {
+  eventBus.emit("update", data)
+}

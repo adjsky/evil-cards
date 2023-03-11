@@ -9,6 +9,7 @@ import {
   useTimeBar,
   useLeavePreventer
 } from "@/lib/hooks"
+import { updateSnackbar } from "@/components/snackbar/use"
 
 import UserList from "@/components/user-list"
 import Card from "@/components/card"
@@ -21,7 +22,20 @@ import type { GameState } from "@/lib/atoms"
 
 const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
+  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
+    onClose(_, manually) {
+      if (manually) {
+        return
+      }
+
+      updateSnackbar({
+        message: "Упс, пропало соединение. Пытаемся его восстановить",
+        severity: "error",
+        open: true,
+        infinite: true
+      })
+    }
+  })
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,

@@ -6,6 +6,8 @@ import { usernameAtom, avatarAtom } from "@/lib/atoms"
 import { useSocket, useScreenFactor } from "@/lib/hooks"
 import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
+import getWSHost from "@/lib/server/get-ws-host"
+import { updateSnackbar } from "@/components/snackbar/use"
 
 import UsernameInput from "@/components/username-input"
 import FadeIn from "@/components/fade-in"
@@ -24,7 +26,7 @@ const Entry: React.FC = () => {
     py: 40,
     disableOnMobile: true
   })
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
+  const { sendJsonMessage, connect } = useSocket<SendMessage, ReceiveMessage>({
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
@@ -40,29 +42,44 @@ const Entry: React.FC = () => {
   const searchParams = new URLSearchParams(window.location.search)
   const joining = searchParams.has("s")
 
-  const handleStart = () => {
-    const s = searchParams.get("s")
+  const handleStart = async () => {
+    const sessionId = searchParams.get("s")
 
-    setWaiting(true)
+    const result = await getWSHost(sessionId ?? undefined)
 
-    if (s) {
-      sendJsonMessage({
-        type: "joinsession",
-        details: {
-          username,
-          sessionId: s,
-          avatarId
+    result.match({
+      err(error) {
+        const message =
+          error == "nosession"
+            ? "Комната не найдена"
+            : "Произошла какая-то ошибка"
+
+        updateSnackbar({ message, open: true, severity: "information" })
+      },
+      ok(wsHost) {
+        connect(wsHost)
+        setWaiting(true)
+
+        if (sessionId) {
+          sendJsonMessage({
+            type: "joinsession",
+            details: {
+              username,
+              sessionId,
+              avatarId
+            }
+          })
+        } else {
+          sendJsonMessage({
+            type: "createsession",
+            details: {
+              username,
+              avatarId
+            }
+          })
         }
-      })
-    } else {
-      sendJsonMessage({
-        type: "createsession",
-        details: {
-          username,
-          avatarId
-        }
-      })
-    }
+      }
+    })
   }
 
   return (

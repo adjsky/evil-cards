@@ -14,6 +14,7 @@ import {
 } from "@/lib/hooks"
 import { getScoreLabel, copyText } from "@/lib/functions"
 import { soundsAtom } from "@/lib/atoms"
+import { updateSnackbar } from "@/components/snackbar/use"
 
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
@@ -51,7 +52,7 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage } = useSocket<
+  const { lastJsonMessage, sendJsonMessage, disconnect } = useSocket<
     SendMessage,
     ReceiveMessage
   >({
@@ -59,6 +60,18 @@ const Waiting: React.FC<{
       if (data.type == "gamestart") {
         start(3)
       }
+    },
+    onClose(_, manually) {
+      if (manually) {
+        return
+      }
+
+      updateSnackbar({
+        message: "Упс, пропало соединение. Пытаемся его восстановить",
+        severity: "error",
+        open: true,
+        infinite: true
+      })
     }
   })
 
@@ -78,6 +91,7 @@ const Waiting: React.FC<{
     const handleAnimationFinish = () => {
       onGameStateUpdate && onGameStateUpdate(null)
       sendJsonMessage({ type: "leavesession" })
+      disconnect()
     }
 
     leaving.current = true
@@ -96,7 +110,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, sendJsonMessage])
+  }, [onGameStateUpdate, sendJsonMessage, disconnect])
 
   const router = useRouter()
   useEffect(() => {
