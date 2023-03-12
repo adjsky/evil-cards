@@ -11,13 +11,58 @@ import type {
 export type ServerEvent = WithWebsocket<
   UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
 >
-export type ControllerEventBus = Emittery<
+
+export type ControllerEvents = Emittery<
   ServerEvent & { lostconnection: { socket: WebSocket } }
 >
-export type SessionEventBus = Emittery<{
-  starting: undefined
-  voting: undefined
-  choosing: undefined
-  choosingbest: undefined
-  end: undefined
+
+export type PlayerSender = {
+  send: (data: unknown) => void
+}
+
+export type SessionEvents = Emittery<{
+  statuschange: Status
+  join: Player
+  leave: Player
+  gameend: undefined
+  sessionend: undefined
+  configurationchange: Configuration
+  vote: Vote
+  choose: Vote
+  choosewinner: Vote
 }>
+
+export type Player = {
+  id: string
+  avatarId: number
+  nickname: string
+  score: number
+  host: boolean
+  master: boolean
+  voted: boolean
+  disconnected: boolean
+  deck: string[]
+  sender: PlayerSender
+}
+
+export type Status =
+  | "waiting"
+  | "starting"
+  | "voting"
+  | "choosing"
+  | "end"
+  | "choosingwinner"
+  | "winnercardview"
+
+export type Vote = {
+  text: string
+  playerId: string
+  visible: boolean
+  winner: boolean
+}
+
+export type Configuration = {
+  votingDurationSeconds: number
+  reader: "on" | "off"
+  maxScore: number
+}

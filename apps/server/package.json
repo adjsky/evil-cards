@@ -21,6 +21,7 @@
     "fastify": "^4.8.1",
     "nanoid": "^4.0.0",
     "serialize-error": "^11.0.0",
+    "wait-for-expect": "^3.0.2",
     "zod": "^3.20.6"
   },
   "devDependencies": {
