@@ -176,7 +176,6 @@ importers:
       fastify: 4.9.2
       nanoid: 4.0.0
       serialize-error: 11.0.0
-      wait-for-expect: 3.0.2
       zod: 3.20.6
     devDependencies:
       '@evil-cards/eslint-config-monorepo': link:../../packages/eslint-config-monorepo
@@ -194,6 +193,7 @@ importers:
       ts-jest: 29.0.3_r24ewcothphvclnu77pxb4u4se
       ts-node: 10.9.1_lw7q66ikwuedwcorwkk4v6trsa
       typescript: 4.8.4
+      wait-for-expect: 3.0.2
 
   packages/eslint-config-monorepo:
     specifiers:
@@ -11220,7 +11220,7 @@ packages:
 
   /wait-for-expect/3.0.2:
     resolution: {integrity: sha512-cfS1+DZxuav1aBYbaO/kE06EOS8yRw7qOFoD3XtjTkYvCvh3zUvNST8DXK/nPaeqIzIv3P3kL3lRJn8iwOiSag==}
-    dev: false
+    dev: true
 
   /walk-up-path/1.0.0:
     resolution: {integrity: sha512-hwj/qMDUEjCU5h0xr90KGCf0tg0/LgJbmOWgrWKYlcJZM7XvquvUJZ0G/HMGr7F7OQMOUuPHWP9JpriinkAlkg==}

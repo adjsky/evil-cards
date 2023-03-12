@@ -213,17 +213,18 @@ class Session {
 
   public vote(playerId: string, text: string) {
     const player = this._players.find((p) => p.id == playerId)
-    const cardIndex = player?.deck.findIndex((value) => value == text)
+    const cardIndex = player?.deck.findIndex((deckCard) => deckCard == text)
 
-    if (
-      !player ||
-      !cardIndex ||
-      this._status != "voting" ||
-      player.master ||
-      player.voted ||
-      cardIndex == -1
-    ) {
-      throw new Error("not allowed")
+    if (!player || cardIndex == undefined) {
+      throw new Error("invalid player id")
+    }
+
+    if (cardIndex == -1) {
+      throw new Error("invalid card text")
+    }
+
+    if (this._status != "voting" || player.master || player.voted) {
+      throw new Error("you can't vote")
     }
 
     player.voted = true
@@ -255,16 +256,21 @@ class Session {
       (vote) => vote.playerId == choosedPlayerId
     )
 
-    if (
-      !player ||
-      !choosedVote ||
-      this._status != "choosing" ||
-      !player.master
-    ) {
-      throw new Error("not allowed")
+    if (!player) {
+      throw new Error("invalid player id")
+    }
+
+    if (!choosedVote) {
+      throw new Error("invalid choosed player id")
+    }
+
+    if (this._status != "choosing" || !player.master) {
+      throw new Error("you can't choose")
     }
 
     choosedVote.visible = true
+
+    this._events.emit("choose", choosedVote)
 
     if (this._votes.every((vote) => vote.visible)) {
       this.startChoosingWinner()
@@ -279,14 +285,16 @@ class Session {
     )
     const choosedPlayer = this._players.find((p) => p.id == choosedPlayerId)
 
-    if (
-      !player ||
-      !choosedVote ||
-      !choosedPlayer ||
-      this._status != "choosingwinner" ||
-      !player.master
-    ) {
-      throw new Error("not allowed")
+    if (!player) {
+      throw new Error("invalid player id")
+    }
+
+    if (!choosedPlayer || !choosedVote) {
+      throw new Error("invalid choosed player id")
+    }
+
+    if (!player.master || this._status != "choosingwinner") {
+      throw new Error("you can't choose winner")
     }
 
     choosedPlayer.score += 1
@@ -315,7 +323,11 @@ class Session {
       player.voted = false
     }
 
-    this._events.emit("gameend")
+    this._events.emit("statuschange", this._status)
+  }
+
+  public getTimeoutDate(name: keyof Timeouts) {
+    return this._timeouts[name]?.date
   }
 
   private startVoting() {
@@ -332,7 +344,9 @@ class Session {
     this._availableRedCards.splice(redCardIndex, 1)
 
     this._players.forEach((player) => {
-      for (let i = 0; i < 10 - player.deck.length; i++) {
+      const deckLength = player.deck.length
+
+      for (let i = 0; i < 10 - deckLength; i++) {
         const randomIndex = getRandomInt(
           0,
           this._availableWhiteCards.length - 1
@@ -443,7 +457,11 @@ class Session {
   }
 
   private isWaiting() {
-    return this._status == "waiting" || this._status == "end"
+    return (
+      this._status == "waiting" ||
+      this._status == "end" ||
+      this._status == "starting"
+    )
   }
 
   private isPlaying() {

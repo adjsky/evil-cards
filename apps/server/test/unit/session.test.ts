@@ -1,5 +1,6 @@
 import dayjs from "dayjs"
 import { jest } from "@jest/globals"
+import waitForExpect from "wait-for-expect"
 
 import Session from "../../src/game/session"
 import {
@@ -23,64 +24,83 @@ afterEach(() => {
 })
 
 it("processes gameplay as expected", () => {
-  const user1 = session.addUser(sender, "user1", 0, true)
-  const user2 = session.addUser(sender, "user2", 0, false)
-  const user3 = session.addUser(sender, "user3", 0, false)
-  const user4 = session.addUser(sender, "user4", 0, false)
+  session.join(sender, "user1", 0, true)
+  session.join(sender, "user2", 0, false)
+  session.join(sender, "user3", 0, false)
+  session.join(sender, "user4", 0, false)
 
-  session.startGame()
+  const firstPlayer = session.players[0]
+
+  session.startGame(firstPlayer.id)
   expect(session.status).toBe("starting")
 
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
   expect(session.status).toBe("voting")
 
-  for (const user of session.users) {
-    expect(session.getUserWhitecards(user).length).toBe(10)
-  }
-  expect(session.redCard).not.toBe(null)
-  expect(user1.master).toBeTruthy()
+  session.players.forEach((player) => {
+    expect(player.deck.length).toBe(10)
+  })
 
-  const user2whiteCard = session.getUserWhitecards(user2)[0]
-  session.vote(user2, user2whiteCard)
+  expect(session.redCard).not.toBe(null)
+  expect(firstPlayer.master).toBeTruthy()
+
+  const secondPlayer = session.players[1]
+  const secondPlayerWhiteCard = secondPlayer.deck[0]
+  session.vote(secondPlayer.id, secondPlayerWhiteCard)
+
   expect(session.votes.length).toBe(1)
-  expect(session.votes[0].text).toBe(user2whiteCard)
-  expect(session.votes[0].userId).toBe(user2.id)
+  expect(session.votes[0].text).toBe(secondPlayerWhiteCard)
+  expect(session.votes[0].playerId).toBe(secondPlayer.id)
   expect(session.votes[0].visible).toBeFalsy()
 
-  session.vote(user3, session.getUserWhitecards(user3)[0])
+  const thirdPlayer = session.players[2]
+  const fourthPlayer = session.players[3]
+
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
   expect(session.votes.length).toBe(2)
-  session.vote(user4, session.getUserWhitecards(user3)[0])
+  session.vote(fourthPlayer.id, fourthPlayer.deck[0])
   expect(session.votes.length).toBe(3)
 
   expect(session.status).toBe("choosing")
 
-  session.choose(user2.id)
-  session.choose(user3.id)
-  session.choose(user4.id)
+  session.choose(firstPlayer.id, secondPlayer.id)
+  session.choose(firstPlayer.id, thirdPlayer.id)
+  session.choose(firstPlayer.id, fourthPlayer.id)
 
-  for (const vote of session.votes) {
+  session.votes.forEach((vote) => {
     expect(vote.visible).toBeTruthy()
-  }
+  })
 
-  expect(session.status).toBe("choosingbest")
+  expect(session.status).toBe("choosingwinner")
 
-  session.chooseBest(user2.id)
-  expect(session.status).toBe("bestcardview")
+  session.chooseWinner(firstPlayer.id, secondPlayer.id)
+  expect(session.status).toBe("winnercardview")
 
   jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
-  expect(user2.score).toBe(1)
-  expect(session.votes.length).toBe(0)
-  for (const user of session.users) {
-    expect(user.voted).toBeFalsy()
-    expect(session.getUserWhitecards(user).length).toBe(10)
-  }
-  expect(session.status).toBe("voting")
-  expect(user2.master).toBeTruthy()
-  expect(user1.master).toBeFalsy()
 
-  user1.score = 9
-  session.vote(user1, session.getUserWhitecards(user1)[0])
-  session.chooseBest(session.votes[0].userId)
+  expect(secondPlayer.score).toBe(1)
+  expect(session.votes.length).toBe(0)
+
+  session.players.forEach((player) => {
+    expect(player.voted).toBeFalsy()
+    expect(player.deck.length).toBe(10)
+  })
+
+  expect(session.status).toBe("voting")
+  expect(secondPlayer.master).toBeTruthy()
+  expect(firstPlayer.master).toBeFalsy()
+
+  firstPlayer.score = 9
+
+  session.vote(firstPlayer.id, firstPlayer.deck[0])
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
+  session.vote(fourthPlayer.id, fourthPlayer.deck[0])
+
+  session.choose(secondPlayer.id, firstPlayer.id)
+  session.choose(secondPlayer.id, thirdPlayer.id)
+  session.choose(secondPlayer.id, fourthPlayer.id)
+
+  session.chooseWinner(secondPlayer.id, firstPlayer.id)
 
   jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
 
@@ -88,199 +108,166 @@ it("processes gameplay as expected", () => {
 })
 
 it("emits all events", async () => {
-  const startingFake = jest.fn(() => {
+  const leaveMock = jest.fn(() => {
     //
   })
-  const votingFake = jest.fn(() => {
+  const joinMock = jest.fn(() => {
     //
   })
-  const choosingFake = jest.fn(() => {
+  const chooseMock = jest.fn(() => {
     //
   })
-  const choosingBestFake = jest.fn(() => {
+  const chooseWinnerMock = jest.fn(() => {
     //
   })
-  const endFake = jest.fn(() => {
+  const configurationChangeMock = jest.fn(() => {
+    //
+  })
+  const sessionEndMock = jest.fn(() => {
+    //
+  })
+  const statusChangeMock = jest.fn(() => {
+    //
+  })
+  const voteMock = jest.fn(() => {
     //
   })
 
-  session.eventBus.on("starting", startingFake)
-  session.eventBus.on("voting", votingFake)
-  session.eventBus.on("choosing", choosingFake)
-  session.eventBus.on("choosingbest", choosingBestFake)
-  session.eventBus.on("end", endFake)
+  session.events.on("choose", chooseMock)
+  session.events.on("choosewinner", chooseWinnerMock)
+  session.events.on("configurationchange", configurationChangeMock)
+  session.events.on("join", joinMock)
+  session.events.on("leave", leaveMock)
+  session.events.on("sessionend", sessionEndMock)
+  session.events.on("statuschange", statusChangeMock)
+  session.events.on("vote", voteMock)
 
-  session.addUser(sender, "user1", 0, true)
-  const user2 = session.addUser(sender, "user2", 0, false)
-  const user3 = session.addUser(sender, "user3", 0, false)
+  session.join(sender, "user1", 0, true)
+  session.join(sender, "user2", 0, false)
+  session.join(sender, "user3", 0, false)
+  session.join(sender, "user4", 0, false)
 
-  await session.startGame()
-  expect(startingFake).toBeCalledTimes(1)
+  const firstPlayer = session.players[0]
+  const secondPlayer = session.players[1]
+  const thirdPlayer = session.players[2]
+  const fourthPlayer = session.players[3]
+
+  session.startGame(firstPlayer.id)
 
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
+  session.vote(secondPlayer.id, secondPlayer.deck[0])
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
+  session.vote(fourthPlayer.id, fourthPlayer.deck[0])
+
+  session.choose(firstPlayer.id, secondPlayer.id)
+  session.choose(firstPlayer.id, thirdPlayer.id)
+  session.choose(firstPlayer.id, fourthPlayer.id)
+
+  session.chooseWinner(firstPlayer.id, secondPlayer.id)
+
+  session.endGame()
+
   jest.useRealTimers()
-  await new Promise((resolve) => setTimeout(resolve, 0))
-
-  expect(votingFake).toBeCalledTimes(1)
-
-  session.vote(user2, session.getUserWhitecards(user2)[0])
-  session.vote(user3, session.getUserWhitecards(user3)[0])
-
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  expect(choosingFake).toBeCalledTimes(1)
-
-  session.choose(user2.id)
-  await session.choose(user3.id)
-  expect(choosingBestFake).toBeCalledTimes(1)
-
-  jest.useFakeTimers()
-  session.chooseBest(user2.id)
-  jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
-  jest.useRealTimers()
-  await new Promise((resolve) => setTimeout(resolve, 0))
-
-  expect(votingFake).toBeCalledTimes(2)
-
-  await session.endGame()
-  expect(endFake).toBeCalledTimes(1)
-})
-
-it("calls callbacks when choose(), vote() and choosebest() are processed", async () => {
-  session.addUser(sender, "qwe", 0, true)
-  const user2 = session.addUser(sender, "qwe", 0, false)
-  const user3 = session.addUser(sender, "qwe", 0, false)
-
-  session.startGame()
-  jest.advanceTimersByTime(GAME_START_DELAY_MS)
-
-  const onVoteFake = jest.fn()
-  session.vote(user2, session.getUserWhitecards(user2)[0], {
-    onVote: onVoteFake
+  await waitForExpect(() => {
+    expect(statusChangeMock).toBeCalledWith("starting")
+    expect(statusChangeMock).toBeCalledWith("end")
+    expect(chooseWinnerMock).toBeCalledTimes(1)
+    expect(chooseMock).toBeCalledTimes(3)
+    expect(statusChangeMock).toBeCalledWith("choosing")
+    expect(voteMock).toBeCalledTimes(3)
+    expect(statusChangeMock).toBeCalledWith("voting")
   })
-  session.vote(user3, session.getUserWhitecards(user3)[0], {
-    onVote: onVoteFake
-  })
-  expect(onVoteFake).toBeCalledTimes(2)
 
-  const onChooseFake = jest.fn()
-  await session.choose(user2.id, { onChoose: onChooseFake })
-  expect(onChooseFake).toBeCalledTimes(1)
-
-  const onChooseBestFake = jest.fn()
-  session.chooseBest(user2.id, { onChooseBest: onChooseBestFake })
-  expect(onChooseBestFake).toBeCalledTimes(1)
+  session.events.clear()
 })
 
 it("automatically starts choosing", () => {
-  session.addUser(sender, "qwe", 0, true)
-  session.addUser(sender, "qwe", 0, false)
-  session.addUser(sender, "qwe", 0, false)
+  session.join(sender, "1", 0, true)
+  session.join(sender, "2", 0, false)
+  session.join(sender, "3", 0, false)
 
-  session.startGame()
+  session.startGame(session.players[0].id)
 
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
   expect(session.status).toBe("voting")
 
   jest.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
   expect(session.status).toBe("choosing")
+
+  session.endGame()
 })
 
-it("votes with a random card if user hasn't voted", () => {
-  session.addUser(sender, "qwe", 0, true)
-  const user2 = session.addUser(sender, "qwe", 0, false)
-  session.addUser(sender, "qwe", 0, false)
+it("votes with a random card if user didn't vote", () => {
+  session.join(sender, "1", 0, true)
+  session.join(sender, "2", 0, false)
+  session.join(sender, "3", 0, false)
 
-  session.startGame()
+  session.startGame(session.players[0].id)
+
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
   jest.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
 
-  expect(session.getUserWhitecards(user2).length).toBe(9)
+  expect(session.players[1].deck.length).toBe(9)
+  expect(session.players[2].deck.length).toBe(9)
   expect(session.votes.length).toBe(2)
+
+  session.endGame()
 })
 
-it("throws if calling choose(), chooseBest(), vote() and getUserWhiteCards() with invalid user", async () => {
-  const user1 = session.addUser(sender, "qwe", 0, true)
-  const fakeUser = { ...user1 }
-  const user2 = session.addUser(sender, "qwe", 0, false)
-  const user3 = session.addUser(sender, "qwe", 0, false)
+it("doesn't master a disconnected user", () => {
+  session.join(sender, "1", 0, true)
+  session.join(sender, "2", 0, false)
+  session.join(sender, "3", 0, false)
+  session.join(sender, "4", 0, false)
+  session.join(sender, "5", 0, false)
 
-  session.startGame()
+  session.startGame(session.players[0].id)
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
-  expect(() =>
-    session.vote(fakeUser, session.getUserWhitecards(user1)[0])
-  ).toThrow()
-  expect(() => session.getUserWhitecards(fakeUser)).toThrow()
 
-  session.vote(user2, session.getUserWhitecards(user2)[0])
-  session.vote(user3, session.getUserWhitecards(user3)[0])
+  session.leave(session.players[1].id)
+  session.leave(session.players[0].id)
 
-  expect((async () => await session.choose("asdasdas"))()).rejects.toThrow()
-  expect(() => session.chooseBest("wqeqweqwew")).toThrow()
-})
+  expect(session.players[1].master).toBeFalsy()
+  expect(session.players[2].master).toBeTruthy()
 
-it("doesn't master a disconnected user ", () => {
-  const user1 = session.addUser(sender, "qwe", 0, true)
-  const user2 = session.addUser(sender, "qwe", 0, false)
-  const user3 = session.addUser(sender, "qwe", 0, false)
-  const user4 = session.addUser(sender, "qwe", 0, false)
-
-  session.startGame()
-  session.disconnectUser(user1)
-
-  jest.advanceTimersByTime(GAME_START_DELAY_MS)
-  expect(user2.master).toBeTruthy()
-
-  session.reconnectUser(sender, user1, 1)
-  session.disconnectUser(user2)
-  session.reconnectUser(sender, user2, 1)
-  session.disconnectUser(user3)
-  session.reconnectUser(sender, user3, 1)
-  session.disconnectUser(user4)
-
-  expect(user1.master).toBeTruthy()
+  session.endGame()
 })
 
 it("uses configuration", () => {
-  const user1 = session.addUser(sender, "qwe", 0, true)
-  session.addUser(sender, "qwe", 0, false)
-  session.addUser(sender, "qwe", 0, false)
-  session.addUser(sender, "qwe", 0, false)
+  session.join(sender, "1", 0, true)
+  session.join(sender, "2", 0, false)
+  session.join(sender, "3", 0, false)
+
+  const firstPlayer = session.players[0]
+  const secondPlayer = session.players[1]
+  const thirdPlayer = session.players[2]
 
   const configuration = {
-    votingDurationSeconds: 30,
+    votingDurationSeconds: 154,
     maxScore: 10,
     reader: "off"
   } as const
-  session.updateConfiguration(configuration)
+  session.updateConfiguration(firstPlayer.id, configuration)
   expect(session.configuration).toEqual(configuration)
 
-  session.startGame()
+  session.startGame(firstPlayer.id)
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-  expect(dayjs(session.getTimeoutDate("voting")).diff(dayjs(), "s")).toBe(30)
+  expect(dayjs(session.getTimeoutDate("voting")).diff(dayjs(), "s")).toBe(
+    configuration.votingDurationSeconds
+  )
 
-  user1.score = 9
-  session.vote(user1, session.getUserWhitecards(user1)[0])
-  session.chooseBest(session.votes[0].userId)
+  secondPlayer.score = configuration.maxScore - 1
+
+  session.vote(secondPlayer.id, secondPlayer.deck[0])
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
+
+  session.choose(firstPlayer.id, secondPlayer.id)
+  session.choose(firstPlayer.id, thirdPlayer.id)
+
+  session.chooseWinner(firstPlayer.id, secondPlayer.id)
   jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
-  expect(session.status).toBe("end")
 
-  session.updateConfiguration({
-    votingDurationSeconds: 30,
-    maxScore: 15,
-    reader: "off"
-  })
-
-  user1.score = 9
-  session.vote(user1, session.getUserWhitecards(user1)[0])
-  session.chooseBest(session.votes[0].userId)
-  jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
-  expect(session.status).toBe("voting")
-
-  user1.score = 14
-  session.vote(user1, session.getUserWhitecards(user1)[0])
-  session.chooseBest(session.votes[0].userId)
-  jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
   expect(session.status).toBe("end")
 })

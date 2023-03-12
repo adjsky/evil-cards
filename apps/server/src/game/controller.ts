@@ -6,10 +6,10 @@ import stringify from "../lib/ws/stringify"
 import { ALIVE_CHECK_INTERVAL_MS } from "./constants"
 
 import type { WebSocket } from "ws"
-import type { ControllerEventBus } from "./types"
+import type { ControllerEvents } from "./types"
 
 class Controller {
-  public eventBus: ControllerEventBus
+  public eventBus: ControllerEvents
 
   constructor() {
     this.eventBus = new Emittery()

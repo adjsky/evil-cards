@@ -24,7 +24,6 @@ export type SessionEvents = Emittery<{
   statuschange: Status
   join: Player
   leave: Player
-  gameend: undefined
   sessionend: undefined
   configurationchange: Configuration
   vote: Vote

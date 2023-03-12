@@ -44,7 +44,12 @@ describe("join", () => {
     session.join(sender, "3", 0, false)
     session.join(sender, "4", 0, false)
 
+    jest.useFakeTimers()
+
     session.startGame(session.players[0].id)
+    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+
+    jest.useRealTimers()
 
     session.leave(session.players[0].id)
 
@@ -88,7 +93,12 @@ describe("leave", () => {
     session.join(sender, "3", 1, false)
     session.join(sender, "4", 1, false)
 
+    jest.useFakeTimers()
+
     session.startGame(session.players[0].id)
+    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+
+    jest.useRealTimers()
 
     session.leave(session.players[1].id)
 
