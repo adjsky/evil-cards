@@ -24,10 +24,6 @@ jest.mock("@/lib/hooks/use-socket", () => {
 })
 
 afterEach(() => {
-  sendJsonMessageMock.mockClear()
-  connectMock.mockClear()
-  disconnectMock.mockClear()
-
   resetLocationMock()
 })
 

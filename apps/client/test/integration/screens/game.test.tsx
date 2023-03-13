@@ -8,23 +8,17 @@ import {
   getFakeNonMasterGameState
 } from "../../helpers/get-fake-game-state"
 
-const fakeGameStateUpdateHandler = jest.fn()
 const sendJsonMessageMock = jest.fn()
 jest.mock("@/lib/hooks/use-socket", () => {
   return {
     __esModule: true,
     default: () => ({
-      sendJsonMessage: sendJsonMessageMock,
+      sendJsonMessage: jest.fn(),
       connected: true
     })
   }
 })
 mockAnimationsApi()
-
-beforeEach(() => {
-  sendJsonMessageMock.mockClear()
-  fakeGameStateUpdateHandler.mockClear()
-})
 
 describe("red cards", () => {
   it("displays red card", () => {

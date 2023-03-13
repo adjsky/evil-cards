@@ -20,13 +20,12 @@ import type {
   Vote,
   Configuration,
   SessionEvents,
-  PlayerSender
+  PlayerSender,
+  Timeouts
 } from "./types"
-import type { DateTimeout } from "../lib/date-timeout"
+import type { ISession, ISessionFactory } from "./intefaces"
 
-type Timeouts = Record<"voting" | "starting" | "choosebest", null | DateTimeout>
-
-class Session {
+class Session implements ISession {
   private _id: string
   private _availableRedCards: string[]
   private _availableWhiteCards: string[]
@@ -466,6 +465,12 @@ class Session {
 
   private isPlaying() {
     return !this.isWaiting()
+  }
+}
+
+export class SessionFactory implements ISessionFactory {
+  public create() {
+    return new Session()
   }
 }
 

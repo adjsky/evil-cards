@@ -12,5 +12,6 @@ export default {
       }
     ]
   },
-  testEnvironment: "node"
+  testEnvironment: "node",
+  clearMocks: true
 }

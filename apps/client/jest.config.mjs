@@ -18,7 +18,8 @@ const config = {
     "^@/(.*)$": "<rootDir>/src/$1",
     "\\.css$": "identity-obj-proxy",
     "@formkit/auto-animate/react": "<rootDir>/test/config/auto-animate.ts"
-  }
+  },
+  clearMocks: true
 }
 
 export default config

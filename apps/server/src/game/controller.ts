@@ -6,20 +6,23 @@ import stringify from "../lib/ws/stringify"
 import { ALIVE_CHECK_INTERVAL_MS } from "./constants"
 
 import type { WebSocket } from "ws"
+import type { ISessionManager } from "./intefaces"
 import type { ControllerEvents } from "./types"
 
 class Controller {
-  public eventBus: ControllerEvents
+  private sessionManager: ISessionManager
+  private events: ControllerEvents
 
-  constructor() {
-    this.eventBus = new Emittery()
+  public constructor(sessionManager: ISessionManager) {
+    this.events = new Emittery()
+    this.sessionManager = sessionManager
   }
 
-  handleConnection(socket: WebSocket) {
+  public handleConnection(socket: WebSocket) {
     socket.alive = true
     const interval = setInterval(() => {
       if (!socket.alive) {
-        this.eventBus.emit("lostconnection", { socket })
+        this.events.emit("lostconnection", { socket })
         socket.terminate()
         clearInterval(interval)
         return
@@ -36,7 +39,7 @@ class Controller {
         if (message.type == "pong") {
           socket.alive = true
         } else {
-          await this.eventBus.emit(
+          await this.events.emit(
             message.type,
             "details" in message ? { ...message.details, socket } : { socket }
           )

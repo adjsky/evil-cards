@@ -1,6 +1,7 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
 import type { Message } from "../lib/ws/receive"
+import type { DateTimeout } from "../lib/date-timeout"
 
 import type {
   MapDiscriminatedUnion,
@@ -65,3 +66,8 @@ export type Configuration = {
   reader: "on" | "off"
   maxScore: number
 }
+
+export type Timeouts = Record<
+  "voting" | "starting" | "choosebest",
+  null | DateTimeout
+>
