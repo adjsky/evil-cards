@@ -13,55 +13,49 @@ import {
   SESSION_ID_SIZE,
   USER_ID_SIZE
 } from "./constants"
+import {
+  ForbiddenNicknameError,
+  ForbiddenToChooseError,
+  ForbiddenToChooseWinnerError,
+  ForbiddenToVoteError,
+  GameStartedError,
+  InvalidCardError,
+  InvalidChoosedPlayerIdError,
+  InvalidPlayerIdError,
+  NoPlayerError,
+  HostError,
+  NotEnoughPlayersError,
+  DisconnectedError
+} from "./errors"
 
-import type { Status, User, Vote, Configuration } from "../lib/ws/send"
-import type { DateTimeout } from "../lib/date-timeout"
-import type { SessionEventBus } from "./types"
+import type {
+  Status,
+  Player,
+  Vote,
+  Configuration,
+  SessionEvents,
+  PlayerSender,
+  Timeouts
+} from "./types"
+import type { ISession, ISessionFactory } from "./intefaces"
 
-export type Sender<T> = {
-  send: (data: T) => void
-}
-export type UserData<T> = {
-  sender: Sender<T>
-  whiteCards: string[]
-}
-type Timeouts = Record<"voting" | "starting" | "choosebest", null | DateTimeout>
-
-class Session<T = string> {
-  private _userData: WeakMap<User, UserData<T>> = new WeakMap()
-  private _availableRedCards = [...redCards]
-  private _availableWhiteCards = [...whiteCards]
-  private _masterIndex = 0
-  private _timeouts: Timeouts = {
-    voting: null,
-    starting: null,
-    choosebest: null
-  }
-
-  private _votes: Vote[] = []
-  private _users: User[] = []
-  private _redCard: string | null = null
-  private _status: Status = "waiting"
-  private _eventBus: SessionEventBus = new Emittery()
-  private _configuration: Configuration
+class Session implements ISession {
   private _id: string
-
-  constructor() {
-    const id = nanoid(SESSION_ID_SIZE)
-    this._id = id
-
-    this._configuration = {
-      maxScore: 10,
-      reader: "on",
-      votingDurationSeconds: 60
-    }
-  }
+  private _availableRedCards: string[]
+  private _availableWhiteCards: string[]
+  private _timeouts: Timeouts
+  private _votes: Vote[]
+  private _players: Player[]
+  private _redCard: string | null
+  private _status: Status
+  private _configuration: Configuration
+  private _events: SessionEvents
 
   public get votes() {
     return this._votes
   }
-  public get users() {
-    return this._users
+  public get players() {
+    return this._players
   }
   public get id() {
     return this._id
@@ -72,187 +66,385 @@ class Session<T = string> {
   public get status() {
     return this._status
   }
-  public get eventBus() {
-    return this._eventBus
+  public get events() {
+    return {
+      on: this._events.on.bind(this._events),
+      off: this._events.off.bind(this._events),
+      clearListeners: this._events.clearListeners.bind(this._events)
+    }
   }
   public get configuration() {
     return this._configuration
   }
 
-  public addUser(
-    sender: Sender<T>,
-    username: string,
+  public constructor() {
+    this._id = nanoid(SESSION_ID_SIZE)
+    this._configuration = {
+      maxScore: 10,
+      reader: "on",
+      votingDurationSeconds: 60
+    }
+    this._availableRedCards = [...redCards]
+    this._availableWhiteCards = [...whiteCards]
+    this._timeouts = {
+      choosebest: null,
+      starting: null,
+      voting: null
+    }
+    this._votes = []
+    this._players = []
+    this._redCard = null
+    this._status = "waiting"
+    this._events = new Emittery()
+  }
+
+  public join(
+    sender: PlayerSender,
+    nickname: string,
     avatarId: number,
     host: boolean
   ) {
-    const id = nanoid(USER_ID_SIZE)
-    const user: User = {
-      id,
+    const existingPlayer = this._players.find(
+      (player) => player.nickname == nickname
+    )
+
+    if (existingPlayer) {
+      if (!existingPlayer.disconnected) {
+        throw new ForbiddenNicknameError()
+      }
+
+      existingPlayer.disconnected = false
+      existingPlayer.avatarId = avatarId
+
+      this._events.emit("join", existingPlayer)
+
+      return existingPlayer
+    }
+
+    const isWaiting = this.isWaiting()
+
+    if (!isWaiting) {
+      throw new GameStartedError()
+    }
+
+    const player: Player = {
+      id: nanoid(USER_ID_SIZE),
       avatarId,
-      username,
+      nickname,
       score: 0,
       host,
       master: false,
       voted: false,
-      disconnected: false
+      disconnected: false,
+      deck: [],
+      sender
     }
-    this._users.push(user)
-    this._userData.set(user, {
-      sender,
-      whiteCards: []
-    })
 
-    return user
+    this._players.push(player)
+    this._events.emit("join", player)
+
+    return player
   }
 
-  public reconnectUser(sender: Sender<T>, user: User, avatarId: number) {
-    const userData = this._userData.get(user)
-    if (!userData) {
-      throw new Error("no userdata found")
+  public leave(playerId: string) {
+    const player = this._players.find((player) => player.id == playerId)
+    if (!player) {
+      throw new NoPlayerError()
     }
 
-    userData.sender = sender
-    user.disconnected = false
-    user.avatarId = avatarId
-  }
-
-  public disconnectUser(
-    user: User,
-    callbacks?: {
-      onSessionEnd?: () => void
-      onDisconnect?: (anyActivePlayers: boolean) => void
+    if (player.disconnected) {
+      throw new DisconnectedError()
     }
-  ) {
-    const isHost = user.host
 
-    if (this._status == "waiting") {
-      this._users = this._users.filter(
-        (sessionUser) => sessionUser.id != user.id
-      )
+    const isPlaying = this.isPlaying()
+
+    if (isPlaying) {
+      player.disconnected = true
     } else {
-      user.disconnected = true
+      this._players = this._players.filter((p) => p.id != playerId)
     }
 
-    const connectedUsers = this._users.filter(
-      (user) => user.disconnected == false
-    )
-    if (connectedUsers.length == 0) {
+    const remainingPlayers = this._players.filter((p) => !p.disconnected)
+
+    if (remainingPlayers.length == 0) {
       this.clearTimeouts()
-      if (callbacks?.onSessionEnd) {
-        callbacks?.onSessionEnd()
-      }
-      if (callbacks?.onDisconnect) {
-        callbacks.onDisconnect(false)
-      }
+
+      this._events.emit("leave", player)
+      this._events.emit("sessionend")
 
       return
     }
 
-    if (isHost && connectedUsers[0]) {
-      connectedUsers[0].host = true
-    }
-
-    if (this._status != "waiting" && user.master) {
-      user.master = false
-
-      // decide who is master
-      let masterUser = this._users[this._masterIndex]
-      if (masterUser.disconnected) {
-        this.updateMasterIndex()
+    if (player.host) {
+      if (isPlaying) {
+        player.host = false
       }
-      masterUser = this._users[this._masterIndex]
-      masterUser.master = true
-      this.updateMasterIndex()
+
+      remainingPlayers[0].host = true
     }
 
-    if (callbacks?.onDisconnect) {
-      callbacks.onDisconnect(true)
+    if (isPlaying && player.master) {
+      this.passMaster()
     }
 
-    if (
-      this._status != "waiting" &&
-      connectedUsers.length < MIN_PLAYERS_TO_START_GAME
-    ) {
+    this._events.emit("leave", player)
+
+    if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
       this.endGame()
     }
   }
 
-  public async startGame() {
+  public updateConfiguration(playerId: string, configuration: Configuration) {
+    const player = this._players.find((p) => p.id == playerId)
+
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    if (!player.host) {
+      throw new HostError()
+    }
+
+    this._configuration = configuration
+
+    this._events.emit("configurationchange", configuration)
+  }
+
+  public startGame(playerId: string) {
+    const player = this._players.find((p) => p.id == playerId)
+
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    if (!player.host) {
+      throw new HostError()
+    }
+
+    if (this.isPlaying()) {
+      throw new GameStartedError()
+    }
+
+    if (this._players.length < MIN_PLAYERS_TO_START_GAME) {
+      throw new NotEnoughPlayersError()
+    }
+
     this._status = "starting"
-    this.users.forEach((user) => {
-      user.score = 0
+
+    this.players.forEach((p) => {
+      p.score = 0
     })
+
     this._timeouts.starting = setDateTimeout(() => {
       this._timeouts.starting = null
       this.startVoting()
     }, dayjs().add(GAME_START_DELAY_MS, "ms").toDate())
 
-    await this._eventBus.emit("starting")
+    this._events.emit("statuschange", this._status)
   }
 
-  public vote(user: User, text: string, callbacks?: { onVote?: () => void }) {
-    const userData = this._userData.get(user)
-    if (!userData) {
-      throw new Error("no userdata found")
+  public vote(playerId: string, text: string) {
+    const player = this._players.find((p) => p.id == playerId)
+    const cardIndex = player?.deck.findIndex((deckCard) => deckCard == text)
+
+    if (!player || cardIndex == undefined) {
+      throw new InvalidPlayerIdError()
     }
 
-    user.voted = true
-    userData.whiteCards = userData.whiteCards.filter(
-      (cardText) => text != cardText
-    )
-    this._votes.push({ text, userId: user.id, visible: false, winner: false })
-
-    if (callbacks?.onVote) {
-      callbacks.onVote()
+    if (cardIndex == -1) {
+      throw new InvalidCardError()
     }
 
-    let allVoted = true
-    for (const user of this._users) {
-      if (!user.master && !user.voted && !user.disconnected) {
-        allVoted = false
-      }
+    if (this._status != "voting" || player.master || player.voted) {
+      throw new ForbiddenToVoteError()
     }
-    if (allVoted) {
+
+    player.voted = true
+
+    player.deck.splice(cardIndex, 1)
+
+    const vote: Vote = {
+      text,
+      playerId: player.id,
+      visible: false,
+      winner: false
+    }
+    this._votes.push(vote)
+
+    this._events.emit("vote", vote)
+
+    const nPlayersToVote = this._players.filter(
+      (player) => !player.master && !player.disconnected
+    ).length
+
+    if (nPlayersToVote == this._votes.length) {
       this.startChoosing()
     }
   }
 
-  public async choose(userId: string, callbacks?: { onChoose?: () => void }) {
-    const card = this._votes.find((card) => card.userId == userId)
-    if (!card) {
-      throw new Error("provided user did not vote")
-    }
-    card.visible = true
+  public choose(playerId: string, choosedPlayerId: string) {
+    const player = this._players.find((p) => p.id == playerId)
+    const choosedVote = this._votes.find(
+      (vote) => vote.playerId == choosedPlayerId
+    )
 
-    if (callbacks?.onChoose) {
-      callbacks.onChoose()
+    if (!player) {
+      throw new InvalidPlayerIdError()
     }
+
+    if (!choosedVote) {
+      throw new InvalidChoosedPlayerIdError()
+    }
+
+    if (this._status != "choosing" || !player.master) {
+      throw new ForbiddenToChooseError()
+    }
+
+    choosedVote.visible = true
+
+    this._events.emit("choose", choosedVote)
 
     if (this._votes.every((vote) => vote.visible)) {
-      this._status = "choosingbest"
-      await this._eventBus.emit("choosingbest")
+      this.startChoosingWinner()
     }
   }
 
-  public chooseBest(userId: string, callbacks?: { onChooseBest?: () => void }) {
-    const votedUser = this._users.find((user) => user.id == userId)
-    const vote = this._votes.find((vote) => vote.userId == userId)
-    if (!votedUser || !vote) {
-      throw new Error("provided user did not vote")
+  public chooseWinner(playerId: string, choosedPlayerId: string) {
+    const player = this._players.find((p) => p.id == playerId)
+
+    const choosedVote = this._votes.find(
+      (vote) => vote.playerId == choosedPlayerId
+    )
+    const choosedPlayer = this._players.find((p) => p.id == choosedPlayerId)
+
+    if (!player) {
+      throw new InvalidPlayerIdError()
     }
 
-    votedUser.score += 1
-    vote.winner = true
-    this._status = "bestcardview"
-
-    if (callbacks?.onChooseBest) {
-      callbacks.onChooseBest()
+    if (!choosedPlayer || !choosedVote) {
+      throw new InvalidChoosedPlayerIdError()
     }
+
+    if (!player.master || this._status != "choosingwinner") {
+      throw new ForbiddenToChooseWinnerError()
+    }
+
+    choosedPlayer.score += 1
+    choosedVote.winner = true
+
+    this._events.emit("choosewinner", choosedVote)
+
+    const didPlayerWin = choosedPlayer.score >= this._configuration.maxScore
+    this.startWinnerCardView(didPlayerWin)
+  }
+
+  public endGame() {
+    this._status = "end"
+    this._redCard = null
+    this._votes = []
+    this._availableRedCards = [...redCards]
+    this._availableWhiteCards = [...whiteCards]
+
+    this.clearTimeouts()
+
+    this._players = this.players.filter((p) => !p.disconnected)
+
+    for (const player of this._players) {
+      player.deck.length = 0
+      player.master = false
+      player.voted = false
+    }
+
+    this._events.emit("statuschange", this._status)
+  }
+
+  public getTimeoutDate(name: keyof Timeouts) {
+    return this._timeouts[name]?.date
+  }
+
+  private startVoting() {
+    this._votes = []
+    this._players.forEach((player) => {
+      player.voted = false
+    })
+    this._status = "voting"
+
+    this.passMaster()
+
+    const redCardIndex = getRandomInt(0, this._availableRedCards.length - 1)
+    this._redCard = this._availableRedCards[redCardIndex]
+    this._availableRedCards.splice(redCardIndex, 1)
+
+    this._players.forEach((player) => {
+      const deckLength = player.deck.length
+
+      for (let i = 0; i < 10 - deckLength; i++) {
+        const randomIndex = getRandomInt(
+          0,
+          this._availableWhiteCards.length - 1
+        )
+
+        const whiteCard = this._availableWhiteCards[randomIndex]
+        player.deck.push(whiteCard)
+
+        this._availableWhiteCards.splice(randomIndex, 1)
+      }
+    })
+
+    this._timeouts.voting = setDateTimeout(() => {
+      this._timeouts.voting = null
+      this.startChoosing()
+    }, dayjs().add(this._configuration.votingDurationSeconds, "s").toDate())
+
+    this._events.emit("statuschange", this._status)
+  }
+
+  private startChoosing() {
+    if (this._timeouts.voting) {
+      this._timeouts.voting.clear()
+      this._timeouts.voting = null
+    }
+
+    this._status = "choosing"
+
+    this._players.forEach((player) => {
+      if (player.voted || player.master || player.disconnected) {
+        return
+      }
+
+      const randomIndex = getRandomInt(0, player.deck.length - 1)
+      const text = player.deck[randomIndex]
+
+      player.voted = true
+
+      this._votes.push({
+        text,
+        playerId: player.id,
+        visible: false,
+        winner: false
+      })
+
+      player.deck.splice(randomIndex, 1)
+    })
+
+    this._votes = shuffleArray(this._votes)
+
+    this._events.emit("statuschange", this._status)
+  }
+
+  private startChoosingWinner() {
+    this._status = "choosingwinner"
+    this._events.emit("statuschange", this._status)
+  }
+
+  private startWinnerCardView(didPlayerWin?: boolean) {
+    this._status = "winnercardview"
+    this._events.emit("statuschange", this._status)
 
     this._timeouts.choosebest = setDateTimeout(() => {
       this._timeouts.choosebest = null
 
-      if (votedUser.score >= this._configuration.maxScore) {
+      if (didPlayerWin) {
         this.endGame()
       } else {
         this.startVoting()
@@ -260,64 +452,29 @@ class Session<T = string> {
     }, dayjs().add(BEST_CARD_VIEW_DURATION_MS, "ms").toDate())
   }
 
-  public async endGame() {
-    this._status = "end"
-    this._redCard = null
-    this._votes = []
-    this._availableRedCards = [...redCards]
-    this._availableWhiteCards = [...whiteCards]
-    this._masterIndex = 0
+  private passMaster() {
+    const currentMasterIndex = this._players.findIndex(
+      (player) => player.master
+    )
 
-    this.clearTimeouts()
+    if (currentMasterIndex == -1) {
+      this.players[0].master = true
 
-    this._users = this._users.filter((user) => user.disconnected == false)
-    for (const user of this._users) {
-      this.getUserWhitecards(user).length = 0
-      user.master = false
-      user.voted = false
+      return
     }
 
-    await this._eventBus.emit("end")
-  }
+    this._players[currentMasterIndex].master = false
 
-  public getUserSender(user: User) {
-    const userData = this._userData.get(user)
-    if (!userData) {
-      throw new Error("no userdata found")
-    }
-
-    return userData.sender
-  }
-
-  public getTimeoutDate(name: keyof Timeouts) {
-    return this._timeouts[name]?.date
-  }
-
-  public getUserWhitecards(user: User) {
-    const userData = this._userData.get(user)
-    if (!userData) {
-      throw new Error("no userdata found")
-    }
-
-    return userData.whiteCards
-  }
-
-  public updateConfiguration(configuration: Configuration) {
-    this._configuration = configuration
-  }
-
-  private updateMasterIndex() {
-    let masterIndex = this._masterIndex
-
+    let nextMasterPlayerIndex = currentMasterIndex
     do {
-      if (masterIndex + 1 >= this._users.length) {
-        masterIndex = 0
+      if (nextMasterPlayerIndex + 1 >= this._players.length) {
+        nextMasterPlayerIndex = 0
       } else {
-        masterIndex += 1
+        nextMasterPlayerIndex += 1
       }
-    } while (this._users.at(masterIndex)?.disconnected == true)
+    } while (this._players[nextMasterPlayerIndex].disconnected)
 
-    this._masterIndex = masterIndex
+    this._players[nextMasterPlayerIndex].master = true
   }
 
   private clearTimeouts() {
@@ -331,85 +488,22 @@ class Session<T = string> {
     }
   }
 
-  private async startVoting() {
-    // prepare
-    this._votes = []
-    for (const user of this._users) {
-      user.voted = false
-    }
-    this._status = "voting"
-
-    // unmaster previous user
-    const prevMasterUser = this._users.find((user) => user.master == true)
-    if (prevMasterUser) {
-      prevMasterUser.master = false
-    }
-
-    // decide who is master
-    let masterUser = this._users[this._masterIndex]
-    if (masterUser.disconnected) {
-      this.updateMasterIndex()
-    }
-    masterUser = this._users[this._masterIndex]
-    masterUser.master = true
-    this.updateMasterIndex()
-
-    // get red card
-    const redCardIndex = getRandomInt(0, this._availableRedCards.length - 1)
-    const redCard = this._availableRedCards[redCardIndex]
-    this._redCard = redCard
-    this._availableRedCards.splice(redCardIndex, 1)
-
-    // get up to 10 white cards
-    for (const user of this._users) {
-      const whiteCards = this.getUserWhitecards(user)
-      const whiteCardsLength = whiteCards.length
-
-      for (let i = 0; i < 10 - whiteCardsLength; i++) {
-        const whiteCardIndex = getRandomInt(
-          0,
-          this._availableWhiteCards.length - 1
-        )
-        const whiteCard = this._availableWhiteCards.at(whiteCardIndex)
-        if (whiteCard) whiteCards.push(whiteCard)
-        this._availableWhiteCards.splice(whiteCardIndex, 1)
-      }
-    }
-
-    this._timeouts.voting = setDateTimeout(() => {
-      this._timeouts.voting = null
-      this.startChoosing()
-    }, dayjs().add(this._configuration.votingDurationSeconds, "s").toDate())
-
-    await this._eventBus.emit("voting")
+  private isWaiting() {
+    return (
+      this._status == "waiting" ||
+      this._status == "end" ||
+      this._status == "starting"
+    )
   }
 
-  private async startChoosing() {
-    if (this._timeouts.voting) {
-      this._timeouts.voting.clear()
-      this._timeouts.voting = null
-    }
+  private isPlaying() {
+    return !this.isWaiting()
+  }
+}
 
-    this._status = "choosing"
-
-    this._users.forEach((user) => {
-      if (!user.voted && !user.master && !user.disconnected) {
-        const userWhitecards = this.getUserWhitecards(user)
-        const randomCardIndex = getRandomInt(0, userWhitecards.length - 1)
-        const text = userWhitecards[randomCardIndex]
-        user.voted = true
-        this._votes.push({
-          text,
-          userId: user.id,
-          visible: false,
-          winner: false
-        })
-        userWhitecards.splice(randomCardIndex, 1)
-      }
-    })
-    this._votes = shuffleArray(this._votes)
-
-    await this._eventBus.emit("choosing")
+export class SessionFactory implements ISessionFactory {
+  public create() {
+    return new Session()
   }
 }
 

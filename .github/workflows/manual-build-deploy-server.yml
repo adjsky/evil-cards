@@ -25,10 +25,16 @@ jobs:
           file: deploy/Dockerfile.server
           platforms: linux/amd64
 
-      - name: Deploy changes
+      - name: Reflect changes on remote server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          script: /app/scripts/deploy-server.sh
+          envs:
+            REPOSITORY: ${{ github.repository }}
+            APP_PATH: /app
+            SOURCE_DIR: source-server
+          script: |
+            git clone https://github.com/$REPOSTORY.git $APP_PATH/$SOURCE_DIR
+            $APP_PATH/$SOURCE_DIR/deploy/update-server.sh

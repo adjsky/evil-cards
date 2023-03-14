@@ -2,12 +2,12 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 
 export function processMessageAndSpeak(message: ReceiveMessage) {
   switch (message.type) {
-    case "votingstarted":
+    case "votingstart":
       speak(message.details.changedState.redCard.replaceAll("_", ""))
       break
     case "choose": {
       const voteText = message.details.changedState.votes.find(
-        (vote) => vote.userId == message.details.choosedUserId
+        (vote) => vote.playerId == message.details.choosedPlayerId
       )?.text
 
       if (voteText) {

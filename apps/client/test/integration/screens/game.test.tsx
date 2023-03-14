@@ -8,7 +8,6 @@ import {
   getFakeNonMasterGameState
 } from "../../helpers/get-fake-game-state"
 
-const fakeGameStateUpdateHandler = jest.fn()
 const sendJsonMessageMock = jest.fn()
 jest.mock("@/lib/hooks/use-socket", () => {
   return {
@@ -20,11 +19,6 @@ jest.mock("@/lib/hooks/use-socket", () => {
   }
 })
 mockAnimationsApi()
-
-beforeEach(() => {
-  sendJsonMessageMock.mockClear()
-  fakeGameStateUpdateHandler.mockClear()
-})
 
 describe("red cards", () => {
   it("displays red card", () => {
@@ -42,8 +36,8 @@ describe("white cards", () => {
     const gameState = getFakeMasterGameState("voting")
     render(<Game gameState={gameState} />)
 
-    const cards = screen.getByTestId("cards")
-    expect(cards.children.length).toBe(gameState.whiteCards.length)
+    const deck = screen.getByTestId("deck")
+    expect(deck.children.length).toBe(gameState.deck.length)
   })
 
   it("sends a vote message when the white card is clicked", async () => {
@@ -51,7 +45,7 @@ describe("white cards", () => {
 
     render(<Game gameState={getFakeNonMasterGameState("voting")} />)
 
-    const firstWhiteCard = screen.getByTestId("cards").children[0]
+    const firstWhiteCard = screen.getByTestId("deck").children[0]
     await user.click(firstWhiteCard)
 
     expect(sendJsonMessageMock).toBeCalledWith({
@@ -63,8 +57,8 @@ describe("white cards", () => {
   it("doesn't allow masters to vote", () => {
     render(<Game gameState={getFakeMasterGameState("voting")} />)
 
-    const cards = screen.getByTestId("cards")
-    for (const card of Array.from(cards.children)) {
+    const deck = screen.getByTestId("deck")
+    for (const card of Array.from(deck.children)) {
       expect(card).toBeDisabled()
     }
   })
@@ -72,8 +66,8 @@ describe("white cards", () => {
   it("allows non-masters to vote", () => {
     render(<Game gameState={getFakeNonMasterGameState("voting")} />)
 
-    const cards = screen.getByTestId("cards")
-    for (const card of Array.from(cards.children)) {
+    const deck = screen.getByTestId("deck")
+    for (const card of Array.from(deck.children)) {
       expect(card).toBeEnabled()
     }
   })
@@ -98,7 +92,7 @@ describe("voted cards", () => {
   })
 
   it("displays a card text if the card is visible", () => {
-    const gameState = getFakeMasterGameState("choosingbest")
+    const gameState = getFakeMasterGameState("choosingwinner")
 
     render(<Game gameState={gameState} />)
 
@@ -112,21 +106,21 @@ describe("voted cards", () => {
     }
   })
 
-  it("displays a card username if the card is winner", () => {
-    const gameState = getFakeMasterGameState("bestcardview")
+  it("displays a card nickname if the card is winner", () => {
+    const gameState = getFakeMasterGameState("winnercardview")
 
-    const firstVoteUsername = gameState.users.find(
-      (user) => user.id == gameState.votes[0].userId
-    )?.username
-    expect(firstVoteUsername).toBeDefined()
+    const firstVoteNickname = gameState.players.find(
+      (player) => player.id == gameState.votes[0].playerId
+    )?.nickname
+    expect(firstVoteNickname).toBeDefined()
 
     render(<Game gameState={gameState} />)
 
     const votesContainer = screen.getByTestId("votes")
-    expect(votesContainer.children[0]).toHaveTextContent(firstVoteUsername!)
+    expect(votesContainer.children[0]).toHaveTextContent(firstVoteNickname!)
   })
 
-  it("allows to choose a voted card when game status=choosing and user is master", () => {
+  it("allows to choose a voted card when game status=choosing and player is master", () => {
     const gameState = getFakeMasterGameState("choosing")
 
     render(<Game gameState={gameState} />)
@@ -139,7 +133,7 @@ describe("voted cards", () => {
     }
   })
 
-  it("doesn't allow to choose a voted card when game status=choosing and user isn't master", () => {
+  it("doesn't allow to choose a voted card when game status=choosing and player isn't master", () => {
     const gameState = getFakeNonMasterGameState("choosing")
 
     render(<Game gameState={gameState} />)

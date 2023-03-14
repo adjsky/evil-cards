@@ -1,5 +1,10 @@
 import { jest } from "@jest/globals"
 import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants"
+import { mock } from "jest-mock-extended"
+import waitForExpect from "wait-for-expect"
+
+import type { ISessionManager } from "../../src/game/intefaces"
+import type { RedisClientType } from "redis"
 
 jest.unstable_mockModule(
   "ws",
@@ -9,8 +14,13 @@ jest.unstable_mockModule(
 const Controller = (await import("../../src/game/controller")).default
 const WebSocket = (await import("ws")).default
 
-it("terminates connection after two failed pings", () => {
-  const controller = new Controller()
+const sessionManager = mock<ISessionManager>()
+const redis = mock<RedisClientType>()
+
+it("terminates connection after two failed pings", async () => {
+  const controller = new Controller(sessionManager, redis, {
+    serverNumber: "1"
+  })
   const socket = new WebSocket("")
 
   jest.useFakeTimers()
@@ -21,5 +31,10 @@ it("terminates connection after two failed pings", () => {
   expect(socket.terminate).not.toBeCalled()
 
   jest.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
-  expect(socket.terminate).toBeCalled()
+
+  jest.useRealTimers()
+
+  await waitForExpect(() => {
+    expect(socket.terminate).toBeCalled()
+  })
 })

@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from "react"
-import { env } from "../env/client.mjs"
+import { createEventBus } from "@/core/event-bus"
 
 const browser = typeof window != "undefined"
 
@@ -10,24 +10,24 @@ type SharedWebsocket = {
   lastJsonMessage?: JsonLike
   messageQueue: unknown[]
   nReconnects: number
+  disconnectedManually: boolean
 }
 const sharedWebsocket: SharedWebsocket = {
   instance: null,
   heartbeatTimeout: null,
   messageQueue: [],
-  nReconnects: 0
+  nReconnects: 0,
+  disconnectedManually: false
 }
 type SocketOptions<T> = {
   onJsonMessage?: (data: T) => void
   onOpen?: (event: WebSocketEventMap["open"]) => void
   onError?: (event: WebSocketEventMap["error"]) => void
-  onClose?: (event: WebSocketEventMap["close"]) => void
+  onClose?: (event: WebSocketEventMap["close"], manually?: boolean) => void
 }
 
-/**
- * Connects to a `WebSocket`, reads URL from `NEXT_PUBLIC_WS_HOST`.
- * Uses a single connection that is shared between all hook calls.
- */
+const eventBus = createEventBus<{ connecting: undefined }>()
+
 const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   const [, updateState] = useState({})
   const forceUpdate = useCallback(() => updateState({}), [])
@@ -35,7 +35,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   const triggerListeners = useCallback(() => updateListenersTrigger({}), [])
 
   const connect = useCallback(
-    (reconnecting?: boolean) => {
+    (path: string, reconnecting?: boolean) => {
       const heartbeat = () => {
         sharedWebsocket.heartbeatTimeout &&
           clearTimeout(sharedWebsocket.heartbeatTimeout)
@@ -85,31 +85,47 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
           sharedWebsocket.nReconnects += 1
         }
 
-        setTimeout(
-          () => connect(true),
-          (2 ** sharedWebsocket.nReconnects + 1) * 1000
-        )
+        if (!sharedWebsocket.disconnectedManually) {
+          setTimeout(
+            () => connect(path, true),
+            (2 ** sharedWebsocket.nReconnects + 1) * 1000
+          )
+        }
       }
 
-      sharedWebsocket.instance = new WebSocket(env.NEXT_PUBLIC_WS_HOST)
-      if (reconnecting) {
-        triggerListeners()
-      }
+      sharedWebsocket.instance = new WebSocket(path)
+      sharedWebsocket.disconnectedManually = false
 
       sharedWebsocket.instance.addEventListener("open", handleOpen)
       sharedWebsocket.instance.addEventListener("message", handleMessage)
       sharedWebsocket.instance.addEventListener("close", handleClose)
+
+      eventBus.emit("connecting")
     },
-    [forceUpdate, triggerListeners]
+    [forceUpdate]
   )
 
-  useEffect(() => {
-    if (sharedWebsocket.instance) {
+  const disconnect = useCallback(() => {
+    if (!sharedWebsocket.instance) {
       return
     }
 
-    connect()
-  }, [connect])
+    sharedWebsocket.disconnectedManually = true
+    sharedWebsocket.instance.close()
+  }, [])
+
+  const getInstance = useCallback(() => sharedWebsocket.instance, [])
+
+  const sendJsonMessage = useCallback((data: S) => {
+    if (
+      !sharedWebsocket.instance ||
+      sharedWebsocket.instance.readyState != WebSocket.OPEN
+    ) {
+      sharedWebsocket.messageQueue.push(data)
+    } else {
+      sharedWebsocket.instance?.send(JSON.stringify(data))
+    }
+  }, [])
 
   useEffect(() => {
     if (!options || !sharedWebsocket.instance) {
@@ -128,7 +144,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     }
     const handleClose = (event: WebSocketEventMap["close"]) => {
       if (options.onClose) {
-        options.onClose(event)
+        options.onClose(event, sharedWebsocket.disconnectedManually)
       }
     }
     const handleJsonMessage = ({ data }: WebSocketEventMap["message"]) => {
@@ -158,19 +174,11 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     }
   }, [options, listenersTrigger])
 
-  const getInstance = useCallback(() => sharedWebsocket.instance, [])
-  const sendJsonMessage = useCallback((data: S) => {
-    if (
-      !sharedWebsocket.instance ||
-      sharedWebsocket.instance.readyState != WebSocket.OPEN
-    ) {
-      sharedWebsocket.messageQueue.push(data)
-    } else {
-      sharedWebsocket.instance?.send(JSON.stringify(data))
-    }
-  }, [])
+  eventBus.useSubscription("connecting", triggerListeners)
 
   return {
+    connect,
+    disconnect,
     getInstance,
     sendJsonMessage,
     lastJsonMessage: sharedWebsocket.lastJsonMessage as R | undefined,

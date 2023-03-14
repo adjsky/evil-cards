@@ -8,18 +8,22 @@ import mockLocation from "../../helpers/mock-location"
 const { changeURL, resetLocationMock } = mockLocation("http://localhost")
 
 const sendJsonMessageMock = jest.fn()
+const connectMock = jest.fn()
+const disconnectMock = jest.fn()
+
 jest.mock("@/lib/hooks/use-socket", () => {
   return {
     __esModule: true,
     default: () => ({
       sendJsonMessage: sendJsonMessageMock,
-      connected: true
+      connected: true,
+      connect: connectMock,
+      disconnect: disconnectMock
     })
   }
 })
 
 afterEach(() => {
-  sendJsonMessageMock.mockClear()
   resetLocationMock()
 })
 
@@ -47,14 +51,14 @@ it("changes and renders avatar", async () => {
   checkAvatar(1)
 })
 
-it("toggles the username button and writes to the input", async () => {
+it("toggles the nickname button and writes to the input", async () => {
   const user = userEvent.setup()
   render(<Entry />)
 
-  await user.click(screen.getByTestId("username-toggle"))
-  await user.clear(screen.getByTestId("username-input"))
-  await user.type(screen.getByTestId("username-input"), "username")
-  expect(screen.getByTestId("username-input")).toHaveValue("username")
+  await user.click(screen.getByTestId("nickname-toggle"))
+  await user.clear(screen.getByTestId("nickname-input"))
+  await user.type(screen.getByTestId("nickname-input"), "nickname")
+  expect(screen.getByTestId("nickname-input")).toHaveValue("nickname")
 })
 
 it("sends a join request if 's' query param is provided", async () => {

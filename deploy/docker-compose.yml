@@ -31,21 +31,35 @@ services:
       - postgres
       - clickhouse
       - mail
-    ports:
-      - 8001:8001
     env_file:
       - ./envs/plausible.env
 
+  redis:
+    image: redis:7.0.9
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: always
+
   server:
     image: adjsky/evil-cards_server:latest
-    ports:
-      - 8000:8000
     restart: always
+    deploy:
+      replicas: 2
+    env_file:
+      - ./envs/server.env
+
+  load-balancer:
+    image: adjsky/evil-cards_load-balancer:latest
+    restart: always
+    env_file:
+      - ./envs/load-balancer.env
+    depends_on:
+      - redis
+      - server
 
   client:
     image: adjsky/evil-cards_client:latest
-    ports:
-      - 3000:3000
     restart: always
     depends_on:
       - plausible
@@ -63,6 +77,7 @@ services:
       - plausible
       - client
       - server
+      - load-balancer
 
 volumes:
   db-data:

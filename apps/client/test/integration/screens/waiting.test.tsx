@@ -12,21 +12,19 @@ import type { GameState } from "@/lib/atoms"
 let gameState: GameState
 beforeEach(() => {
   gameState = getFakeMasterGameState("waiting")
-  gameState.users[0].master = false
+  gameState.players[0].master = false
 })
 
 const fakeGameStateUpdateHandler = jest.fn()
 const sendJsonMessageMock = jest.fn()
-beforeEach(() => {
-  sendJsonMessageMock.mockClear()
-  fakeGameStateUpdateHandler.mockClear()
-})
+const disconnectMock = jest.fn()
 
 jest.mock("@/lib/hooks/use-socket", () => ({
   __esModule: true,
   default: () => ({
     sendJsonMessage: sendJsonMessageMock,
-    connected: true
+    connected: true,
+    disconnect: disconnectMock
   })
 }))
 jest.mock("@/lib/functions/copy-text", () => ({
@@ -63,7 +61,7 @@ it("sets gameState to null and sends a leave message when the back button is cli
   )
 })
 
-it("renders connected users and displays extra empty spots", () => {
+it("renders connected players and displays extra empty spots", () => {
   render(
     <Waiting
       gameState={gameState}
@@ -71,14 +69,16 @@ it("renders connected users and displays extra empty spots", () => {
     />
   )
 
-  const userList = screen.getAllByTestId("user-list")[0]
+  const playerList = screen.getAllByTestId("player-list")[0]
 
-  for (let i = 0; i < gameState.users.length; i++) {
-    expect(userList.children[i]).toHaveTextContent(gameState.users[i].username)
+  for (let i = 0; i < gameState.players.length; i++) {
+    expect(playerList.children[i]).toHaveTextContent(
+      gameState.players[i].nickname
+    )
   }
 
-  for (let i = gameState.users.length; i < 10; i++) {
-    expect(userList.children[i]).toHaveTextContent("Пусто")
+  for (let i = gameState.players.length; i < 10; i++) {
+    expect(playerList.children[i]).toHaveTextContent("Пусто")
   }
 })
 
@@ -113,7 +113,7 @@ it("sends a start message when the start button is clicked", async () => {
   expect(sendJsonMessageMock).toBeCalledWith({ type: "startgame" })
 })
 
-it("hides the save configuration button for users who is not the host", async () => {
+it("hides the save configuration button for players who is not the host", async () => {
   const user = userEvent.setup()
 
   const { unmount } = render(
@@ -126,7 +126,7 @@ it("hides the save configuration button for users who is not the host", async ()
   await user.click(screen.getByTestId("show-configuration"))
   expect(screen.getByTestId("save-configuration")).toBeEnabled()
 
-  gameState.users[0].host = false
+  gameState.players[0].host = false
   unmount()
   render(
     <Waiting
@@ -166,12 +166,12 @@ it("displays winners when the game ends", () => {
   const winners = screen.getByTestId("winners")
 
   expect(winners.children[0]).toHaveTextContent(
-    new RegExp(endGameState.winners![1].username)
+    new RegExp(endGameState.winners![1].nickname)
   )
   expect(winners.children[1]).toHaveTextContent(
-    new RegExp(endGameState.winners![0].username)
+    new RegExp(endGameState.winners![0].nickname)
   )
   expect(winners.children[2]).toHaveTextContent(
-    new RegExp(endGameState.winners![2].username)
+    new RegExp(endGameState.winners![2].nickname)
   )
 })

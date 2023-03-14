@@ -3,7 +3,7 @@ import { useToggle } from "@/lib/hooks"
 
 import Pencil from "@/assets/pencil.svg"
 
-const UsernameInput: React.FC<{
+const NicknameInput: React.FC<{
   value?: string
   onChange?: (value: string) => void
 }> = ({ value, onChange }) => {
@@ -29,7 +29,7 @@ const UsernameInput: React.FC<{
           onBlur={toggle}
           onKeyDown={(event) => event.code == "Enter" && toggle()}
           className="flex w-full rounded-lg border-2 border-gray-900 bg-transparent py-1 text-center text-lg font-medium text-gray-900 focus:outline-none"
-          data-testid="username-input"
+          data-testid="nickname-input"
         />
       </div>
     )
@@ -39,7 +39,7 @@ const UsernameInput: React.FC<{
     <button
       className="flex h-10 items-center px-1"
       onClick={toggle}
-      data-testid="username-toggle"
+      data-testid="nickname-toggle"
     >
       <span className="flex items-baseline gap-2">
         <span className="text-center text-lg font-medium text-gray-900">
@@ -51,4 +51,4 @@ const UsernameInput: React.FC<{
   )
 }
 
-export default UsernameInput
+export default NicknameInput

@@ -8,37 +8,40 @@ import CheckMark from "@/assets/check-mark.svg"
 import Crown from "@/assets/crown.svg"
 import Question from "@/assets/question.svg"
 
-import type { User as UserType } from "@evil-cards/server/src/lib/ws/send"
+import type { Player as PlayerType } from "@evil-cards/server/src/lib/ws/send"
 
-const DesktopUserList: React.FC<{
-  users: UserType[]
+const DesktopPlayerList: React.FC<{
+  players: PlayerType[]
   variant: "game" | "waiting"
-}> = ({ users, variant }) => {
-  const filteredUsers = users.filter((user) => user.disconnected == false)
+}> = ({ players, variant }) => {
+  const filteredPlayers = players.filter(
+    (player) => player.disconnected == false
+  )
 
   return (
     <div
       className="scrollable hidden h-full flex-col gap-2 pr-2 sm:flex"
-      data-testid="user-list"
+      data-testid="player-list"
     >
-      {filteredUsers.map((user) => (
-        <User key={user.id} user={user} variant={variant} />
+      {filteredPlayers.map((player) => (
+        <Player key={player.id} player={player} variant={variant} />
       ))}
       {variant == "waiting" &&
-        Array.from({ length: 10 - filteredUsers.length }).map((_, index) => (
-          <User key={index} variant={variant} />
+        Array.from({ length: 10 - filteredPlayers.length }).map((_, index) => (
+          <Player key={index} variant={variant} />
         ))}
     </div>
   )
 }
 
-const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
-  user,
-  variant
-}) => {
+const Player: React.FC<{
+  player?: PlayerType
+  variant: "game" | "waiting"
+}> = ({ player, variant }) => {
   const displayCrown =
-    (variant == "waiting" && user?.host) || (variant == "game" && user?.master)
-  const displayCheckMark = variant == "game" && user?.voted
+    (variant == "waiting" && player?.host) ||
+    (variant == "game" && player?.master)
+  const displayCheckMark = variant == "game" && player?.voted
 
   return (
     <div className="flex w-[194px] items-center gap-2 rounded-xl border-2 border-gray-200 px-2 py-1">
@@ -48,9 +51,9 @@ const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
           {displayCheckMark && <CheckMark />}
         </div>
       )}
-      {user ? (
+      {player ? (
         <Image
-          src={`/avatars/${user.avatarId}.svg`}
+          src={`/avatars/${player.avatarId}.svg`}
           width={48}
           height={48}
           alt=""
@@ -61,15 +64,15 @@ const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
       <div
         className={clsx(
           "flex flex-col gap-1",
-          user ? "text-gray-100" : "text-gray-600"
+          player ? "text-gray-100" : "text-gray-600"
         )}
       >
         <span className="text-xs leading-none">
-          {user?.username ?? "Пусто"}
+          {player?.nickname ?? "Пусто"}
         </span>
-        {user && variant == "game" && (
+        {player && variant == "game" && (
           <span className="text-base font-medium leading-none">
-            {user.score} {getScoreLabel(user.score)}
+            {player.score} {getScoreLabel(player.score)}
           </span>
         )}
       </div>
@@ -77,4 +80,4 @@ const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
   )
 }
 
-export default DesktopUserList
+export default DesktopPlayerList
