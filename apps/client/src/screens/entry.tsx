@@ -2,14 +2,14 @@ import React, { useState } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 
-import { usernameAtom, avatarAtom } from "@/lib/atoms"
+import { nicknameAtom, avatarAtom } from "@/lib/atoms"
 import { useSocket, useScreenFactor } from "@/lib/hooks"
 import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import getWSHost from "@/lib/server/get-ws-host"
 import { updateSnackbar } from "@/components/snackbar/use"
 
-import UsernameInput from "@/components/username-input"
+import NicknameInput from "@/components/nickname-input"
 import FadeIn from "@/components/fade-in"
 import Arrow from "@/assets/arrow.svg"
 import Logo from "@/components/logo"
@@ -36,7 +36,7 @@ const Entry: React.FC = () => {
 
   const previousPathname = usePreviousPathname()
 
-  const username = useAtomValue(usernameAtom)
+  const nickname = useAtomValue(nicknameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
   const searchParams = new URLSearchParams(window.location.search)
@@ -64,7 +64,7 @@ const Entry: React.FC = () => {
           sendJsonMessage({
             type: "joinsession",
             details: {
-              username,
+              nickname,
               sessionId,
               avatarId
             }
@@ -73,7 +73,7 @@ const Entry: React.FC = () => {
           sendJsonMessage({
             type: "createsession",
             details: {
-              username,
+              nickname,
               avatarId
             }
           })
@@ -113,7 +113,7 @@ const Entry: React.FC = () => {
 }
 
 const UserCard: React.FC = () => {
-  const [username, setUsername] = useAtom(usernameAtom)
+  const [nickname, setNickname] = useAtom(nicknameAtom)
   const [avatarId, setAvatarId] = useAtom(avatarAtom)
 
   return (
@@ -150,7 +150,7 @@ const UserCard: React.FC = () => {
           </button>
         </div>
       </div>
-      <UsernameInput value={username} onChange={setUsername} />
+      <NicknameInput value={nickname} onChange={setNickname} />
     </div>
   )
 }

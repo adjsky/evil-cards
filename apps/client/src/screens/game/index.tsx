@@ -11,7 +11,7 @@ import {
 } from "@/lib/hooks"
 import { updateSnackbar } from "@/components/snackbar/use"
 
-import UserList from "@/components/user-list"
+import PlayerList from "@/components/player-list"
 import Card from "@/components/card"
 import FadeIn from "@/components/fade-in"
 import styles from "./game.module.css"
@@ -47,11 +47,11 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     gameState.votingEndsAt
   )
 
-  const onBoardCardClick = (userId: string) => {
+  const onBoardCardClick = (playerId: string) => {
     if (gameState.status == "choosing") {
-      sendJsonMessage({ type: "choose", details: { userId } })
+      sendJsonMessage({ type: "choose", details: { playerId } })
     } else {
-      sendJsonMessage({ type: "choosebest", details: { userId } })
+      sendJsonMessage({ type: "choosewinner", details: { playerId } })
     }
   }
 
@@ -63,12 +63,12 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         ref={containerRef}
       >
         <div className="w-full sm:hidden">
-          <UserList users={gameState.users} variant="game" />
+          <PlayerList players={gameState.players} variant="game" />
         </div>
         <Board gameState={gameState} onCardClick={onBoardCardClick} />
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden sm:block">
-            <UserList users={gameState.users} variant="game" />
+            <PlayerList players={gameState.players} variant="game" />
           </div>
           <div className="flex w-full flex-col gap-2 sm:gap-3">
             <div className="relative h-[10px] w-full rounded-lg bg-gray-200">
@@ -78,7 +78,7 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
                 data-testid="timebar"
               />
             </div>
-            <Cards
+            <Deck
               gameState={gameState}
               onCardClick={(text) =>
                 sendJsonMessage({ type: "vote", details: { text } })
@@ -155,7 +155,9 @@ const Board: React.FC<{
     }
   }, [enable])
 
-  const user = gameState.users.find((user) => user.id == gameState.userId)!
+  const player = gameState.players.find(
+    (player) => player.id == gameState.playerId
+  )!
 
   return (
     <div className="relative flex w-full flex-auto items-center justify-center">
@@ -182,34 +184,37 @@ const Board: React.FC<{
             className="sm:grid sm:w-auto sm:grid-cols-5 sm:grid-rows-2 sm:gap-2"
             data-testid="votes"
           >
-            {gameState.votes.map(({ text, userId, visible, winner }, index) => (
-              <div
-                className={clsx(
-                  styles["voted-card"],
-                  styles[`card-${index + 1}`]
-                )}
-                key={text}
-              >
-                <Card
-                  text={visible ? text : undefined}
-                  author={
-                    winner
-                      ? gameState.users.find((user) => user.id == userId)
-                          ?.username
-                      : undefined
-                  }
-                  disabled={
-                    !user.master ||
-                    (visible && gameState.status != "choosingbest") ||
-                    (!visible && gameState.status != "choosing")
-                  }
-                  onClick={() => {
-                    onCardClick && onCardClick(userId)
-                  }}
-                  flipable
-                />
-              </div>
-            ))}
+            {gameState.votes.map(
+              ({ text, playerId, visible, winner }, index) => (
+                <div
+                  className={clsx(
+                    styles["voted-card"],
+                    styles[`card-${index + 1}`]
+                  )}
+                  key={text}
+                >
+                  <Card
+                    text={visible ? text : undefined}
+                    author={
+                      winner
+                        ? gameState.players.find(
+                            (player) => player.id == playerId
+                          )?.nickname
+                        : undefined
+                    }
+                    disabled={
+                      !player.master ||
+                      (visible && gameState.status != "choosingwinner") ||
+                      (!visible && gameState.status != "choosing")
+                    }
+                    onClick={() => {
+                      onCardClick && onCardClick(playerId)
+                    }}
+                    flipable
+                  />
+                </div>
+              )
+            )}
           </div>
         )}
       </div>
@@ -217,16 +222,18 @@ const Board: React.FC<{
   )
 }
 
-const Cards: React.FC<{
+const Deck: React.FC<{
   gameState: GameState
   onCardClick?: (text: string) => void
 }> = ({ gameState, onCardClick }) => {
-  const user = gameState.users.find((user) => user.id == gameState.userId)!
+  const player = gameState.players.find(
+    (player) => player.id == gameState.playerId
+  )!
   const availableCardDisabled =
     gameState.status == "choosing" ||
-    gameState.status == "choosingbest" ||
-    user.master ||
-    user.voted
+    gameState.status == "choosingwinner" ||
+    player.master ||
+    player.voted
 
   return (
     <div
@@ -234,9 +241,9 @@ const Cards: React.FC<{
         "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
         "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
       )}
-      data-testid="cards"
+      data-testid="deck"
     >
-      {gameState.whiteCards.map((text) => (
+      {gameState.deck.map((text) => (
         <Card
           key={text}
           text={text}

@@ -19,7 +19,7 @@ import { updateSnackbar } from "@/components/snackbar/use"
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import BackButton from "@/components/back-button"
-import UserList from "@/components/user-list"
+import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
 import Configuration from "@/components/configuration"
 import SoundOn from "@/assets/sound-on.svg"
@@ -29,7 +29,7 @@ import Close from "@/assets/configuration-close.svg"
 
 import type {
   Message as ReceiveMessage,
-  User
+  Player
 } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { GameState } from "@/lib/atoms"
@@ -75,9 +75,11 @@ const Waiting: React.FC<{
     }
   })
 
-  const user = gameState.users.find((user) => user.id == gameState.userId)!
+  const player = gameState.players.find(
+    (player) => player.id == gameState.playerId
+  )!
   const lowerButtonOpacity =
-    !user.host && (gameState.status == "waiting" || gameState.status == "end")
+    !player.host && (gameState.status == "waiting" || gameState.status == "end")
 
   const onStart = () => {
     sendJsonMessage({ type: "startgame" })
@@ -90,7 +92,6 @@ const Waiting: React.FC<{
 
     const handleAnimationFinish = () => {
       onGameStateUpdate && onGameStateUpdate(null)
-      sendJsonMessage({ type: "leavesession" })
       disconnect()
     }
 
@@ -110,7 +111,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, sendJsonMessage, disconnect])
+  }, [onGameStateUpdate, disconnect])
 
   const router = useRouter()
   useEffect(() => {
@@ -155,7 +156,7 @@ const Waiting: React.FC<{
           </div>
           <div className="flex h-full w-full flex-col sm:h-full sm:flex-row sm:gap-4">
             <div className="sm:h-[500px]">
-              <UserList users={gameState.users} variant="waiting" />
+              <PlayerList players={gameState.players} variant="waiting" />
             </div>
             <div className="flex w-full flex-1 flex-col gap-3 p-2 pb-12 sm:gap-6 sm:p-0">
               <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
@@ -163,7 +164,7 @@ const Waiting: React.FC<{
                 {configurationVisible && (
                   <Configuration
                     configuration={gameState.configuration}
-                    host={user.host}
+                    host={player.host}
                     onSave={(configuration) => {
                       sendJsonMessage({
                         type: "updateconfiguration",
@@ -190,7 +191,9 @@ const Waiting: React.FC<{
                 <StartButton
                   lowerOpacity={lowerButtonOpacity}
                   onClick={onStart}
-                  disabled={lastJsonMessage?.type == "gamestart" || !user.host}
+                  disabled={
+                    lastJsonMessage?.type == "gamestart" || !player.host
+                  }
                   secondsLeft={secondsLeft}
                   withCountdown={lastJsonMessage?.type == "gamestart"}
                 />
@@ -270,7 +273,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
 
 const HEIGHT_PER_SCORE = 29
 
-const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
+const Winners: React.FC<{ winners: Player[] }> = ({ winners }) => {
   const [show, setShow] = useState(true)
   useEffect(() => {
     const timeout = setTimeout(() => setShow(false), 5000)
@@ -285,16 +288,16 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
     py: 40
   })
 
-  const renderUserPlace = (user: User, place: number) => (
+  const renderUserPlace = (player: Player, place: number) => (
     <div className="flex flex-col items-center gap-4">
       <Image
         width={120}
         height={120}
-        src={`/avatars/${user.avatarId}.svg`}
+        src={`/avatars/${player.avatarId}.svg`}
         alt=""
       />
       <div
-        style={{ minHeight: 100, height: user.score * HEIGHT_PER_SCORE }}
+        style={{ minHeight: 100, height: player.score * HEIGHT_PER_SCORE }}
         className={clsx(
           "flex w-56 flex-col items-center justify-end p-4",
           place == 1 && "bg-gold-300",
@@ -302,9 +305,9 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
           place == 3 && "bg-gold-700"
         )}
       >
-        <span className="text-2xl font-bold">{user.username}</span>
+        <span className="text-2xl font-bold">{player.nickname}</span>
         <span className="text-lg font-bold">
-          {user.score} {getScoreLabel(user.score)}
+          {player.score} {getScoreLabel(player.score)}
         </span>
       </div>
     </div>
@@ -333,7 +336,7 @@ const Winners: React.FC<{ winners: User[] }> = ({ winners }) => {
         <div className="text-center text-gray-100">
           <h2 className="text-5xl font-bold leading-normal">ПОЗДРАВЛЯЮ!</h2>
           <p className="text-4xl font-bold">
-            {winners[0].username} НАБРАЛ {winners[0].score}{" "}
+            {winners[0].nickname} НАБРАЛ {winners[0].score}{" "}
             {getScoreLabel(winners[0].score)}
           </p>
         </div>

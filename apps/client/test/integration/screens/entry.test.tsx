@@ -51,14 +51,14 @@ it("changes and renders avatar", async () => {
   checkAvatar(1)
 })
 
-it("toggles the username button and writes to the input", async () => {
+it("toggles the nickname button and writes to the input", async () => {
   const user = userEvent.setup()
   render(<Entry />)
 
-  await user.click(screen.getByTestId("username-toggle"))
-  await user.clear(screen.getByTestId("username-input"))
-  await user.type(screen.getByTestId("username-input"), "username")
-  expect(screen.getByTestId("username-input")).toHaveValue("username")
+  await user.click(screen.getByTestId("nickname-toggle"))
+  await user.clear(screen.getByTestId("nickname-input"))
+  await user.type(screen.getByTestId("nickname-input"), "nickname")
+  expect(screen.getByTestId("nickname-input")).toHaveValue("nickname")
 })
 
 it("sends a join request if 's' query param is provided", async () => {

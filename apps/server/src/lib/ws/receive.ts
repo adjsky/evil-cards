@@ -42,9 +42,6 @@ export const messageSchema = z.discriminatedUnion("type", [
     details: joinSessionSchema
   }),
   z.object({
-    type: z.literal("leavesession")
-  }),
-  z.object({
     type: z.literal("startgame")
   }),
   z.object({

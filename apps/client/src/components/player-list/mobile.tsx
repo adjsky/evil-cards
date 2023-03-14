@@ -7,43 +7,46 @@ import CheckMark from "@/assets/check-mark.svg"
 import Crown from "@/assets/crown.svg"
 import Question from "@/assets/question.svg"
 
-import type { User as UserType } from "@evil-cards/server/src/lib/ws/send"
+import type { Player as PlayerType } from "@evil-cards/server/src/lib/ws/send"
 
-const MobileUserList: React.FC<{
-  users: UserType[]
+const MobilePlayerList: React.FC<{
+  players: PlayerType[]
   variant: "game" | "waiting"
-}> = ({ users, variant }) => {
-  const filteredUsers = users.filter((user) => user.disconnected == false)
+}> = ({ players, variant }) => {
+  const filterePlayers = players.filter(
+    (player) => player.disconnected == false
+  )
 
   return (
     <div className="w-full overflow-x-auto sm:hidden">
-      <div className="flex" data-testid="user-list">
-        {filteredUsers.map((user) => (
-          <User key={user.id} user={user} variant={variant} />
+      <div className="flex" data-testid="player-list">
+        {filterePlayers.map((player) => (
+          <Player key={player.id} player={player} variant={variant} />
         ))}
         {variant == "waiting" &&
-          Array.from({ length: 10 - filteredUsers.length }).map((_, index) => (
-            <User key={index} variant={variant} />
+          Array.from({ length: 10 - filterePlayers.length }).map((_, index) => (
+            <Player key={index} variant={variant} />
           ))}
       </div>
     </div>
   )
 }
 
-const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
-  user,
-  variant
-}) => {
+const Player: React.FC<{
+  player?: PlayerType
+  variant: "game" | "waiting"
+}> = ({ player, variant }) => {
   const displayCrown =
-    (variant == "waiting" && user?.host) || (variant == "game" && user?.master)
-  const displayMark = variant == "game" && user?.voted
+    (variant == "waiting" && player?.host) ||
+    (variant == "game" && player?.master)
+  const displayMark = variant == "game" && player?.voted
 
   return (
     <div className="flex w-[70px] flex-col items-center gap-1 p-2 pb-0">
       <div className="relative h-[44px] w-[44px] flex-none">
-        {user ? (
+        {player ? (
           <Image
-            src={`/avatars/${user.avatarId}.svg`}
+            src={`/avatars/${player.avatarId}.svg`}
             width={44}
             height={44}
             alt=""
@@ -63,17 +66,17 @@ const User: React.FC<{ user?: UserType; variant: "game" | "waiting" }> = ({
         )}
       </div>
       <div className="flex flex-col items-center justify-center text-gray-100">
-        {variant == "game" && user && (
+        {variant == "game" && player && (
           <span className="text-xs font-medium">
-            {user.score} {getScoreLabel(user.score)}
+            {player.score} {getScoreLabel(player.score)}
           </span>
         )}
         <span className="inline-block max-w-[60px] overflow-hidden overflow-ellipsis whitespace-nowrap text-[10px]">
-          {user?.username ?? "Пусто"}
+          {player?.nickname ?? "Пусто"}
         </span>
       </div>
     </div>
   )
 }
 
-export default MobileUserList
+export default MobilePlayerList

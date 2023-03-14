@@ -3,7 +3,7 @@ import clsx from "clsx"
 import { Listbox, Transition } from "@headlessui/react"
 import ArrowDown from "@/assets/arrow-down.svg"
 
-import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/receive"
+import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/send"
 
 const votingPeriodOptions = [
   { value: 60, name: "НОРМАЛЬНАЯ" },

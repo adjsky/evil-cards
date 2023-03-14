@@ -2,7 +2,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 
 const sounds: Partial<Record<ReceiveMessage["type"], string>> = {
   gamestart: "/sounds/countdown.wav",
-  userjoined: "/sounds/user-joined.wav",
+  playerjoin: "/sounds/player-joined.wav",
   choose: "/sounds/flip-card.wav"
 }
 

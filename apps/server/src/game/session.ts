@@ -13,6 +13,20 @@ import {
   SESSION_ID_SIZE,
   USER_ID_SIZE
 } from "./constants"
+import {
+  ForbiddenNicknameError,
+  ForbiddenToChooseError,
+  ForbiddenToChooseWinnerError,
+  ForbiddenToVoteError,
+  GameStartedError,
+  InvalidCardError,
+  InvalidChoosedPlayerIdError,
+  InvalidPlayerIdError,
+  NoPlayerError,
+  HostError,
+  NotEnoughPlayersError,
+  DisconnectedError
+} from "./errors"
 
 import type {
   Status,
@@ -56,7 +70,7 @@ class Session implements ISession {
     return {
       on: this._events.on.bind(this._events),
       off: this._events.off.bind(this._events),
-      clear: this._events.clearListeners.bind(this._events)
+      clearListeners: this._events.clearListeners.bind(this._events)
     }
   }
   public get configuration() {
@@ -96,42 +110,50 @@ class Session implements ISession {
 
     if (existingPlayer) {
       if (!existingPlayer.disconnected) {
-        throw new Error("nickname is taken")
+        throw new ForbiddenNicknameError()
       }
 
       existingPlayer.disconnected = false
       existingPlayer.avatarId = avatarId
 
       this._events.emit("join", existingPlayer)
-    } else {
-      const isWaiting = this.isWaiting()
 
-      if (!isWaiting) {
-        throw new Error("game is started")
-      }
-
-      const player: Player = {
-        id: nanoid(USER_ID_SIZE),
-        avatarId,
-        nickname,
-        score: 0,
-        host,
-        master: false,
-        voted: false,
-        disconnected: false,
-        deck: [],
-        sender
-      }
-
-      this._players.push(player)
-      this._events.emit("join", player)
+      return existingPlayer
     }
+
+    const isWaiting = this.isWaiting()
+
+    if (!isWaiting) {
+      throw new GameStartedError()
+    }
+
+    const player: Player = {
+      id: nanoid(USER_ID_SIZE),
+      avatarId,
+      nickname,
+      score: 0,
+      host,
+      master: false,
+      voted: false,
+      disconnected: false,
+      deck: [],
+      sender
+    }
+
+    this._players.push(player)
+    this._events.emit("join", player)
+
+    return player
   }
 
   public leave(playerId: string) {
     const player = this._players.find((player) => player.id == playerId)
     if (!player) {
-      throw new Error("no player")
+      throw new NoPlayerError()
+    }
+
+    if (player.disconnected) {
+      throw new DisconnectedError()
     }
 
     const isPlaying = this.isPlaying()
@@ -175,8 +197,12 @@ class Session implements ISession {
   public updateConfiguration(playerId: string, configuration: Configuration) {
     const player = this._players.find((p) => p.id == playerId)
 
-    if (!player?.host) {
-      throw new Error("not allowed")
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    if (!player.host) {
+      throw new HostError()
     }
 
     this._configuration = configuration
@@ -187,13 +213,20 @@ class Session implements ISession {
   public startGame(playerId: string) {
     const player = this._players.find((p) => p.id == playerId)
 
-    if (
-      !player ||
-      !player.host ||
-      this.isPlaying() ||
-      this._players.length < MIN_PLAYERS_TO_START_GAME
-    ) {
-      throw new Error("not allowed")
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    if (!player.host) {
+      throw new HostError()
+    }
+
+    if (this.isPlaying()) {
+      throw new GameStartedError()
+    }
+
+    if (this._players.length < MIN_PLAYERS_TO_START_GAME) {
+      throw new NotEnoughPlayersError()
     }
 
     this._status = "starting"
@@ -215,15 +248,15 @@ class Session implements ISession {
     const cardIndex = player?.deck.findIndex((deckCard) => deckCard == text)
 
     if (!player || cardIndex == undefined) {
-      throw new Error("invalid player id")
+      throw new InvalidPlayerIdError()
     }
 
     if (cardIndex == -1) {
-      throw new Error("invalid card text")
+      throw new InvalidCardError()
     }
 
     if (this._status != "voting" || player.master || player.voted) {
-      throw new Error("you can't vote")
+      throw new ForbiddenToVoteError()
     }
 
     player.voted = true
@@ -256,15 +289,15 @@ class Session implements ISession {
     )
 
     if (!player) {
-      throw new Error("invalid player id")
+      throw new InvalidPlayerIdError()
     }
 
     if (!choosedVote) {
-      throw new Error("invalid choosed player id")
+      throw new InvalidChoosedPlayerIdError()
     }
 
     if (this._status != "choosing" || !player.master) {
-      throw new Error("you can't choose")
+      throw new ForbiddenToChooseError()
     }
 
     choosedVote.visible = true
@@ -285,15 +318,15 @@ class Session implements ISession {
     const choosedPlayer = this._players.find((p) => p.id == choosedPlayerId)
 
     if (!player) {
-      throw new Error("invalid player id")
+      throw new InvalidPlayerIdError()
     }
 
     if (!choosedPlayer || !choosedVote) {
-      throw new Error("invalid choosed player id")
+      throw new InvalidChoosedPlayerIdError()
     }
 
     if (!player.master || this._status != "choosingwinner") {
-      throw new Error("you can't choose winner")
+      throw new ForbiddenToChooseWinnerError()
     }
 
     choosedPlayer.score += 1

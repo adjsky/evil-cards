@@ -3,41 +3,41 @@ import type { Status } from "@evil-cards/server/src/lib/ws/send"
 
 const redCard = "redcard"
 const votes = [
-  { text: "vote1", winner: false, visible: false, userId: "fakeUserId2" },
-  { text: "vote2", winner: false, visible: false, userId: "fakeUserId3" },
-  { text: "vote3", winner: false, visible: false, userId: "fakeUserId4" },
-  { text: "vote4", winner: false, visible: false, userId: "fakeUserId5" }
+  { text: "vote1", winner: false, visible: false, playerId: "fakePlayerId2" },
+  { text: "vote2", winner: false, visible: false, playerId: "fakePlayerId3" },
+  { text: "vote3", winner: false, visible: false, playerId: "fakePlayerId4" },
+  { text: "vote4", winner: false, visible: false, playerId: "fakePlayerId5" }
 ]
-const whiteCards = ["whitecard1", "whitecard2", "whitecard3", "whitecard4"]
+const deck = ["whitecard1", "whitecard2", "whitecard3", "whitecard4"]
 const winners = [
   {
     avatarId: 2,
     disconnected: false,
     host: true,
-    id: "fakeUserId",
+    id: "fakePlayerId",
     master: false,
     score: 0,
-    username: "abobus1",
+    nickname: "abobus1",
     voted: false
   },
   {
     avatarId: 2,
     disconnected: false,
     host: true,
-    id: "fakeUserId2",
+    id: "fakePlayerId2",
     master: false,
     score: 7,
-    username: "abobus2",
+    nickname: "abobus2",
     voted: false
   },
   {
     avatarId: 2,
     disconnected: false,
     host: true,
-    id: "fakeUserId3",
+    id: "fakePlayerId3",
     master: false,
     score: 5,
-    username: "abobus3",
+    nickname: "abobus3",
     voted: false
   }
 ]
@@ -50,62 +50,62 @@ const base: GameState = {
   id: "fakeid",
   redCard: null,
   status: "waiting",
-  userId: "fakeUserId",
-  users: [
+  playerId: "fakePlayerId",
+  players: [
     {
       avatarId: 2,
       disconnected: false,
       host: true,
-      id: "fakeUserId",
+      id: "fakePlayerId",
       master: true,
       score: 0,
-      username: "abobus",
+      nickname: "abobus",
       voted: false
     },
     {
       avatarId: 2,
       disconnected: false,
       host: false,
-      id: "fakeUserId2",
+      id: "fakePlayerId2",
       master: false,
       score: 0,
-      username: "abobus2",
+      nickname: "abobus2",
       voted: false
     },
     {
       avatarId: 2,
       disconnected: false,
       host: false,
-      id: "fakeUserId3",
+      id: "fakePlayerId3",
       master: false,
       score: 0,
-      username: "abobus3",
+      nickname: "abobus3",
       voted: false
     },
     {
       avatarId: 2,
       disconnected: false,
       host: false,
-      id: "fakeUserId4",
+      id: "fakePlayerId4",
       master: false,
       score: 0,
-      username: "abobus4",
+      nickname: "abobus4",
       voted: false
     },
     {
       avatarId: 2,
       disconnected: false,
       host: false,
-      id: "fakeUserId5",
+      id: "fakePlayerId5",
       master: false,
       score: 0,
-      username: "abobus5",
+      nickname: "abobus5",
       voted: false
     }
   ],
   votes: [],
   votingEndsAt: null,
-  whiteCards: [],
+  deck: [],
   winners: null
 }
 
@@ -115,7 +115,7 @@ export function getFakeMasterGameState(status: Status): GameState {
   switch (status) {
     case "voting":
       baseToModify.status = "voting"
-      baseToModify.whiteCards = whiteCards
+      baseToModify.deck = deck
       baseToModify.redCard = redCard
       break
     case "end":
@@ -125,21 +125,21 @@ export function getFakeMasterGameState(status: Status): GameState {
     case "choosing":
       baseToModify.status = "choosing"
       baseToModify.votes = votes
-      baseToModify.whiteCards = whiteCards
+      baseToModify.deck = deck
       baseToModify.redCard = redCard
       break
-    case "choosingbest":
-      baseToModify.status = "choosingbest"
+    case "choosingwinner":
+      baseToModify.status = "choosingwinner"
       baseToModify.votes = votes.map((vote) => ({ ...vote, visible: true }))
-      baseToModify.whiteCards = whiteCards
+      baseToModify.deck = deck
       baseToModify.redCard = redCard
       break
-    case "bestcardview":
-      baseToModify.status = "bestcardview"
+    case "winnercardview":
+      baseToModify.status = "winnercardview"
       baseToModify.votes = votes.map((vote) => ({ ...vote, visible: true }))
       baseToModify.votes[0].winner = true
 
-      baseToModify.whiteCards = whiteCards
+      baseToModify.deck = deck
       baseToModify.redCard = redCard
       break
     case "starting":
@@ -151,5 +151,5 @@ export function getFakeMasterGameState(status: Status): GameState {
 }
 
 export function getFakeNonMasterGameState(status: Status): GameState {
-  return { ...getFakeMasterGameState(status), userId: "fakeUserId2" }
+  return { ...getFakeMasterGameState(status), playerId: "fakePlayerId2" }
 }

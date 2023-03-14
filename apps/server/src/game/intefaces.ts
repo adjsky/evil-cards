@@ -11,7 +11,7 @@ import type {
 type PublicEvents = {
   on: SessionEvents["on"]
   off: SessionEvents["off"]
-  clear: SessionEvents["clearListeners"]
+  clearListeners: SessionEvents["clearListeners"]
 }
 
 export interface ISession {
@@ -28,7 +28,7 @@ export interface ISession {
     nickname: string,
     avatarId: number,
     host: boolean
-  ): void
+  ): Player
   leave(playerId: string): void
   updateConfiguration(playerId: string, configuration: Configuration): void
   startGame(playerId: string): void

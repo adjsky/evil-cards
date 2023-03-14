@@ -1,6 +1,7 @@
 import { jest } from "@jest/globals"
 import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants"
-import { mock, mockClear } from "jest-mock-extended"
+import { mock } from "jest-mock-extended"
+import waitForExpect from "wait-for-expect"
 
 import type { ISessionManager } from "../../src/game/intefaces"
 
@@ -14,11 +15,7 @@ const WebSocket = (await import("ws")).default
 
 const sessionManager = mock<ISessionManager>()
 
-afterEach(() => {
-  mockClear(sessionManager)
-})
-
-it("terminates connection after two failed pings", () => {
+it("terminates connection after two failed pings", async () => {
   const controller = new Controller(sessionManager)
   const socket = new WebSocket("")
 
@@ -30,5 +27,10 @@ it("terminates connection after two failed pings", () => {
   expect(socket.terminate).not.toBeCalled()
 
   jest.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
-  expect(socket.terminate).toBeCalled()
+
+  jest.useRealTimers()
+
+  await waitForExpect(() => {
+    expect(socket.terminate).toBeCalled()
+  })
 })

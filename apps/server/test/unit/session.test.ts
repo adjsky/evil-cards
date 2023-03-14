@@ -179,7 +179,7 @@ it("emits all events", async () => {
     expect(statusChangeMock).toBeCalledWith("voting")
   })
 
-  session.events.clear()
+  session.events.clearListeners()
 })
 
 it("automatically starts choosing", () => {
@@ -244,7 +244,7 @@ it("uses configuration", () => {
   const thirdPlayer = session.players[2]
 
   const configuration = {
-    votingDurationSeconds: 154,
+    votingDurationSeconds: 30,
     maxScore: 10,
     reader: "off"
   } as const

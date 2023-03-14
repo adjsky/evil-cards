@@ -18,7 +18,7 @@ export type ControllerEvents = Emittery<
 >
 
 export type PlayerSender = {
-  send: (data: unknown) => void
+  send: (data: string) => void
 }
 
 export type SessionEvents = Emittery<{
@@ -62,9 +62,9 @@ export type Vote = {
 }
 
 export type Configuration = {
-  votingDurationSeconds: number
+  votingDurationSeconds: 30 | 60 | 90
   reader: "on" | "off"
-  maxScore: number
+  maxScore: 10 | 15 | 20
 }
 
 export type Timeouts = Record<

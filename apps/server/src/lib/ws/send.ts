@@ -1,4 +1,11 @@
-import type { Status, Player, Configuration, Vote } from "../../game/types"
+import type {
+  Status,
+  Player as GamePlayer,
+  Configuration,
+  Vote
+} from "../../game/types"
+
+type SendPlayer = Omit<GamePlayer, "sender" | "deck">
 
 export type Created = {
   type: "create"
@@ -6,7 +13,7 @@ export type Created = {
     changedState: {
       id: string
       status: Status
-      players: Player[]
+      players: SendPlayer[]
       playerId: string
       configuration: Configuration
     }
@@ -19,7 +26,7 @@ export type Joined = {
     changedState: {
       id: string
       status: Status
-      players: Player[]
+      players: SendPlayer[]
       playerId: string
       deck: string[]
       redCard: string | null
@@ -29,24 +36,24 @@ export type Joined = {
   }
 }
 
-export type UserJoined = {
+export type PlayerJoined = {
   type: "playerjoin"
   details: {
     changedState: {
-      players: Player[]
+      players: SendPlayer[]
     }
   }
 }
 
-export type UserDisconnected = {
-  type: "playerdisconnect"
-  details: { changedState: { players: Player[] } }
+export type PlayerLeaved = {
+  type: "playerleave"
+  details: { changedState: { players: SendPlayer[] } }
 }
 
 export type Voted = {
   type: "vote"
   details: {
-    changedState: { players: Player[]; votes: Vote[]; deck: string[] }
+    changedState: { players: SendPlayer[]; votes: Vote[]; deck: string[] }
   }
 }
 
@@ -62,7 +69,7 @@ export type VotingStarted = {
       status: Status
       deck: string[]
       redCard: string
-      players: Player[]
+      players: SendPlayer[]
       votes: Vote[]
       votingEndsAt: number | null
     }
@@ -80,7 +87,7 @@ export type Choose = {
   type: "choose"
   details: {
     changedState: { votes: Vote[] }
-    choosedUserId: string
+    choosedPlayerId: string
   }
 }
 
@@ -92,13 +99,20 @@ export type ChoosingWinnerStarted = {
 export type ChooseWinner = {
   type: "choosewinner"
   details: {
-    changedState: { status: Status; votes: Vote[]; players: Player[] }
+    changedState: { votes: Vote[]; players: SendPlayer[] }
+  }
+}
+
+export type WinnerCardView = {
+  type: "winnercardview"
+  details: {
+    changedState: { status: Status }
   }
 }
 
 export type GameEnd = {
   type: "gameend"
-  details: { changedState: { status: Status; players: Player[] } }
+  details: { changedState: { status: Status; players: SendPlayer[] } }
 }
 
 export type Error = {
@@ -110,16 +124,16 @@ export type Ping = {
   type: "ping"
 }
 
-export type ConfigurationUpdated = {
-  type: "configurationupdate"
+export type ConfigurationChanged = {
+  type: "configurationchange"
   details: { changedState: { configuration: Configuration } }
 }
 
 export type Message =
   | Created
   | Joined
-  | UserJoined
-  | UserDisconnected
+  | PlayerJoined
+  | PlayerLeaved
   | Voted
   | GameStart
   | VotingStarted
@@ -130,4 +144,8 @@ export type Message =
   | GameEnd
   | Error
   | Ping
-  | ConfigurationUpdated
+  | ConfigurationChanged
+  | WinnerCardView
+
+export type { Status, Configuration, Vote } from "../../game/types"
+export type Player = SendPlayer

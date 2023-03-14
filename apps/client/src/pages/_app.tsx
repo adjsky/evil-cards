@@ -54,7 +54,7 @@ const useSocketEvents = () => {
         })
       }
 
-      if (message.type == "joined" || message.type == "created") {
+      if (message.type == "join" || message.type == "create") {
         Router.push("/room", undefined, { shallow: true })
       }
 
@@ -75,24 +75,24 @@ const useSocketEvents = () => {
       }
 
       switch (message.type) {
-        case "joined":
+        case "join":
           setGameState({
             ...message.details.changedState,
             votes: [],
             winners: null
           })
           break
-        case "created":
+        case "create":
           setGameState({
             ...message.details.changedState,
             redCard: null,
             votes: [],
-            whiteCards: [],
+            deck: [],
             votingEndsAt: null,
             winners: null
           })
           break
-        case "votingstarted":
+        case "votingstart":
           setGameState((prev) => ({
             ...prev!,
             ...message.details.changedState
@@ -108,9 +108,9 @@ const useSocketEvents = () => {
               let winners = prev.winners
               if (
                 message.type == "gameend" &&
-                message.details.changedState.users.length >= 3
+                message.details.changedState.players.length >= 3
               ) {
-                winners = [...message.details.changedState.users]
+                winners = [...message.details.changedState.players]
                   .sort((a, b) => b.score - a.score)
                   .slice(0, 3)
               }
@@ -119,7 +119,7 @@ const useSocketEvents = () => {
                 ...prev,
                 ...message.details.changedState,
                 votingEndsAt:
-                  message.type == "choosingstarted" ? null : prev.votingEndsAt,
+                  message.type == "choosingstart" ? null : prev.votingEndsAt,
                 winners
               }
             })
