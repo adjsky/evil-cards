@@ -1,5 +1,9 @@
+import * as dotenv from "dotenv"
 import z from "zod"
+
 import type { ZodFormattedError } from "zod"
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 
 /**
  * Specify your environment variables schema here.
@@ -9,7 +13,9 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   PORT: z.coerce.number().default(8000),
   LOG_MEMORY: z.coerce.boolean(),
-  SERVER_NUMBER: z.coerce.number().optional()
+  SERVER_NUMBER: z.string(),
+  REDIS_URL: z.string(),
+  SITE_PATH: z.string().url()
 })
 
 const formatErrors = (errors: ZodFormattedError<Map<string, string>, string>) =>

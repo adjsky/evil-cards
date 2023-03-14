@@ -11,6 +11,8 @@
     "dev": "cross-env NODE_ENV=development nodemon --exec node --experimental-specifier-resolution=node --loader=ts-node/esm ./src/app.ts"
   },
   "dependencies": {
+    "@fastify/compress": "^6.2.0",
+    "@fastify/cors": "^8.2.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
     "fastify": "^4.8.1",

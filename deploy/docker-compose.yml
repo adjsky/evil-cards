@@ -48,6 +48,8 @@ services:
     restart: always
     deploy:
       replicas: 2
+    env_file:
+      - ./envs/server.env
 
   load-balancer:
     image: adjsky/evil-cards_load-balancer:latest

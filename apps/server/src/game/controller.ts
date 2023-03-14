@@ -22,14 +22,27 @@ import type {
   Configuration,
   Player
 } from "./types"
+import type { RedisClientType } from "redis"
+
+export type ControllerConfig = {
+  serverNumber: string
+}
 
 class Controller {
   private sessionManager: ISessionManager
   private events: ControllerEvents
+  private redis: RedisClientType
+  private config: ControllerConfig
 
-  public constructor(sessionManager: ISessionManager) {
+  public constructor(
+    sessionManager: ISessionManager,
+    redis: RedisClientType,
+    config: ControllerConfig
+  ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
+    this.redis = redis
+    this.config = config
 
     this.events.on("createsession", this.createSession.bind(this))
     this.events.on("joinsession", this.joinSession.bind(this))
@@ -123,6 +136,7 @@ class Controller {
     session.events.on("sessionend", () => {
       session.events.clearListeners()
       this.sessionManager.delete(session.id)
+      this.redis.del(`sessionserver:${session.id}`)
     })
 
     socket.on("close", () => {
@@ -130,6 +144,8 @@ class Controller {
     })
 
     this.setupSessionListeners(session)
+
+    this.redis.set(`sessionserver:${session.id}`, this.config.serverNumber)
   }
 
   private joinSession({

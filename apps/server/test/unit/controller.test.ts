@@ -4,6 +4,7 @@ import { mock } from "jest-mock-extended"
 import waitForExpect from "wait-for-expect"
 
 import type { ISessionManager } from "../../src/game/intefaces"
+import type { RedisClientType } from "redis"
 
 jest.unstable_mockModule(
   "ws",
@@ -14,9 +15,12 @@ const Controller = (await import("../../src/game/controller")).default
 const WebSocket = (await import("ws")).default
 
 const sessionManager = mock<ISessionManager>()
+const redis = mock<RedisClientType>()
 
 it("terminates connection after two failed pings", async () => {
-  const controller = new Controller(sessionManager)
+  const controller = new Controller(sessionManager, redis, {
+    serverNumber: "1"
+  })
   const socket = new WebSocket("")
 
   jest.useFakeTimers()

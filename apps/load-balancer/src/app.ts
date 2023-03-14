@@ -1,6 +1,9 @@
 import Fastify from "fastify"
+import fastifyCompress from "@fastify/compress"
+import fastifyCors from "@fastify/cors"
 import { createClient } from "redis"
 import { SequentialRoundRobin } from "round-robin-js"
+
 import { env } from "./env"
 import { z } from "zod"
 
@@ -20,6 +23,11 @@ const envLogger = {
 
 const fastify = Fastify({
   logger: envLogger[env.NODE_ENV]
+})
+
+await fastify.register(fastifyCompress)
+await fastify.register(fastifyCors, {
+  origin: `${env.PROTOCOL}://${env.HOST}`
 })
 
 const redis = createClient({ url: env.REDIS_URL })

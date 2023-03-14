@@ -34,6 +34,8 @@ RUN npm run build
 
 FROM node:16-alpine AS runner
 
+RUN apk --no-cache add bind-tools
+
 WORKDIR /evil-cards
 COPY --from=builder /evil-cards/node_modules ./node_modules
 
@@ -41,8 +43,9 @@ WORKDIR /evil-cards/apps/server
 COPY --from=builder /evil-cards/apps/server/node_modules ./node_modules
 COPY --from=builder /evil-cards/apps/server/dist ./dist
 COPY --from=builder /evil-cards/apps/server/package.json ./package.json
+COPY --from=builder /evil-cards/apps/server/scripts/start-with-server-number.sh ./start-with-server-number.sh
 
 EXPOSE 8000
 ENV PORT 8000
 
-CMD ["npm", "start"]
+CMD ["sh", "start-with-server-number.sh"]
