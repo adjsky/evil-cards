@@ -12,9 +12,10 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   PORT: z.coerce.number().default(1337),
-  REDIS_URL: z.string(),
-  PROTOCOL: z.string(),
-  HOST: z.string()
+  REDIS_URL: z.string().url(),
+  SITE_DOMAIN: z.string(),
+  SITE_PROTOCOL: z.string(),
+  WS_PROTOCOL: z.string()
 })
 
 const formatErrors = (errors: ZodFormattedError<Map<string, string>, string>) =>

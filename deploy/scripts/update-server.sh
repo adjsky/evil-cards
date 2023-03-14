@@ -9,7 +9,7 @@ for CONTAINER in $(docker-compose -f $COMPOSE_PATH ps server | tail -n +3 | awk 
   CURRENT_RUNNING_SERVERS+=($CONTAINER)
 
   (
-    nohup sh -c "sleep 10 && docker stop $CONTAINER && docker rm $CONTAINER" >/dev/null 2>&1
+    nohup sh -c "sleep 1800 && docker stop $CONTAINER && docker rm $CONTAINER" >/dev/null 2>&1
   ) &
 done
 

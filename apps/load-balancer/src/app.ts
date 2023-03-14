@@ -27,7 +27,7 @@ const fastify = Fastify({
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {
-  origin: `${env.PROTOCOL}://${env.HOST}`
+  origin: `${env.SITE_PROTOCOL}://${env.SITE_DOMAIN}`
 })
 
 const redis = createClient({ url: env.REDIS_URL })
@@ -50,7 +50,7 @@ async function getServerNumbersFromRedis() {
 }
 
 function makeURLFromServer(serverNumber: string) {
-  return `${env.PROTOCOL}://sv-${serverNumber}.${env.HOST}`
+  return `${env.WS_PROTOCOL}://sv-${serverNumber}.${env.SITE_DOMAIN}`
 }
 
 const serversRoundRobin = new SequentialRoundRobin(

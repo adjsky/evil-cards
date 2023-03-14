@@ -30,7 +30,7 @@ await redis.connect()
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {
-  origin: env.SITE_PATH
+  origin: env.SITE_URL
 })
 
 await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })
