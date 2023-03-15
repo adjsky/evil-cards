@@ -1,4 +1,4 @@
-name: Manual build and push
+name: Build and push
 
 on: 
   workflow_dispatch:
