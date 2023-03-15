@@ -36,4 +36,4 @@ jobs:
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
           script: |
             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
-            $APP_PATH/$SOURCE_DIR/deploy/update-${{ inputs.service }}.sh
+            $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ inputs.service }}.sh
