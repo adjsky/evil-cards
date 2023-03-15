@@ -35,5 +35,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
           script: |
-            git clone https://github.com/$REPOSTORY $APP_PATH/$SOURCE_DIR
+            git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/update-${{ inputs.service }}.sh
