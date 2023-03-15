@@ -38,6 +38,6 @@ jobs:
         if: inputs.service == 'client'
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_$${{ inputs.service }}:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_${{ inputs.service }}:latest
           file: deploy/Dockerfile.client
           platforms: linux/amd64
