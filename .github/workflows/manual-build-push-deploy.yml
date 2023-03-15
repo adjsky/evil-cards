@@ -18,6 +18,9 @@ jobs:
     name: Build, push and deploy ${{ inputs.service }}
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
       - name: Build and push
         uses: ./.github/workflows/build-and-push.yml
         with:
