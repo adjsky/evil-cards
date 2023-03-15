@@ -1,0 +1,38 @@
+name: Manual build, push and deploy
+
+on: 
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build'
+        required: true
+        type: choice
+        options:
+          - server
+          - client
+          - load-balancer
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    name: Build, push and deploy ${{ inputs.service }}
+
+    steps:
+      - name: Build and push
+        uses: ./.github/workflows/build-and-push.yml
+        with:
+          service: ${{ inputs.service }}
+
+      - name: Reflect changes on remote server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          envs:
+            REPOSITORY: ${{ github.repository }}
+            APP_PATH: /app
+            SOURCE_DIR: source-${{ inputs.service }}
+          script: |
+            git clone https://github.com/$REPOSTORY $APP_PATH/$SOURCE_DIR
+            $APP_PATH/$SOURCE_DIR/deploy/update-${{ inputs.service }}.sh
