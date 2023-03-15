@@ -25,14 +25,15 @@ jobs:
 
       - name: Reflect changes on remote server
         uses: appleboy/ssh-action@v0.1.7
+        env:
+            REPOSITORY: ${{ github.repository }}
+            APP_PATH: /app
+            SOURCE_DIR: source-${{ inputs.service }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs:
-            REPOSITORY: ${{ github.repository }}
-            APP_PATH: /app
-            SOURCE_DIR: source-${{ inputs.service }}
+          envs: REPOSITORY,APP_PATH,SOURCE_DIR
           script: |
             git clone https://github.com/$REPOSTORY $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/update-${{ inputs.service }}.sh
