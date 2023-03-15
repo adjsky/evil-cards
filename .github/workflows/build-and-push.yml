@@ -45,8 +45,8 @@ jobs:
         if: inputs.service == 'client'
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_${{ inputs.service }}:latest
-          file: deploy/Dockerfile.${{ inputs.service }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_client:latest
+          file: deploy/Dockerfile.client
           platforms: linux/amd64
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
