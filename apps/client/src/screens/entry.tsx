@@ -43,6 +43,8 @@ const Entry: React.FC = () => {
   const joining = searchParams.has("s")
 
   const handleStart = async () => {
+    setWaiting(true)
+
     const sessionId = searchParams.get("s")
 
     const result = await getWSHost(sessionId ?? undefined)
@@ -55,10 +57,10 @@ const Entry: React.FC = () => {
             : "Произошла какая-то ошибка"
 
         updateSnackbar({ message, open: true, severity: "information" })
+        setWaiting(false)
       },
       ok(wsHost) {
         connect(wsHost)
-        setWaiting(true)
 
         if (sessionId) {
           sendJsonMessage({
