@@ -13,16 +13,17 @@ on:
           - load-balancer
 
 jobs:
-  build-push-deploy:
+  build-and-push:
+    name: Build and push ${{ inputs.service }}
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      service: ${{ inputs.service }}
+
+  deploy:
     runs-on: ubuntu-latest
-    name: Build, push and deploy ${{ inputs.service }}
+    name: Deploy ${{ inputs.service }}
 
     steps:
-      - name: Build and push
-        uses: adjsky/evil-cards/.github/workflows/build-and-push.yml@master
-        with:
-          service: ${{ inputs.service }}
-
       - name: Reflect changes on remote server
         uses: appleboy/ssh-action@v0.1.7
         env:
