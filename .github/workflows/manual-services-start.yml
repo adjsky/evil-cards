@@ -21,4 +21,4 @@ jobs:
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
           script: |
             git clone https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
-            $APP_PATH/$SOURCE_DIR/deploy/start-services.sh
+            $APP_PATH/$SOURCE_DIR/deploy/scripts/start-services.sh
