@@ -35,9 +35,8 @@ jobs:
 
       - name: Build and push ${{ inputs.service }}
         uses: docker/build-push-action@v3
-        if: inputs.service == 'client'
         with:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_${{ inputs.service }}:latest
-          file: deploy/Dockerfile.client
+          file: deploy/Dockerfile.${{ inputs.service }}
           platforms: linux/amd64
