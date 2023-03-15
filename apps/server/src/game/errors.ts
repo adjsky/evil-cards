@@ -88,6 +88,12 @@ export class NotEnoughPlayersError extends Error {
   }
 }
 
+export class TooManyPlayersError extends Error {
+  constructor() {
+    super("too many players")
+  }
+}
+
 export class DisconnectedError extends Error {
   constructor() {
     super("already disconnected")

@@ -20,7 +20,7 @@ const DesktopPlayerList: React.FC<{
 
   return (
     <div
-      className="scrollable hidden h-full flex-col gap-2 pr-2 sm:flex"
+      className="scrollable hidden h-full flex-col gap-2 sm:flex"
       data-testid="player-list"
     >
       {filteredPlayers.map((player) => (

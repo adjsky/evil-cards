@@ -28,6 +28,8 @@ html,
 .scrollable {
   overflow-y: auto;
   overflow-x: hidden;
+
+  padding-right: 0.5rem;
 }
 .scrollable::-webkit-scrollbar {
   width: 4px;
@@ -41,4 +43,11 @@ html,
 }
 .scrollable::-webkit-scrollbar-thumb:hover {
   background: theme("colors.gray.200");
+}
+
+@supports (-moz-appearance: none) {
+  .scrollable {
+    scrollbar-width: none;
+    padding-right: 0;
+  }
 }

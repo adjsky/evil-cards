@@ -9,6 +9,7 @@ import { setDateTimeout } from "../lib/date-timeout"
 import {
   BEST_CARD_VIEW_DURATION_MS,
   GAME_START_DELAY_MS,
+  MAX_PLAYERS_IN_SESSSION,
   MIN_PLAYERS_TO_START_GAME,
   SESSION_ID_SIZE,
   USER_ID_SIZE
@@ -25,7 +26,8 @@ import {
   NoPlayerError,
   HostError,
   NotEnoughPlayersError,
-  DisconnectedError
+  DisconnectedError,
+  TooManyPlayersError
 } from "./errors"
 
 import type {
@@ -119,6 +121,10 @@ class Session implements ISession {
       this._events.emit("join", existingPlayer)
 
       return existingPlayer
+    }
+
+    if (this._players.length >= MAX_PLAYERS_IN_SESSSION) {
+      throw new TooManyPlayersError()
     }
 
     const isWaiting = this.isWaiting()
