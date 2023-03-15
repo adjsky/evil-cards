@@ -14,7 +14,6 @@ on:
 
 jobs:
   build-and-push:
-    name: Build and push ${{ inputs.service }}
     uses: ./.github/workflows/build-and-push.yml
     with:
       service: ${{ inputs.service }}
