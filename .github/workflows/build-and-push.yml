@@ -22,6 +22,8 @@ on:
         required: true
       DOCKER_PASSWORD:
         required: true
+      SENTRY_AUTH_TOKEN:
+        required: false
 
 jobs:
   build-and-push:
