@@ -22,6 +22,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy ${{ inputs.service }}
+    needs: build-and-push
 
     steps:
       - name: Reflect changes on remote server
