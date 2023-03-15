@@ -1,0 +1,43 @@
+name: Manual build and push
+
+on: 
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build'
+        required: true
+        type: choice
+        options:
+          - server
+          - client
+          - load-balancer
+  workflow_call:
+    inputs:
+      service:
+        description: 'Service to build'
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    name: Build and push ${{ inputs.service }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push ${{ inputs.service }}
+        uses: docker/build-push-action@v3
+        if: inputs.service == 'client'
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/evil-cards_$${{ inputs.service }}:latest
+          file: deploy/Dockerfile.client
+          platforms: linux/amd64
