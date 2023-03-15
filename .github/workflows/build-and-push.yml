@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push ${{ inputs.service }}
+      - name: Build and push client with secrets
         uses: docker/build-push-action@v3
         if: inputs.service == 'client'
         with:
@@ -51,7 +51,7 @@ jobs:
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
-      - name: Build and push ${{ inputs.service }}
+      - name: Default ${{ inputs.service }} build and push 
         uses: docker/build-push-action@v3
         if: inputs.service != 'client'
         with:
