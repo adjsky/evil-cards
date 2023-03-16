@@ -28,6 +28,6 @@ for CONTAINER in $(docker-compose -f $COMPOSE_PATH ps server | tail -n +3 | awk 
   fi
 done
 
-docker-compose -f $COMPOSE_PATH exec redis redis-cli -n 0 SET servers "${AVAILABLE_SERVERS[*]}"
+docker-compose -f $COMPOSE_PATH exec -T redis redis-cli -n 0 SET servers "${AVAILABLE_SERVERS[*]}"
 
 $APP_PATH/$SOURCE_DIR/deploy/scripts/cleanup.sh
