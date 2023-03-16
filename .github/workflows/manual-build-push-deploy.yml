@@ -40,3 +40,15 @@ jobs:
           script: |
             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ inputs.service }}.sh
+
+  purge-cache:
+    name: Purge cloudflare cache
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: inputs.service == 'client'
+    steps:
+      - name: Purge cloudflare cace
+        uses: nathanvaughn/actions-cloudflare-purge@3.1.0
+        with:
+          cf_zone: ${{ secrets.CLOUDFLARE_ZONE }}
+          cf_auth: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
