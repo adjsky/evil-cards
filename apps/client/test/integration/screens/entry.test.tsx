@@ -22,6 +22,11 @@ jest.mock("@/lib/hooks/use-socket", () => {
     })
   }
 })
+jest.mock("next/router", () => ({
+  useRouter: () => ({
+    //
+  })
+}))
 
 afterEach(() => {
   resetLocationMock()
