@@ -5,6 +5,7 @@ import waitForExpect from "wait-for-expect"
 
 import type { ISessionManager } from "../../src/game/intefaces"
 import type { RedisClientType } from "redis"
+import type { FastifyBaseLogger } from "fastify"
 
 jest.unstable_mockModule(
   "ws",
@@ -16,11 +17,19 @@ const WebSocket = (await import("ws")).default
 
 const sessionManager = mock<ISessionManager>()
 const redis = mock<RedisClientType>()
+const log = mock<FastifyBaseLogger>({
+  child: () => mock<FastifyBaseLogger>()
+})
 
 it("terminates connection after two failed pings", async () => {
-  const controller = new Controller(sessionManager, redis, {
-    serverNumber: "1"
-  })
+  const controller = new Controller(
+    sessionManager,
+    redis,
+    {
+      serverNumber: "1"
+    },
+    log
+  )
   const socket = new WebSocket("")
 
   jest.useFakeTimers()

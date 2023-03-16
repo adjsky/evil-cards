@@ -7,3 +7,5 @@ export const SESSION_ID_SIZE = 5
 export const GAME_START_DELAY_MS = 3 * 1000
 export const BEST_CARD_VIEW_DURATION_MS = 2 * 1000
 export const ALIVE_CHECK_INTERVAL_MS = 60 * 1000
+
+export const SESSION_REDIS_EXPIRE_SECONDS = 21600 // 6h

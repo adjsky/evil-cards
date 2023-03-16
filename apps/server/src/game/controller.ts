@@ -3,7 +3,10 @@ import Emittery from "emittery"
 
 import { messageSchema } from "../lib/ws/receive"
 import stringify from "../lib/ws/stringify"
-import { ALIVE_CHECK_INTERVAL_MS } from "./constants"
+import {
+  ALIVE_CHECK_INTERVAL_MS,
+  SESSION_REDIS_EXPIRE_SECONDS
+} from "./constants"
 import {
   InSessionError,
   NoPlayerError,
@@ -66,7 +69,7 @@ class Controller {
         try {
           await this.events.emit("lostconnection", { socket })
         } catch (error) {
-          this.log.error(error)
+          this.log.error(error, "emit lostconnection")
         }
 
         socket.terminate()
@@ -91,7 +94,7 @@ class Controller {
           )
         }
       } catch (error) {
-        this.log.error(error)
+        this.log.error(error, "socket.on message")
 
         if (socket.OPEN) {
           socket.send(
@@ -105,7 +108,7 @@ class Controller {
     })
   }
 
-  private createSession({
+  private async createSession({
     socket,
     nickname,
     avatarId
@@ -116,6 +119,23 @@ class Controller {
 
     const session = this.sessionManager.create()
     const player = session.join(socket, nickname, avatarId, true)
+
+    await this.addSessionToRedis(session.id)
+
+    this.setupSessionListeners(session)
+
+    socket.session = session
+    socket.player = player
+
+    session.events.on("sessionend", () => {
+      session.events.clearListeners()
+      this.delSessionFromRedis(session.id)
+      this.sessionManager.delete(session.id)
+    })
+
+    socket.on("close", () => {
+      this.disconnect(socket)
+    })
 
     socket.send(
       stringify({
@@ -133,23 +153,6 @@ class Controller {
         }
       })
     )
-
-    socket.session = session
-    socket.player = player
-
-    session.events.on("sessionend", () => {
-      session.events.clearListeners()
-      this.sessionManager.delete(session.id)
-      this.redis.del(`sessionserver:${session.id}`)
-    })
-
-    socket.on("close", () => {
-      this.disconnect(socket)
-    })
-
-    this.setupSessionListeners(session)
-
-    this.redis.set(`sessionserver:${session.id}`, this.config.serverNumber)
   }
 
   private joinSession({
@@ -170,6 +173,13 @@ class Controller {
 
     const player = session.join(socket, nickname, avatarId, false)
 
+    socket.session = session
+    socket.player = player
+
+    socket.on("close", () => {
+      this.disconnect(socket)
+    })
+
     socket.send(
       stringify({
         type: "join",
@@ -189,13 +199,6 @@ class Controller {
         }
       })
     )
-
-    socket.session = session
-    socket.player = player
-
-    socket.on("close", () => {
-      this.disconnect(socket)
-    })
   }
 
   private disconnect(socket: WebSocket) {
@@ -571,6 +574,44 @@ class Controller {
     session.events.on("configurationchange", handleConfigurationChange)
     session.events.on("join", handleJoin)
     session.events.on("leave", handleLeave)
+  }
+
+  private async addSessionToRedis(sessionId: string) {
+    try {
+      const result = await this.redis.set(
+        `sessionserver:${sessionId}`,
+        this.config.serverNumber,
+        {
+          EX: SESSION_REDIS_EXPIRE_SECONDS
+        }
+      )
+
+      this.log.info(
+        { result, sessionId, serverNumber: this.config.serverNumber },
+        "redis.set sessionserver"
+      )
+    } catch (error) {
+      this.log.error(
+        { err: error, sessionId, serverNumber: this.config.serverNumber },
+        "redis.set sessionserver"
+      )
+    }
+  }
+
+  private async delSessionFromRedis(sessionId: string) {
+    try {
+      const result = await this.redis.del(`sessionserver:${sessionId}`)
+
+      this.log.info(
+        { result, sessionId, serverNumber: this.config.serverNumber },
+        "redis.del sessionserver"
+      )
+    } catch (error) {
+      this.log.error(
+        { err: error, sessionId, serverNumber: this.config.serverNumber },
+        "redis.del sessionserver"
+      )
+    }
   }
 }
 
