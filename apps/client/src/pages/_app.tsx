@@ -1,7 +1,7 @@
 import "@/styles/globals.css"
 import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
-import Router, { useRouter } from "next/router"
+import { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
 
 import getMetaTags from "@/lib/seo"
@@ -52,18 +52,6 @@ const useSocketEvents = () => {
           open: true,
           infinite: false
         })
-      }
-
-      if (message.type == "join" || message.type == "create") {
-        Router.push("/room", undefined, { shallow: true })
-      }
-
-      if (
-        message.type == "error" &&
-        message.details &&
-        message.details == "game is started already"
-      ) {
-        Router.replace("/", undefined, { shallow: true })
       }
 
       if (sounds) {

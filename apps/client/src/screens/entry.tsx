@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
+import { useRouter } from "next/router"
 
 import { nicknameAtom, avatarAtom } from "@/lib/atoms"
 import { useSocket, useScreenFactor } from "@/lib/hooks"
@@ -20,6 +21,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 
 const Entry: React.FC = () => {
   const [waiting, setWaiting] = useState(false)
+  const router = useRouter()
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
@@ -30,6 +32,11 @@ const Entry: React.FC = () => {
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
+        router.replace("/", undefined, { shallow: true })
+      }
+
+      if (message.type == "join" || message.type == "create") {
+        router.push("/room", undefined, { shallow: true })
       }
     }
   })
