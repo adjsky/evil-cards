@@ -16,11 +16,15 @@ jest.unstable_mockModule(
 const Controller = (await import("../../src/game/controller")).default
 const WebSocket = (await import("ws")).default
 
+function getMockLog() {
+  return mock<FastifyBaseLogger>({
+    child: getMockLog
+  })
+}
+
 const sessionManager = mock<ISessionManager>()
 const redis = mock<RedisClientType>()
-const log = mock<FastifyBaseLogger>({
-  child: () => mock<FastifyBaseLogger>()
-})
+const log = getMockLog()
 const ctx = mock<ReqContext>()
 
 it("terminates connection after two failed pings", async () => {
