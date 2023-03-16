@@ -23,6 +23,7 @@ import type {
   Player
 } from "./types"
 import type { RedisClientType } from "redis"
+import type { FastifyBaseLogger } from "fastify"
 
 export type ControllerConfig = {
   serverNumber: string
@@ -33,16 +34,19 @@ class Controller {
   private events: ControllerEvents
   private redis: RedisClientType
   private config: ControllerConfig
+  private log: FastifyBaseLogger
 
   public constructor(
     sessionManager: ISessionManager,
     redis: RedisClientType,
-    config: ControllerConfig
+    config: ControllerConfig,
+    log: FastifyBaseLogger
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
     this.redis = redis
     this.config = config
+    this.log = log.child({ component: "game controller" })
 
     this.events.on("createsession", this.createSession.bind(this))
     this.events.on("joinsession", this.joinSession.bind(this))
@@ -62,7 +66,7 @@ class Controller {
         try {
           await this.events.emit("lostconnection", { socket })
         } catch (error) {
-          console.error(error)
+          this.log.error(error)
         }
 
         socket.terminate()
@@ -87,7 +91,7 @@ class Controller {
           )
         }
       } catch (error) {
-        console.error(error)
+        this.log.error(error)
 
         if (socket.OPEN) {
           socket.send(

@@ -13,9 +13,14 @@ const websocketRoutes: FastifyPluginCallback<{ redis: RedisClientType }> = (
 ) => {
   const sessionFactory = new SessionFactory()
   const sessionManager = new SessionManager(sessionFactory)
-  const controller = new Controller(sessionManager, redis, {
-    serverNumber: env.SERVER_NUMBER
-  })
+  const controller = new Controller(
+    sessionManager,
+    redis,
+    {
+      serverNumber: env.SERVER_NUMBER
+    },
+    fastify.log
+  )
 
   fastify.get("/ws", { websocket: true }, ({ socket }) => {
     controller.handleConnection(socket)
