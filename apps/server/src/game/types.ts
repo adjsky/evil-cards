@@ -2,19 +2,18 @@ import type Emittery from "emittery"
 import type { WebSocket } from "ws"
 import type { Message } from "../lib/ws/receive"
 import type { DateTimeout } from "../lib/date-timeout"
+import type { ReqContext } from "../context"
 
-import type {
-  MapDiscriminatedUnion,
-  UnwrapField,
-  WithWebsocket
-} from "../types/utility"
+import type { MapDiscriminatedUnion, UnwrapField, With } from "../types/utility"
 
-export type ServerEvent = WithWebsocket<
+type WithHelperData<T> = With<{ socket: WebSocket; ctx: ReqContext }, T>
+
+export type ServerEvent = WithHelperData<
   UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
 >
 
 export type ControllerEvents = Emittery<
-  ServerEvent & { lostconnection: { socket: WebSocket } }
+  ServerEvent & WithHelperData<{ lostconnection: undefined }>
 >
 
 export type PlayerSender = {

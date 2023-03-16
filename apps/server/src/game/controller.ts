@@ -14,6 +14,7 @@ import {
   SessionNotFoundError
 } from "./errors"
 import omit from "../functions/omit"
+import { logWithCtx } from "../context"
 
 import type { WebSocket } from "ws"
 import type { ISessionManager, ISession } from "./intefaces"
@@ -27,6 +28,7 @@ import type {
 } from "./types"
 import type { RedisClientType } from "redis"
 import type { FastifyBaseLogger } from "fastify"
+import { ReqContext } from "../context"
 
 export type ControllerConfig = {
   serverNumber: string
@@ -62,14 +64,14 @@ class Controller {
     this.events.on("lostconnection", ({ socket }) => this.disconnect(socket))
   }
 
-  public handleConnection(socket: WebSocket) {
+  public handleConnection(ctx: ReqContext, socket: WebSocket) {
     socket.alive = true
     const interval = setInterval(async () => {
       if (!socket.alive) {
         try {
-          await this.events.emit("lostconnection", { socket })
+          await this.events.emit("lostconnection", { socket, ctx })
         } catch (error) {
-          this.log.error(error, "emit lostconnection")
+          logWithCtx(ctx, this.log).error(error, "emit lostconnection")
         }
 
         socket.terminate()
@@ -90,11 +92,13 @@ class Controller {
         } else {
           await this.events.emit(
             message.type,
-            "details" in message ? { ...message.details, socket } : { socket }
+            "details" in message
+              ? { ...message.details, socket, ctx }
+              : { socket, ctx }
           )
         }
       } catch (error) {
-        this.log.error(error, "socket.on message")
+        logWithCtx(ctx, this.log).error(error, "socket.on message")
 
         if (socket.OPEN) {
           socket.send(
@@ -109,6 +113,7 @@ class Controller {
   }
 
   private async createSession({
+    ctx,
     socket,
     nickname,
     avatarId
@@ -120,7 +125,7 @@ class Controller {
     const session = this.sessionManager.create()
     const player = session.join(socket, nickname, avatarId, true)
 
-    await this.addSessionToRedis(session.id)
+    await this.addSessionToRedis(ctx, session.id)
 
     this.setupSessionListeners(session)
 
@@ -129,7 +134,7 @@ class Controller {
 
     session.events.on("sessionend", () => {
       session.events.clearListeners()
-      this.delSessionFromRedis(session.id)
+      this.delSessionFromRedis(ctx, session.id)
       this.sessionManager.delete(session.id)
     })
 
@@ -576,7 +581,7 @@ class Controller {
     session.events.on("leave", handleLeave)
   }
 
-  private async addSessionToRedis(sessionId: string) {
+  private async addSessionToRedis(ctx: ReqContext, sessionId: string) {
     try {
       const result = await this.redis.set(
         `sessionserver:${sessionId}`,
@@ -586,28 +591,28 @@ class Controller {
         }
       )
 
-      this.log.info(
+      logWithCtx(ctx, this.log).info(
         { result, sessionId, serverNumber: this.config.serverNumber },
         "redis.set sessionserver"
       )
     } catch (error) {
-      this.log.error(
+      logWithCtx(ctx, this.log).error(
         { err: error, sessionId, serverNumber: this.config.serverNumber },
         "redis.set sessionserver"
       )
     }
   }
 
-  private async delSessionFromRedis(sessionId: string) {
+  private async delSessionFromRedis(ctx: ReqContext, sessionId: string) {
     try {
       const result = await this.redis.del(`sessionserver:${sessionId}`)
 
-      this.log.info(
+      logWithCtx(ctx, this.log).info(
         { result, sessionId, serverNumber: this.config.serverNumber },
         "redis.del sessionserver"
       )
     } catch (error) {
-      this.log.error(
+      logWithCtx(ctx, this.log).error(
         { err: error, sessionId, serverNumber: this.config.serverNumber },
         "redis.del sessionserver"
       )
