@@ -34,6 +34,9 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         open: true,
         infinite: true
       })
+    },
+    onOpen() {
+      updateSnackbar({ open: false })
     }
   })
 

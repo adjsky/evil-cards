@@ -9,6 +9,7 @@ import {
 } from "./constants"
 import {
   InSessionError,
+  InternalError,
   NoPlayerError,
   NoSessionError,
   SessionNotFoundError
@@ -26,9 +27,9 @@ import type {
   Configuration,
   Player
 } from "./types"
-import type { RedisClientType } from "redis"
 import type { FastifyBaseLogger } from "fastify"
-import { ReqContext } from "../context"
+import type { ReqContext } from "../context"
+import type { RedisClientWithLogs } from "../redis-client-with-logs"
 
 export type ControllerConfig = {
   serverNumber: string
@@ -37,19 +38,19 @@ export type ControllerConfig = {
 class Controller {
   private sessionManager: ISessionManager
   private events: ControllerEvents
-  private redis: RedisClientType
+  private redisClient: RedisClientWithLogs
   private config: ControllerConfig
   private log: FastifyBaseLogger
 
   public constructor(
     sessionManager: ISessionManager,
-    redis: RedisClientType,
+    redisClient: RedisClientWithLogs,
     config: ControllerConfig,
     log: FastifyBaseLogger
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
-    this.redis = redis
+    this.redisClient = redisClient
     this.config = config
     this.log = log.child({ component: "game controller" })
 
@@ -123,41 +124,66 @@ class Controller {
     }
 
     const session = this.sessionManager.create()
-    const player = session.join(socket, nickname, avatarId, true)
 
-    await this.addSessionToRedis(ctx, session.id)
+    const handleSessionEnd = () => {
+      this.log.info({ sessionId: session.id }, "handling session end")
 
-    this.setupSessionListeners(session)
-
-    socket.session = session
-    socket.player = player
-
-    session.events.on("sessionend", () => {
       session.events.clearListeners()
-      this.delSessionFromRedis(ctx, session.id)
-      this.sessionManager.delete(session.id)
-    })
 
-    socket.on("close", () => {
-      this.disconnect(socket)
-    })
-
-    socket.send(
-      stringify({
-        type: "create",
-        details: {
-          changedState: {
-            id: session.id,
-            status: session.status,
-            playerId: player.id,
-            players: session.players.map((player) =>
-              omit(player, ["sender", "deck"])
-            ),
-            configuration: session.configuration
-          }
-        }
+      this.redisClient.del(ctx, `sessionserver:${session.id}`).catch(() => {
+        // do nothing with errors to prevent crashes
+        // errors are automatically logged in the client
       })
-    )
+
+      this.sessionManager.delete(session.id)
+    }
+
+    try {
+      await this.redisClient.set(
+        ctx,
+        `sessionserver:${session.id}`,
+        this.config.serverNumber,
+        {
+          EX: SESSION_REDIS_EXPIRE_SECONDS
+        }
+      )
+
+      const player = session.join(socket, nickname, avatarId, true)
+
+      this.setupSessionListeners(session)
+
+      socket.session = session
+      socket.player = player
+
+      session.events.on("sessionend", handleSessionEnd)
+
+      socket.on("close", () => {
+        this.disconnect(socket)
+      })
+
+      socket.send(
+        stringify({
+          type: "create",
+          details: {
+            changedState: {
+              id: session.id,
+              status: session.status,
+              playerId: player.id,
+              players: session.players.map((player) =>
+                omit(player, ["sender", "deck"])
+              ),
+              configuration: session.configuration
+            }
+          }
+        })
+      )
+    } catch (error) {
+      handleSessionEnd()
+
+      logWithCtx(ctx, this.log).error({ err: error, sessionId: session.id })
+
+      throw new InternalError()
+    }
   }
 
   private joinSession({
@@ -579,44 +605,6 @@ class Controller {
     session.events.on("configurationchange", handleConfigurationChange)
     session.events.on("join", handleJoin)
     session.events.on("leave", handleLeave)
-  }
-
-  private async addSessionToRedis(ctx: ReqContext, sessionId: string) {
-    try {
-      const result = await this.redis.set(
-        `sessionserver:${sessionId}`,
-        this.config.serverNumber,
-        {
-          EX: SESSION_REDIS_EXPIRE_SECONDS
-        }
-      )
-
-      logWithCtx(ctx, this.log).info(
-        { result, sessionId, serverNumber: this.config.serverNumber },
-        "redis.set sessionserver"
-      )
-    } catch (error) {
-      logWithCtx(ctx, this.log).error(
-        { err: error, sessionId, serverNumber: this.config.serverNumber },
-        "redis.set sessionserver"
-      )
-    }
-  }
-
-  private async delSessionFromRedis(ctx: ReqContext, sessionId: string) {
-    try {
-      const result = await this.redis.del(`sessionserver:${sessionId}`)
-
-      logWithCtx(ctx, this.log).info(
-        { result, sessionId, serverNumber: this.config.serverNumber },
-        "redis.del sessionserver"
-      )
-    } catch (error) {
-      logWithCtx(ctx, this.log).error(
-        { err: error, sessionId, serverNumber: this.config.serverNumber },
-        "redis.del sessionserver"
-      )
-    }
   }
 }
 

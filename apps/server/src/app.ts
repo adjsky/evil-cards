@@ -8,6 +8,7 @@ import { buildRedisClient } from "./build"
 
 import websocketRoutes from "./routes/ws"
 import { env } from "./env"
+import { getRedisClientWithLogs } from "./redis-client-with-logs"
 
 const envLogger = {
   development: {
@@ -25,8 +26,10 @@ const envLogger = {
 
 const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
 
-const redis = buildRedisClient()
-await redis.connect()
+const redisClient = buildRedisClient()
+await redisClient.connect()
+
+const redisClientWithLogs = getRedisClientWithLogs(redisClient, fastify.log)
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {
@@ -35,7 +38,7 @@ await fastify.register(fastifyCors, {
 
 await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })
 await fastify.register(websocketPlugin)
-await fastify.register(websocketRoutes, { redis })
+await fastify.register(websocketRoutes, { redisClient: redisClientWithLogs })
 
 await fastify.listen({
   port: env.PORT,

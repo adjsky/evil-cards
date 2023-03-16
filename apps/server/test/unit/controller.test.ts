@@ -4,7 +4,7 @@ import { mock } from "jest-mock-extended"
 import waitForExpect from "wait-for-expect"
 
 import type { ISessionManager } from "../../src/game/intefaces"
-import type { RedisClientType } from "redis"
+import type { RedisClientWithLogs } from "../../src/redis-client-with-logs"
 import type { FastifyBaseLogger } from "fastify"
 import type { ReqContext } from "../../src/context"
 
@@ -23,14 +23,14 @@ function getMockLog() {
 }
 
 const sessionManager = mock<ISessionManager>()
-const redis = mock<RedisClientType>()
+const redisClient = mock<RedisClientWithLogs>()
 const log = getMockLog()
 const ctx = mock<ReqContext>()
 
 it("terminates connection after two failed pings", async () => {
   const controller = new Controller(
     sessionManager,
-    redis,
+    redisClient,
     {
       serverNumber: "1"
     },

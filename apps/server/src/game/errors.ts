@@ -99,3 +99,9 @@ export class DisconnectedError extends Error {
     super("already disconnected")
   }
 }
+
+export class InternalError extends Error {
+  constructor() {
+    super("internal error")
+  }
+}

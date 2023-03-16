@@ -52,7 +52,7 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage, disconnect } = useSocket<
+  const { lastJsonMessage, sendJsonMessage, disconnect, connected } = useSocket<
     SendMessage,
     ReceiveMessage
   >({
@@ -72,6 +72,9 @@ const Waiting: React.FC<{
         open: true,
         infinite: true
       })
+    },
+    onOpen() {
+      updateSnackbar({ open: false })
     }
   })
 
@@ -92,7 +95,11 @@ const Waiting: React.FC<{
 
     const handleAnimationFinish = () => {
       onGameStateUpdate && onGameStateUpdate(null)
-      disconnect()
+      updateSnackbar({ open: false })
+
+      if (connected) {
+        disconnect()
+      }
     }
 
     leaving.current = true
@@ -111,7 +118,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, disconnect])
+  }, [onGameStateUpdate, disconnect, connected])
 
   const router = useRouter()
   useEffect(() => {

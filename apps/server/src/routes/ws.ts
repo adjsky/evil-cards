@@ -5,18 +5,16 @@ import { env } from "../env"
 import { createCtxFromReq } from "../context"
 
 import type { FastifyPluginCallback } from "fastify"
-import type { RedisClientType } from "redis"
+import type { RedisClientWithLogs } from "../redis-client-with-logs"
 
-const websocketRoutes: FastifyPluginCallback<{ redis: RedisClientType }> = (
-  fastify,
-  { redis },
-  done
-) => {
+const websocketRoutes: FastifyPluginCallback<{
+  redisClient: RedisClientWithLogs
+}> = (fastify, { redisClient }, done) => {
   const sessionFactory = new SessionFactory()
   const sessionManager = new SessionManager(sessionFactory)
   const controller = new Controller(
     sessionManager,
-    redis,
+    redisClient,
     {
       serverNumber: env.SERVER_NUMBER
     },
