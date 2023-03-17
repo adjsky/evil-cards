@@ -22,10 +22,12 @@ import BackButton from "@/components/back-button"
 import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
 import Configuration from "@/components/configuration"
+import Authors from "@/components/authors"
 import SoundOn from "@/assets/sound-on.svg"
 import SoundOff from "@/assets/sound-off.svg"
 import Gear from "@/assets/gear.svg"
-import Close from "@/assets/configuration-close.svg"
+import Close from "@/assets/waiting-close.svg"
+import Author from "@/assets/author.svg"
 
 import type {
   Message as ReceiveMessage,
@@ -39,8 +41,11 @@ const Waiting: React.FC<{
   onGameStateUpdate?: (gameState: GameState | null) => void
 }> = ({ gameState, onGameStateUpdate }) => {
   useLeavePreventer()
-  const [configurationVisible, toggleConfiguration] = useToggle()
   const [sounds, setSounds] = useAtom(soundsAtom)
+
+  const [visibleMainScreen, setVisibleMainScreen] = useState<
+    "configuration" | "rules" | "authors"
+  >("rules")
 
   const screenRef = useRef<HTMLDivElement>(null)
   const leaving = useRef(false)
@@ -167,8 +172,9 @@ const Waiting: React.FC<{
             </div>
             <div className="flex w-full flex-1 flex-col gap-3 p-2 pb-12 sm:gap-6 sm:p-0">
               <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
-                {!configurationVisible && <Rules />}
-                {configurationVisible && (
+                {visibleMainScreen == "rules" && <Rules />}
+                {visibleMainScreen == "authors" && <Authors />}
+                {visibleMainScreen == "configuration" && (
                   <Configuration
                     configuration={gameState.configuration}
                     host={player.host}
@@ -177,21 +183,37 @@ const Waiting: React.FC<{
                         type: "updateconfiguration",
                         details: configuration
                       })
-                      toggleConfiguration()
+
+                      setVisibleMainScreen("rules")
                     }}
                   />
                 )}
                 <button
                   className="absolute top-3 right-3 p-1"
-                  onClick={toggleConfiguration}
+                  onClick={() => {
+                    setVisibleMainScreen((currentScreen) =>
+                      currentScreen != "rules" ? "rules" : "configuration"
+                    )
+                  }}
                   data-testid={
-                    configurationVisible
-                      ? "close-configuration"
+                    visibleMainScreen == "configuration"
+                      ? "show-rules"
                       : "show-configuration"
                   }
                 >
-                  {configurationVisible ? <Close /> : <Gear />}
+                  {visibleMainScreen != "rules" ? <Close /> : <Gear />}
                 </button>
+                {visibleMainScreen == "rules" && (
+                  <button
+                    className="absolute top-3 left-3 p-1"
+                    onClick={() => {
+                      setVisibleMainScreen("authors")
+                    }}
+                    data-testid="show-authors"
+                  >
+                    <Author />
+                  </button>
+                )}
               </div>
               <div className="flex w-full justify-center gap-2 sm:gap-6">
                 <InviteButton id={gameState.id} />
