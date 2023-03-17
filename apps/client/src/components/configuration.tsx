@@ -120,7 +120,7 @@ function Row<T>({ label, options, value, disabled, onChange }: RowProps<T>) {
             as={React.Fragment}
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
-            leave="transition"
+            leave="transition ease-in duration-75"
           >
             <Listbox.Options className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg bg-gray-100 py-1">
               {options.map((option) => (
