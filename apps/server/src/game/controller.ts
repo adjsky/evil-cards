@@ -129,6 +129,7 @@ class Controller {
     }
 
     const session = this.sessionManager.create()
+    socket.session = session
 
     const handleSessionEnd = () => {
       this.log.info({ sessionId: session.id }, "handling session end")
@@ -154,12 +155,9 @@ class Controller {
       )
 
       const player = session.join(socket, nickname, avatarId, true)
-
-      this.setupSessionListeners(session)
-
-      socket.session = session
       socket.player = player
 
+      this.setupSessionListeners(session)
       session.events.on("sessionend", handleSessionEnd)
 
       socket.on("close", () => {
