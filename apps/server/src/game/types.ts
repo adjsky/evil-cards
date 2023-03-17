@@ -13,7 +13,7 @@ export type ServerEvent = WithHelperData<
 >
 
 export type ControllerEvents = Emittery<
-  ServerEvent & WithHelperData<{ lostconnection: undefined }>
+  ServerEvent & WithHelperData<{ lostconnection: undefined; close: undefined }>
 >
 
 export type PlayerSender = {
