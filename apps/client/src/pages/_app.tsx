@@ -113,6 +113,22 @@ const useSocketEvents = () => {
             })
           }
       }
+    },
+    onClose(_, manually) {
+      if (manually || gameState == null) {
+        return
+      }
+
+      setGameState(null)
+      updateSnackbar({
+        message: "Упс, пропало соединение. Пытаемся его восстановить",
+        severity: "error",
+        open: true,
+        infinite: true
+      })
+    },
+    onOpen() {
+      updateSnackbar({ open: false })
     }
   })
 

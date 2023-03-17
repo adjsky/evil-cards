@@ -65,21 +65,6 @@ const Waiting: React.FC<{
       if (data.type == "gamestart") {
         start(3)
       }
-    },
-    onClose(_, manually) {
-      if (manually) {
-        return
-      }
-
-      updateSnackbar({
-        message: "Упс, пропало соединение. Пытаемся его восстановить",
-        severity: "error",
-        open: true,
-        infinite: true
-      })
-    },
-    onOpen() {
-      updateSnackbar({ open: false })
     }
   })
 
