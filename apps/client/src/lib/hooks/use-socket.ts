@@ -9,14 +9,12 @@ type SharedWebsocket = {
   heartbeatTimeout: NodeJS.Timeout | null
   lastJsonMessage?: JsonLike
   messageQueue: unknown[]
-  nReconnects: number
   disconnectedManually: boolean
 }
 const sharedWebsocket: SharedWebsocket = {
   instance: null,
   heartbeatTimeout: null,
   messageQueue: [],
-  nReconnects: 0,
   disconnectedManually: false
 }
 type SocketOptions<T> = {
@@ -35,7 +33,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   const triggerListeners = useCallback(() => updateListenersTrigger({}), [])
 
   const connect = useCallback(
-    (path: string, reconnecting?: boolean) => {
+    (path: string) => {
       const heartbeat = () => {
         sharedWebsocket.heartbeatTimeout &&
           clearTimeout(sharedWebsocket.heartbeatTimeout)
@@ -45,8 +43,6 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
         }, 60000 + 1000)
       }
       const handleOpen = () => {
-        sharedWebsocket.nReconnects = 0
-
         let message = sharedWebsocket.messageQueue.shift()
         while (message != undefined) {
           sharedWebsocket.instance?.send(JSON.stringify(message))
@@ -80,17 +76,6 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
         sharedWebsocket.instance?.removeEventListener("open", handleOpen)
         sharedWebsocket.instance?.removeEventListener("message", handleMessage)
         sharedWebsocket.instance?.removeEventListener("close", handleClose)
-
-        if (reconnecting) {
-          sharedWebsocket.nReconnects += 1
-        }
-
-        if (!sharedWebsocket.disconnectedManually) {
-          setTimeout(
-            () => connect(path, true),
-            (2 ** sharedWebsocket.nReconnects + 1) * 1000
-          )
-        }
       }
 
       sharedWebsocket.instance = new WebSocket(path)
@@ -125,6 +110,10 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     } else {
       sharedWebsocket.instance?.send(JSON.stringify(data))
     }
+  }, [])
+
+  const clearMessageQueue = useCallback(() => {
+    sharedWebsocket.messageQueue = []
   }, [])
 
   useEffect(() => {
@@ -181,6 +170,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     disconnect,
     getInstance,
     sendJsonMessage,
+    clearMessageQueue,
     lastJsonMessage: sharedWebsocket.lastJsonMessage as R | undefined,
     connected: browser
       ? sharedWebsocket.instance?.readyState == WebSocket.OPEN

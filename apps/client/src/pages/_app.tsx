@@ -121,14 +121,11 @@ const useSocketEvents = () => {
 
       setGameState(null)
       updateSnackbar({
-        message: "Упс, пропало соединение. Пытаемся его восстановить",
+        message:
+          "Упс, пропало соединение. Проверьте ваше соединение и попробуйте зайти в игру снова",
         severity: "error",
-        open: true,
-        infinite: true
+        open: true
       })
-    },
-    onOpen() {
-      updateSnackbar({ open: false })
     }
   })
 

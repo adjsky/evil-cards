@@ -28,7 +28,10 @@ const Entry: React.FC = () => {
     py: 40,
     disableOnMobile: true
   })
-  const { sendJsonMessage, connect } = useSocket<SendMessage, ReceiveMessage>({
+  const { sendJsonMessage, connect, clearMessageQueue } = useSocket<
+    SendMessage,
+    ReceiveMessage
+  >({
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
@@ -38,6 +41,16 @@ const Entry: React.FC = () => {
       if (message.type == "join" || message.type == "create") {
         router.push("/room", undefined, { shallow: true })
       }
+    },
+    onClose() {
+      setWaiting(false)
+      clearMessageQueue()
+
+      updateSnackbar({
+        message: "Не удалось подключиться к серверу",
+        open: true,
+        severity: "error"
+      })
     }
   })
 
