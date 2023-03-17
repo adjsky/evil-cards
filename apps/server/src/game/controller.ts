@@ -111,6 +111,10 @@ class Controller {
         }
       }
     })
+
+    socket.on("close", () => {
+      clearInterval(interval)
+    })
   }
 
   private async createSession({
