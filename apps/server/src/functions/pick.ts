@@ -1,14 +1,7 @@
-type PickByValue<T, ValueType> = Pick<
-  T,
-  {
-    [Key in keyof T]: T[Key] extends ValueType ? Key : never
-  }[keyof T]
->
-
 function pick<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: K[]
-): PickByValue<T, T[K]> {
+): Pick<T, K> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = {} as any
 
