@@ -35,7 +35,9 @@ module.exports = {
         500: "#3BB948",
         700: "#2F943A",
         900: "#236F2B"
-      }
+      },
+      blue: "#93C5FD",
+      current: "currentcolor"
     },
     extend: {
       fontFamily: {
