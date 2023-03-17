@@ -62,7 +62,7 @@ class Controller {
     this.events.on("choosewinner", this.chooseWinner.bind(this))
     this.events.on("startgame", this.startGame.bind(this))
     this.events.on("vote", this.vote.bind(this))
-    this.events.on(["lostconnection", "close"], ({ ctx, socket }) => {
+    this.events.on("close", ({ ctx, socket }) => {
       try {
         this.disconnect(socket)
       } catch (error) {
@@ -75,8 +75,6 @@ class Controller {
     socket.alive = true
     const interval = setInterval(() => {
       if (!socket.alive) {
-        this.events.emit("lostconnection", { socket, ctx })
-
         socket.terminate()
         clearInterval(interval)
 
