@@ -75,12 +75,11 @@ const Entry: React.FC = () => {
 
     result.match({
       err(error) {
-        const message =
-          error == "nosession"
-            ? "Комната не найдена"
-            : "Произошла какая-то ошибка"
-
-        updateSnackbar({ message, open: true, severity: "information" })
+        updateSnackbar({
+          message: startErrors[error],
+          open: true,
+          severity: "error"
+        })
         setWaiting(false)
       },
       ok(wsHost) {
@@ -179,6 +178,12 @@ const UserCard: React.FC = () => {
       <NicknameInput value={nickname} onChange={setNickname} />
     </div>
   )
+}
+
+const startErrors = {
+  nosession: "Комната не найдена",
+  nobalancerpath: "nobalancerpath",
+  fetcherror: "Не удалось получить доступные сервера"
 }
 
 export default Entry

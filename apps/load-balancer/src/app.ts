@@ -27,7 +27,12 @@ const fastify = Fastify({
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {
-  origin: `${env.SITE_PROTOCOL}://${env.SITE_DOMAIN}`
+  origin:
+    env.NODE_ENV == "development"
+      ? "*"
+      : `${env.SITE_PROTOCOL}://${env.SITE_DOMAIN}${
+          env.SITE_PORT ? ":" + env.SITE_PORT : ""
+        }`
 })
 
 const redis = createClient({ url: env.REDIS_URL })

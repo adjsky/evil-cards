@@ -3,7 +3,7 @@ import { ok, err } from "@/core/fp/result"
 
 import type { Result } from "@/core/fp/result"
 
-type Error = "nobalancerpath" | "nosession"
+type Error = "nobalancerpath" | "nosession" | "fetcherror"
 
 type SuccessLoadBalancerResponse = {
   message: "ok"
@@ -24,15 +24,21 @@ async function getWSHost(sessionId?: string): Promise<Result<string, Error>> {
     loadBalancerPath += `?sessionId=${sessionId}`
   }
 
-  const response = await fetch(loadBalancerPath)
+  try {
+    const response = await fetch(loadBalancerPath)
 
-  if (response.status == 404) {
-    return err("nosession")
+    if (response.status == 404) {
+      return err("nosession")
+    }
+
+    const parsedResponse: SuccessLoadBalancerResponse = await response.json()
+
+    return ok(parsedResponse.host)
+  } catch (error) {
+    console.error(error)
+
+    return err("fetcherror")
   }
-
-  const parsedResponse: SuccessLoadBalancerResponse = await response.json()
-
-  return ok(parsedResponse.host)
 }
 
 export default getWSHost

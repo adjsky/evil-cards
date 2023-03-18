@@ -15,6 +15,7 @@ export const envSchema = z.object({
   REDIS_URL: z.string().url(),
   SITE_DOMAIN: z.string(),
   SITE_PROTOCOL: z.string(),
+  SITE_PORT: z.string().optional(),
   WS_PROTOCOL: z.string()
 })
 
