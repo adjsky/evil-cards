@@ -1,5 +1,6 @@
 import React from "react"
 import { clsx } from "clsx"
+import packageJson from "../../package.json"
 
 const Authors: React.FC = () => {
   return (
@@ -49,6 +50,7 @@ const Authors: React.FC = () => {
               GitHub
             </ExternalUnderlineLink>
           </li>
+          <li>v{packageJson.version}</li>
         </ul>
       </div>
     </div>
