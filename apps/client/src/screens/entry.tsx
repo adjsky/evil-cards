@@ -42,7 +42,11 @@ const Entry: React.FC = () => {
         router.push("/room", undefined, { shallow: true })
       }
     },
-    onClose() {
+    onClose(_, manually) {
+      if (manually) {
+        return
+      }
+
       setWaiting(false)
       clearMessageQueue()
 
