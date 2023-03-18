@@ -263,7 +263,11 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
           const url = `${window.location.origin}?s=${id}`
 
           if (navigator.canShare && navigator.canShare({ url })) {
-            navigator.share({ url })
+            try {
+              await navigator.share({ url })
+            } catch (error) {
+              console.error(error)
+            }
           } else {
             await copyText(url)
             !copied && toggleCopied()
