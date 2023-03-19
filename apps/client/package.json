@@ -1,6 +1,6 @@
 {
   "name": "@evil-cards/client",
-  "version": "0.1.0-beta",
+  "version": "0.1.1-beta",
   "private": true,
   "scripts": {
     "build": "next build",
