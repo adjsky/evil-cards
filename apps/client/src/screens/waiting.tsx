@@ -70,9 +70,10 @@ const Waiting: React.FC<{
 
   const player = gameState.players.find(
     (player) => player.id == gameState.playerId
-  )!
+  )
   const lowerButtonOpacity =
-    !player.host && (gameState.status == "waiting" || gameState.status == "end")
+    !player?.host &&
+    (gameState.status == "waiting" || gameState.status == "end")
 
   const onStart = () => {
     sendJsonMessage({ type: "startgame" })
@@ -162,7 +163,7 @@ const Waiting: React.FC<{
                 {visibleMainScreen == "configuration" && (
                   <Configuration
                     configuration={gameState.configuration}
-                    host={player.host}
+                    host={player?.host}
                     onSave={(configuration) => {
                       sendJsonMessage({
                         type: "updateconfiguration",
@@ -206,7 +207,7 @@ const Waiting: React.FC<{
                   lowerOpacity={lowerButtonOpacity}
                   onClick={onStart}
                   disabled={
-                    lastJsonMessage?.type == "gamestart" || !player.host
+                    lastJsonMessage?.type == "gamestart" || !player?.host
                   }
                   secondsLeft={secondsLeft}
                   withCountdown={lastJsonMessage?.type == "gamestart"}

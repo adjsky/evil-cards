@@ -143,7 +143,7 @@ const Board: React.FC<{
 
   const player = gameState.players.find(
     (player) => player.id == gameState.playerId
-  )!
+  )
 
   return (
     <div className="relative flex w-full flex-auto items-center justify-center">
@@ -189,7 +189,7 @@ const Board: React.FC<{
                         : undefined
                     }
                     disabled={
-                      !player.master ||
+                      !player?.master ||
                       (visible && gameState.status != "choosingwinner") ||
                       (!visible && gameState.status != "choosing")
                     }
@@ -214,12 +214,12 @@ const Deck: React.FC<{
 }> = ({ gameState, onCardClick }) => {
   const player = gameState.players.find(
     (player) => player.id == gameState.playerId
-  )!
+  )
   const availableCardDisabled =
     gameState.status == "choosing" ||
     gameState.status == "choosingwinner" ||
-    player.master ||
-    player.voted
+    player?.master ||
+    player?.voted
 
   return (
     <div
