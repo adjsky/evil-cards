@@ -39,7 +39,7 @@ import type {
   PlayerSender,
   Timeouts
 } from "./types"
-import type { ISession, ISessionFactory } from "./intefaces"
+import type { ISession, ISessionFactory } from "./interfaces"
 
 class Session implements ISession {
   private _id: string

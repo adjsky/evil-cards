@@ -1,4 +1,4 @@
-import type { ISession, ISessionFactory, ISessionManager } from "./intefaces"
+import type { ISession, ISessionFactory, ISessionManager } from "./interfaces"
 
 class SessionManager implements ISessionManager {
   private sessions: Map<string, ISession>

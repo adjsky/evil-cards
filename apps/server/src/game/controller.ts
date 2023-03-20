@@ -18,7 +18,7 @@ import omit from "../functions/omit"
 import { logWithCtx } from "../context"
 
 import type { WebSocket } from "ws"
-import type { ISessionManager, ISession } from "./intefaces"
+import type { ISessionManager, ISession } from "./interfaces"
 import type {
   ControllerEvents,
   ServerEvent,

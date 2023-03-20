@@ -3,7 +3,7 @@ import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants"
 import { mock } from "jest-mock-extended"
 import waitForExpect from "wait-for-expect"
 
-import type { ISessionManager } from "../../src/game/intefaces"
+import type { ISessionManager } from "../../src/game/interfaces"
 import type { RedisClientWithLogs } from "../../src/redis-client-with-logs"
 import type { FastifyBaseLogger } from "fastify"
 import type { ReqContext } from "../../src/context"
