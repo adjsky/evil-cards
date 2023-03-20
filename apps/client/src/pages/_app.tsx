@@ -1,4 +1,5 @@
 import "@/styles/globals.css"
+import { useEffect } from "react"
 import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
 import { useRouter } from "next/router"
@@ -12,6 +13,7 @@ import { useSnackbar, updateSnackbar } from "@/components/snackbar/use"
 import { mapErrorMessage } from "@/lib/functions"
 import { processMessageAndSpeak, processMessageAndPlaySound } from "@/lib/audio"
 import { env } from "@/lib/env/client.mjs"
+import isBrowserOld from "@/lib/functions/is-browser-old"
 
 import type { AppProps } from "next/app"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -20,6 +22,18 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const { Snackbar } = useSocketEvents()
   const router = useRouter()
+
+  useEffect(() => {
+    const shouldNotify = isBrowserOld()
+
+    if (shouldNotify) {
+      updateSnackbar({
+        message: "Похоже, что вы используете неподдерживаемый браузер",
+        open: true,
+        severity: "information"
+      })
+    }
+  }, [])
 
   return (
     <>
