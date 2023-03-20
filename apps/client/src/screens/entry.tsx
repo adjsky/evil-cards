@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 import { useRouter } from "next/router"
@@ -9,6 +9,7 @@ import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import getWSHost from "@/lib/server/get-ws-host"
 import { updateSnackbar } from "@/components/snackbar/use"
+import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
 
 import NicknameInput from "@/components/nickname-input"
 import FadeIn from "@/components/fade-in"
@@ -22,6 +23,7 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 const Entry: React.FC = () => {
   const [waiting, setWaiting] = useState(false)
   const router = useRouter()
+  const unsupported = useRef(isBrowserUnsupported())
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
@@ -107,6 +109,8 @@ const Entry: React.FC = () => {
     })
   }
 
+  const disabled = waiting || unsupported.current
+
   return (
     <FadeIn
       className="flex h-full items-center justify-center"
@@ -125,9 +129,9 @@ const Entry: React.FC = () => {
           className={clsx(
             "flex h-12 w-32 items-center justify-center rounded-lg bg-red-500 text-xl leading-none text-gray-100",
             "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
-            waiting && "opacity-80"
+            disabled && "opacity-80"
           )}
-          disabled={waiting}
+          disabled={disabled}
           data-testid="connect-session"
         >
           {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}

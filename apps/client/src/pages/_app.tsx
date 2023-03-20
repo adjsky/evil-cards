@@ -13,7 +13,7 @@ import { useSnackbar, updateSnackbar } from "@/components/snackbar/use"
 import { mapErrorMessage } from "@/lib/functions"
 import { processMessageAndSpeak, processMessageAndPlaySound } from "@/lib/audio"
 import { env } from "@/lib/env/client.mjs"
-import isBrowserOld from "@/lib/functions/is-browser-old"
+import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
 
 import type { AppProps } from "next/app"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -24,11 +24,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   const router = useRouter()
 
   useEffect(() => {
-    const shouldNotify = isBrowserOld()
+    const shouldNotify = isBrowserUnsupported()
 
     if (shouldNotify) {
       updateSnackbar({
-        message: "Похоже, что вы используете неподдерживаемый браузер",
+        message:
+          "Похоже, что вы используете неподдерживаемый браузер. Вы не сможете начать игру",
         open: true,
         severity: "information"
       })
