@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { mockAnimationsApi } from "jsdom-testing-mocks"
 
 import Entry from "@/screens/entry"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
@@ -27,6 +28,7 @@ jest.mock("next/router", () => ({
     //
   })
 }))
+mockAnimationsApi()
 
 afterEach(() => {
   resetLocationMock()
