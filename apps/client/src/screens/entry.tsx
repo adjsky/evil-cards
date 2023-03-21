@@ -20,6 +20,8 @@ import Loader from "@/components/loader"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
+const errorsToIgnore = ["nickname is taken"]
+
 const Entry: React.FC = () => {
   const [waiting, setWaiting] = useState(false)
   const router = useRouter()
@@ -37,7 +39,16 @@ const Entry: React.FC = () => {
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
-        router.replace("/", undefined, { shallow: true })
+
+        let ignore = false
+
+        if (message.details && errorsToIgnore.includes(message.details)) {
+          ignore = true
+        }
+
+        if (!ignore) {
+          router.replace("/", undefined, { shallow: true })
+        }
       }
 
       if (message.type == "join" || message.type == "create") {
