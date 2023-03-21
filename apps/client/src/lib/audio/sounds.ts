@@ -6,7 +6,7 @@ const sounds: Partial<Record<ReceiveMessage["type"], string>> = {
   choose: "/sounds/flip-card.wav"
 }
 
-export function processMessageAndPlaySound(message: ReceiveMessage) {
+export async function processMessageAndPlaySound(message: ReceiveMessage) {
   const messageSound = sounds[message.type]
 
   if (!messageSound) {
@@ -14,5 +14,10 @@ export function processMessageAndPlaySound(message: ReceiveMessage) {
   }
 
   const audio = new Audio(messageSound)
-  audio.play()
+  
+  try {
+    await audio.play()
+  } catch (error) {
+    console.error(error)
+  }
 }
