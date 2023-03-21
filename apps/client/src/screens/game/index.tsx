@@ -66,8 +66,8 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
             </div>
             <Deck
               gameState={gameState}
-              onCardClick={(text) =>
-                sendJsonMessage({ type: "vote", details: { text } })
+              onCardClick={(cardId) =>
+                sendJsonMessage({ type: "vote", details: { cardId } })
               }
             />
           </div>
@@ -210,7 +210,7 @@ const Board: React.FC<{
 
 const Deck: React.FC<{
   gameState: GameState
-  onCardClick?: (text: string) => void
+  onCardClick?: (cardId: string) => void
 }> = ({ gameState, onCardClick }) => {
   const player = gameState.players.find(
     (player) => player.id == gameState.playerId
@@ -229,11 +229,11 @@ const Deck: React.FC<{
       )}
       data-testid="deck"
     >
-      {gameState.deck.map((text) => (
+      {gameState.deck.map((card) => (
         <Card
-          key={text}
-          text={text}
-          onClick={() => onCardClick && onCardClick(text)}
+          key={card.id}
+          text={card.text}
+          onClick={() => onCardClick && onCardClick(card.id)}
           disabled={availableCardDisabled}
           lowerOpacity={availableCardDisabled}
         />

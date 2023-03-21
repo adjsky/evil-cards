@@ -17,7 +17,7 @@ export const joinSessionSchema = z.object({
 export type JoinSession = z.TypeOf<typeof joinSessionSchema>
 
 export const voteSchema = z.object({
-  text: z.string()
+  cardId: z.string()
 })
 export type Vote = z.TypeOf<typeof voteSchema>
 
@@ -28,8 +28,9 @@ export type Choose = z.TypeOf<typeof chooseSchema>
 
 export const configurationSchema = implement<Configuration>().with({
   votingDurationSeconds: z.literal(30).or(z.literal(60)).or(z.literal(90)),
-  reader: z.enum(["off", "on"]),
-  maxScore: z.literal(10).or(z.literal(15)).or(z.literal(20))
+  reader: z.boolean(),
+  maxScore: z.literal(10).or(z.literal(15)).or(z.literal(20)),
+  version18Plus: z.boolean()
 })
 
 export const messageSchema = z.discriminatedUnion("type", [

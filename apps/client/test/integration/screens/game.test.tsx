@@ -43,14 +43,16 @@ describe("white cards", () => {
   it("sends a vote message when the white card is clicked", async () => {
     const user = userEvent.setup()
 
-    render(<Game gameState={getFakeNonMasterGameState("voting")} />)
+    const state = getFakeNonMasterGameState("voting")
+
+    render(<Game gameState={state} />)
 
     const firstWhiteCard = screen.getByTestId("deck").children[0]
     await user.click(firstWhiteCard)
 
     expect(sendJsonMessageMock).toBeCalledWith({
       type: "vote",
-      details: { text: firstWhiteCard.textContent }
+      details: { cardId: state.deck[0].id }
     })
   })
 

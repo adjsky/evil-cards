@@ -31,6 +31,7 @@ import {
 } from "./errors"
 
 import type {
+  Card,
   Status,
   Player,
   Vote,
@@ -39,12 +40,13 @@ import type {
   PlayerSender,
   Timeouts
 } from "./types"
+import type { Card as StoredCard } from "./cards"
 import type { ISession, ISessionFactory } from "./interfaces"
 
 class Session implements ISession {
   private _id: string
-  private _availableRedCards: string[]
-  private _availableWhiteCards: string[]
+  private _availableRedCards: Card[] | null
+  private _availableWhiteCards: Card[] | null
   private _timeouts: Timeouts
   private _votes: Vote[]
   private _players: Player[]
@@ -83,11 +85,12 @@ class Session implements ISession {
     this._id = nanoid(SESSION_ID_SIZE)
     this._configuration = {
       maxScore: 10,
-      reader: "on",
-      votingDurationSeconds: 60
+      reader: true,
+      votingDurationSeconds: 60,
+      version18Plus: true
     }
-    this._availableRedCards = [...redCards]
-    this._availableWhiteCards = [...whiteCards]
+    this._availableRedCards = null
+    this._availableWhiteCards = null
     this._timeouts = {
       choosebest: null,
       starting: null,
@@ -237,6 +240,9 @@ class Session implements ISession {
 
     this._status = "starting"
 
+    this._availableRedCards = this.reduceCards(redCards)
+    this._availableWhiteCards = this.reduceCards(whiteCards)
+
     this.players.forEach((p) => {
       p.score = 0
     })
@@ -249,15 +255,15 @@ class Session implements ISession {
     this._events.emit("statuschange", this._status)
   }
 
-  public vote(playerId: string, text: string) {
+  public vote(playerId: string, cardId: string) {
     const player = this._players.find((p) => p.id == playerId)
-    const cardIndex = player?.deck.findIndex((deckCard) => deckCard == text)
+    const card = player?.deck.find((deckCard) => deckCard.id == cardId)
 
-    if (!player || cardIndex == undefined) {
+    if (!player) {
       throw new InvalidPlayerIdError()
     }
 
-    if (cardIndex == -1) {
+    if (card == undefined) {
       throw new InvalidCardError()
     }
 
@@ -266,11 +272,10 @@ class Session implements ISession {
     }
 
     player.voted = true
-
-    player.deck.splice(cardIndex, 1)
+    player.deck = player.deck.filter((deckCard) => deckCard.id != cardId)
 
     const vote: Vote = {
-      text,
+      text: card.text,
       playerId: player.id,
       visible: false,
       winner: false
@@ -348,8 +353,8 @@ class Session implements ISession {
     this._status = "end"
     this._redCard = null
     this._votes = []
-    this._availableRedCards = [...redCards]
-    this._availableWhiteCards = [...whiteCards]
+    this._availableRedCards = null
+    this._availableWhiteCards = null
 
     this.clearTimeouts()
 
@@ -369,6 +374,14 @@ class Session implements ISession {
   }
 
   private startVoting() {
+    if (!this._availableWhiteCards || !this._availableRedCards) {
+      throw new Error("received null availableRedCards and availableWhiteCards")
+    }
+
+    if (this._availableRedCards.length == 0) {
+      return this.endGame()
+    }
+
     this._votes = []
     this._players.forEach((player) => {
       player.voted = false
@@ -378,13 +391,17 @@ class Session implements ISession {
     this.passMaster()
 
     const redCardIndex = getRandomInt(0, this._availableRedCards.length - 1)
-    this._redCard = this._availableRedCards[redCardIndex]
+    this._redCard = this._availableRedCards[redCardIndex].text
     this._availableRedCards.splice(redCardIndex, 1)
 
-    this._players.forEach((player) => {
+    for (const player of this._players) {
       const deckLength = player.deck.length
 
       for (let i = 0; i < 10 - deckLength; i++) {
+        if (this._availableWhiteCards.length == 0) {
+          break
+        }
+
         const randomIndex = getRandomInt(
           0,
           this._availableWhiteCards.length - 1
@@ -395,7 +412,7 @@ class Session implements ISession {
 
         this._availableWhiteCards.splice(randomIndex, 1)
       }
-    })
+    }
 
     this._timeouts.voting = setDateTimeout(() => {
       this._timeouts.voting = null
@@ -418,13 +435,17 @@ class Session implements ISession {
         return
       }
 
+      if (player.deck.length == 0) {
+        return
+      }
+
       const randomIndex = getRandomInt(0, player.deck.length - 1)
-      const text = player.deck[randomIndex]
+      const whiteCard = player.deck[randomIndex]
 
       player.voted = true
 
       this._votes.push({
-        text,
+        text: whiteCard.text,
         playerId: player.id,
         visible: false,
         winner: false
@@ -481,6 +502,25 @@ class Session implements ISession {
     } while (this._players[nextMasterPlayerIndex].disconnected)
 
     this._players[nextMasterPlayerIndex].master = true
+  }
+
+  private reduceCards(cards: StoredCard[]) {
+    return cards.reduce((acc, current, index) => {
+      let card = this._configuration.version18Plus
+        ? current.adult
+        : current.baby
+
+      if (!card) {
+        card = current.adult
+      }
+
+      acc.push({
+        id: index.toString(),
+        text: card
+      })
+
+      return acc
+    }, [] as Card[])
   }
 
   private clearTimeouts() {

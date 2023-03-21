@@ -70,7 +70,7 @@ const useSocketEvents = () => {
       }
 
       if (sounds) {
-        if (gameState?.configuration.reader == "on") {
+        if (gameState?.configuration.reader) {
           processMessageAndSpeak(message)
         }
 

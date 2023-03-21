@@ -32,7 +32,7 @@ export interface ISession {
   leave(playerId: string): void
   updateConfiguration(playerId: string, configuration: Configuration): void
   startGame(playerId: string): void
-  vote(playerId: string, text: string): void
+  vote(playerId: string, cardId: string): void
   choose(playerId: string, choosedPlayerId: string): void
   chooseWinner(playerId: string, choosedPlayerId: string): void
   endGame(): void

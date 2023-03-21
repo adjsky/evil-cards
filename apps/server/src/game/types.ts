@@ -40,8 +40,13 @@ export type Player = {
   master: boolean
   voted: boolean
   disconnected: boolean
-  deck: string[]
+  deck: Card[]
   sender: PlayerSender
+}
+
+export type Card = {
+  id: string
+  text: string
 }
 
 export type Status =
@@ -62,8 +67,9 @@ export type Vote = {
 
 export type Configuration = {
   votingDurationSeconds: 30 | 60 | 90
-  reader: "on" | "off"
+  reader: boolean
   maxScore: 10 | 15 | 20
+  version18Plus: boolean
 }
 
 export type Timeouts = Record<

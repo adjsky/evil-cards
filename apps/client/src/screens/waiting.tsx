@@ -156,8 +156,8 @@ const Waiting: React.FC<{
             <div className="sm:h-[500px]">
               <PlayerList players={gameState.players} variant="waiting" />
             </div>
-            <div className="flex w-full flex-1 flex-col gap-3 p-2 pb-12 sm:gap-6 sm:p-0">
-              <div className="relative flex w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
+            <div className="flex min-h-0 w-full flex-1 flex-col gap-3 p-2 pb-12 sm:h-[500px] sm:gap-6 sm:p-0">
+              <div className="relative flex min-h-0 w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
                 {visibleMainScreen == "rules" && <Rules />}
                 {visibleMainScreen == "authors" && <Authors />}
                 {visibleMainScreen == "configuration" && (
