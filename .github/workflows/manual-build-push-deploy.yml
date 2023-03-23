@@ -48,7 +48,7 @@ jobs:
     needs: deploy
 
     steps:
-      - name: Purge cloudflare cace
+      - name: Purge cloudflare cache
         uses: nathanvaughn/actions-cloudflare-purge@v3.1.0
         with:
           cf_zone: ${{ secrets.CLOUDFLARE_ZONE }}
