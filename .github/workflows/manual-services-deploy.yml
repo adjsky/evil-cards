@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       client:
-        description: 'Deploy client?'
+        description: 'client'
         type: boolean
       server:
-        description: 'Deploy server?'
+        description: 'server'
         type: boolean
       load-balancer:
-        description: 'Deploy load-balancer?'
+        description: 'load-balancer'
         type: boolean
 
 jobs:
@@ -24,13 +24,12 @@ jobs:
             run: inputs.server 
           - name: "load-balancer"
             run: inputs.load-balancer
-        
+
     runs-on: ubuntu-latest
     name: Deploy ${{ matrix.service.name }}
 
     steps:
       - name: Reflect changes on remote server
-        if: matrix.service.run
         uses: appleboy/ssh-action@v0.1.7
         env:
             REPOSITORY: ${{ github.repository }}
