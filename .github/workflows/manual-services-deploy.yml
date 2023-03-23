@@ -14,19 +14,33 @@ on:
         type: boolean
 
 jobs:
-  deploy:
-    strategy:
-      matrix:
-        service:
-          - name: client
-            run: inputs.client
-          - name: server
-            run: inputs.server 
-          - name: load-balancer
-            run: inputs.load-balancer
-
+  generate-matrix:
     runs-on: ubuntu-latest
-    name: Deploy ${{ matrix.service.name }}
+    name: Generate service matrix
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    
+    steps:
+      - name: Generate matrix
+        id: generate-matrix
+        run: |
+          matrix=""
+          for service in client server load-balancer
+          do
+            if [ "${{ inputs[$service] }}" = "true" ]
+            then
+              matrix="$matrix $service"
+            fi
+          done
+          echo "::set-output name=matrix::$matrix"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: generate-matrix
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    
+    name: Deploy ${{ matrix.service }}
 
     steps:
       - name: Reflect changes on remote server
@@ -40,7 +54,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
-          script: echo ${{ matrix.service.name }}
+          script: echo ${{ matrix.service }}
 #           script: |
 #             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
 #             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service }}.sh
