@@ -27,10 +27,7 @@ jobs:
           matrix=""
           for service in client server load-balancer
           do
-            if [ "$(echo "${{ inputs }}" | jq -r ".$service")" = "true" ]
-            then
-              matrix="$matrix $service"
-            fi
+            echo $service ${{ inputs }}
           done
           echo "::set-output name=matrix::$matrix"
 
