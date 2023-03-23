@@ -15,16 +15,19 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    name: Deploy ${{ matrix.service.name }}
-    if: matrix.service.run
-    
     strategy:
       matrix:
         service:
-          - { name: "client", run: inputs.client }
-          - { name: "server", run: inputs.server }
-          - { name: "load-balancer", run: inputs.load-balancer }
+          - name: "client"
+            run: inputs.client
+          - name: "server"
+            run: inputs.server 
+          - name: "load-balancer"
+            run: inputs.load-balancer
+        
+    runs-on: ubuntu-latest
+    name: Deploy ${{ matrix.service.name }}
+    if: matrix.service.run
 
     steps:
       - name: Reflect changes on remote server
