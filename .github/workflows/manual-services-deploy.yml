@@ -27,7 +27,12 @@ jobs:
           matrix=""
           for service in client server load-balancer
           do
-            echo ${{ inputs[toUpperCase(service)] }}
+            service_upper=$(echo $service | tr '[:lower:]' '[:upper:]')
+            if [ "${{ inputs[$service_upper] }}" = "true" ]
+            then
+              matrix="$matrix $service"
+            fi
+            export service=$service
           done
           echo "::set-output name=matrix::$matrix"
 
