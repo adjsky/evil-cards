@@ -5,16 +5,13 @@ on:
     inputs:
       client:
         description: 'Deploy client?'
-        required: false
-        default: false
+        type: boolean
       server:
         description: 'Deploy server?'
-        required: false
-        default: false
+        type: boolean
       load-balancer:
         description: 'Deploy load-balancer?'
-        required: false
-        default: false
+        type: boolean
 
 jobs:
   deploy:
