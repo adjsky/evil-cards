@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       client:
-        description: 'client'
+        description: client
         type: boolean
       server:
-        description: 'server'
+        description: server
         type: boolean
       load-balancer:
-        description: 'load-balancer'
+        description: load-balancer
         type: boolean
 
 jobs:
@@ -18,11 +18,11 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: "client"
+          - name: client
             run: inputs.client
-          - name: "server"
+          - name: server
             run: inputs.server 
-          - name: "load-balancer"
+          - name: load-balancer
             run: inputs.load-balancer
 
     runs-on: ubuntu-latest
