@@ -43,6 +43,9 @@ jobs:
     name: Purge cloudflare cache
     runs-on: ubuntu-latest
     needs: deploy
+    
+    steps:
+      - run: echo HI!
 
 #     steps:
 #       - name: Purge cloudflare cache
