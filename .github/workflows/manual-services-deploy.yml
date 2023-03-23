@@ -3,44 +3,17 @@ name: Manual services deploy
 on: 
   workflow_dispatch:
     inputs:
-      client:
-        description: client
-        type: boolean
-      server:
-        description: server
-        type: boolean
-      load-balancer:
-        description: load-balancer
-        type: boolean
+      services:
+        type: string
+        required: true
+        description: Services to deploy in JSON notation
 
 jobs:
-  generate-matrix:
-    runs-on: ubuntu-latest
-    name: Generate service matrix
-    outputs:
-      matrix: ${{ steps.generate-matrix.outputs.matrix }}
-    
-    steps:
-      - name: Generate matrix
-        id: generate-matrix
-        run: |
-          matrix=""
-          for service in client server load-balancer
-          do
-            service_upper=$(echo $service | tr '[:lower:]' '[:upper:]')
-            if [ "${{ inputs[env.SERVICE_UPPER] }}" = "true" ]
-            then
-              matrix="$matrix $service"
-            fi
-            export SERVICE_UPPER=$service_upper
-          done
-          echo "::set-output name=matrix::$matrix"
-
   deploy:
     runs-on: ubuntu-latest
-    needs: generate-matrix
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      matrix: 
+        service: ${{ fromJson(inputs.services) }}
     
     name: Deploy ${{ matrix.service }}
 
