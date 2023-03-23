@@ -16,10 +16,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy ${{ matrix.service }}
+    name: Deploy ${{ matrix.service.name }}
+    if: matrix.service.run
+    
     strategy:
       matrix:
-        service: ${{ toJson(fromJSON('{' + "client:" + inputs.client + ',' + "server:" + inputs.server + ',' + "load-balancer:" + inputs.load-balancer + '}') }}
+        service:
+          - { name: "client", run: inputs.client }
+          - { name: "server", run: inputs.server }
+          - { name: "load-balancer", run: inputs.load-balancer }
 
     steps:
       - name: Reflect changes on remote server
@@ -33,7 +38,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
-          script: echo ${{ matrix.service }}
+          script: echo ${{ matrix.service.name }}
 #           script: |
 #             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
 #             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service }}.sh
