@@ -2,7 +2,8 @@ import type {
   Status,
   Player as GamePlayer,
   Configuration,
-  Vote
+  Vote,
+  Card
 } from "../../game/types"
 
 type SendPlayer = Omit<GamePlayer, "sender" | "deck">
@@ -28,7 +29,7 @@ export type Joined = {
       status: Status
       players: SendPlayer[]
       playerId: string
-      deck: string[]
+      deck: Card[]
       redCard: string | null
       votingEndsAt: number | null
       configuration: Configuration
@@ -53,7 +54,7 @@ export type PlayerLeaved = {
 export type Voted = {
   type: "vote"
   details: {
-    changedState: { players: SendPlayer[]; votes: Vote[]; deck: string[] }
+    changedState: { players: SendPlayer[]; votes: Vote[]; deck: Card[] }
   }
 }
 
@@ -67,7 +68,7 @@ export type VotingStarted = {
   details: {
     changedState: {
       status: Status
-      deck: string[]
+      deck: Card[]
       redCard: string
       players: SendPlayer[]
       votes: Vote[]
@@ -79,7 +80,7 @@ export type VotingStarted = {
 export type ChoosingStarted = {
   type: "choosingstart"
   details: {
-    changedState: { status: Status; votes: Vote[]; deck: string[] }
+    changedState: { status: Status; votes: Vote[]; deck: Card[] }
   }
 }
 
@@ -147,5 +148,5 @@ export type Message =
   | ConfigurationChanged
   | WinnerCardView
 
-export type { Status, Configuration, Vote } from "../../game/types"
+export type { Status, Configuration, Vote, Card } from "../../game/types"
 export type Player = SendPlayer

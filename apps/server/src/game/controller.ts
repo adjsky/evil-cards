@@ -290,7 +290,7 @@ class Controller {
     session.startGame(player.id)
   }
 
-  private vote({ socket, text }: ServerEvent["vote"]) {
+  private vote({ socket, cardId }: ServerEvent["vote"]) {
     const session = socket.session
 
     if (!session) {
@@ -303,7 +303,7 @@ class Controller {
       throw new NoPlayerError()
     }
 
-    session.vote(player.id, text)
+    session.vote(player.id, cardId)
   }
 
   private choose({ socket, playerId }: ServerEvent["choose"]) {

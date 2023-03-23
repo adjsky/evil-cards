@@ -4,7 +4,8 @@ import type {
   Vote,
   Player,
   Status,
-  Configuration
+  Configuration,
+  Card
 } from "@evil-cards/server/src/lib/ws/send"
 
 export type GameState = {
@@ -15,7 +16,7 @@ export type GameState = {
   status: Status
   configuration: Configuration
   redCard: string | null
-  deck: string[]
+  deck: Card[]
   votingEndsAt: number | null
   winners: Player[] | null
 }

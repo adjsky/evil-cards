@@ -8,7 +8,12 @@ const votes = [
   { text: "vote3", winner: false, visible: false, playerId: "fakePlayerId4" },
   { text: "vote4", winner: false, visible: false, playerId: "fakePlayerId5" }
 ]
-const deck = ["whitecard1", "whitecard2", "whitecard3", "whitecard4"]
+const deck = [
+  { id: "1", text: "whitecard1" },
+  { id: "2", text: "whitecard2" },
+  { id: "3", text: "whitecard3" },
+  { id: "4", text: "whitecard4" }
+]
 const winners = [
   {
     avatarId: 2,
@@ -44,7 +49,8 @@ const winners = [
 const base: GameState = {
   configuration: {
     maxScore: 10,
-    reader: "off",
+    reader: false,
+    version18Plus: true,
     votingDurationSeconds: 30
   },
   id: "fakeid",

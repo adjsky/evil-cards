@@ -46,19 +46,19 @@ it("processes gameplay as expected", () => {
 
   const secondPlayer = session.players[1]
   const secondPlayerWhiteCard = secondPlayer.deck[0]
-  session.vote(secondPlayer.id, secondPlayerWhiteCard)
+  session.vote(secondPlayer.id, secondPlayerWhiteCard.id)
 
   expect(session.votes.length).toBe(1)
-  expect(session.votes[0].text).toBe(secondPlayerWhiteCard)
+  expect(session.votes[0].text).toBe(secondPlayerWhiteCard.text)
   expect(session.votes[0].playerId).toBe(secondPlayer.id)
   expect(session.votes[0].visible).toBeFalsy()
 
   const thirdPlayer = session.players[2]
   const fourthPlayer = session.players[3]
 
-  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
   expect(session.votes.length).toBe(2)
-  session.vote(fourthPlayer.id, fourthPlayer.deck[0])
+  session.vote(fourthPlayer.id, fourthPlayer.deck[0].id)
   expect(session.votes.length).toBe(3)
 
   expect(session.status).toBe("choosing")
@@ -92,9 +92,9 @@ it("processes gameplay as expected", () => {
 
   firstPlayer.score = 9
 
-  session.vote(firstPlayer.id, firstPlayer.deck[0])
-  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
-  session.vote(fourthPlayer.id, fourthPlayer.deck[0])
+  session.vote(firstPlayer.id, firstPlayer.deck[0].id)
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
+  session.vote(fourthPlayer.id, fourthPlayer.deck[0].id)
 
   session.choose(secondPlayer.id, firstPlayer.id)
   session.choose(secondPlayer.id, thirdPlayer.id)
@@ -156,9 +156,9 @@ it("emits all events", async () => {
 
   jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-  session.vote(secondPlayer.id, secondPlayer.deck[0])
-  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
-  session.vote(fourthPlayer.id, fourthPlayer.deck[0])
+  session.vote(secondPlayer.id, secondPlayer.deck[0].id)
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
+  session.vote(fourthPlayer.id, fourthPlayer.deck[0].id)
 
   session.choose(firstPlayer.id, secondPlayer.id)
   session.choose(firstPlayer.id, thirdPlayer.id)
@@ -246,7 +246,8 @@ it("uses configuration", () => {
   const configuration = {
     votingDurationSeconds: 30,
     maxScore: 10,
-    reader: "off"
+    reader: false,
+    version18Plus: true
   } as const
   session.updateConfiguration(firstPlayer.id, configuration)
   expect(session.configuration).toEqual(configuration)
@@ -260,8 +261,8 @@ it("uses configuration", () => {
 
   secondPlayer.score = configuration.maxScore - 1
 
-  session.vote(secondPlayer.id, secondPlayer.deck[0])
-  session.vote(thirdPlayer.id, thirdPlayer.deck[0])
+  session.vote(secondPlayer.id, secondPlayer.deck[0].id)
+  session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
 
   session.choose(firstPlayer.id, secondPlayer.id)
   session.choose(firstPlayer.id, thirdPlayer.id)
