@@ -1,4 +1,4 @@
-name: Build and push
+name: Build and push service
 
 on: 
   workflow_dispatch:
@@ -11,19 +11,6 @@ on:
           - server
           - client
           - load-balancer
-  workflow_call:
-    inputs:
-      service:
-        description: 'Service to build'
-        required: true
-        type: string
-    secrets:
-      DOCKER_USERNAME:
-        required: true
-      DOCKER_PASSWORD:
-        required: true
-      SENTRY_AUTH_TOKEN:
-        required: false
 
 jobs:
   build-and-push:
