@@ -27,11 +27,10 @@ jobs:
           matrix=""
           for service in client server load-balancer
           do
-            if [ "${{ inputs[$service] }}" = "true" ]
+            if [ "${{ inputs[env.service] }}" = "true" ]
             then
               matrix="$matrix $service"
             fi
-            export service=$service
           done
           echo "::set-output name=matrix::$matrix"
 
