@@ -1,29 +1,28 @@
-name: Manual build, push and deploy
+name: Manual services deploy
 
 on: 
   workflow_dispatch:
     inputs:
-      service:
-        description: 'Service?'
-        required: true
-        type: choice
-        options:
-          - server
-          - client
-          - load-balancer
+      client:
+        description: 'Deploy client?'
+        required: false
+        default: false
+      server:
+        description: 'Deploy server?'
+        required: false
+        default: false
+      load-balancer:
+        description: 'Deploy load-balancer?'
+        required: false
+        default: false
 
 jobs:
-  build-and-push:
-    name: Run build-and-push.yml
-    uses: ./.github/workflows/build-and-push.yml
-    with:
-      service: ${{ inputs.service }}
-    secrets: inherit
-
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy ${{ inputs.service }}
-    needs: build-and-push
+    name: Deploy ${{ matrix.service }}
+    strategy:
+      matrix:
+        service: ${{ toJson(fromJSON('{' + "client:" + inputs.client + ',' + "server:" + inputs.server + ',' + "load-balancer:" + inputs.load-balancer + '}') }}
 
     steps:
       - name: Reflect changes on remote server
@@ -31,7 +30,7 @@ jobs:
         env:
             REPOSITORY: ${{ github.repository }}
             APP_PATH: /app
-            SOURCE_DIR: source-${{ inputs.service }}
+            SOURCE_DIR: source-${{ matrix.service }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -39,10 +38,10 @@ jobs:
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
           script: |
             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
-            $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ inputs.service }}.sh
+            $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service }}.sh
 
   purge-cache:
-    if: inputs.service == 'client'
+    if: inputs.client
     name: Purge cloudflare cache
     runs-on: ubuntu-latest
     needs: deploy
