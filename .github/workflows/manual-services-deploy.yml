@@ -27,7 +27,7 @@ jobs:
           matrix=""
           for service in client server load-balancer
           do
-            echo sh -c "echo ${{ inputs }} | | jq '.'"
+            echo ${{ inputs }} | jq '.'
           done
           echo "::set-output name=matrix::$matrix"
 
