@@ -27,10 +27,10 @@ jobs:
         
     runs-on: ubuntu-latest
     name: Deploy ${{ matrix.service.name }}
-    if: matrix.service.run
 
     steps:
       - name: Reflect changes on remote server
+        if: matrix.service.run
         uses: appleboy/ssh-action@v0.1.7
         env:
             REPOSITORY: ${{ github.repository }}
