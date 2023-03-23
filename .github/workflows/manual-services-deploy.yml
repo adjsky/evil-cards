@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Reflect changes on remote server
-        if: matrix.service.run == true
+        if: matrix.service.run
         uses: appleboy/ssh-action@v0.1.7
         env:
             REPOSITORY: ${{ github.repository }}
