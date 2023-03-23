@@ -27,7 +27,7 @@ jobs:
           matrix=""
           for service in client server load-balancer
           do
-            echo ${{ inputs.${service^^} }}
+            echo ${{ inputs[toUpperCase(service)] }}
           done
           echo "::set-output name=matrix::$matrix"
 
