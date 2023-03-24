@@ -17,7 +17,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy ${{ matrix.service.name }}
-    if: matrix.service.run
     
     strategy:
       matrix:
@@ -31,6 +30,7 @@ jobs:
     
     steps:
       - run: echo ${{ matrix.service.name }}
+        if: matrix.service.run
 
 #     steps:
 #       - name: Deploy ${{ inputs.service }}
