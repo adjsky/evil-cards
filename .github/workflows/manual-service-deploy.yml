@@ -3,46 +3,53 @@ name: Deploy service
 on: 
   workflow_dispatch:
     inputs:
-      service:
-        description: 'Service?'
-        required: true
-        type: choice
-        options:
-          - server
-          - client
-          - load-balancer
+      client:
+        description: client
+        type: boolean
+      server:
+        description: server
+        type: boolean
+      load-balancer:
+        description: load-balancer
+        type: boolean
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy ${{ inputs.service }}
-
+    name: Deploy
+    
     steps:
-      - name: Deploy ${{ inputs.service }}
-        uses: appleboy/ssh-action@v0.1.7
-        env:
-            REPOSITORY: ${{ github.repository }}
-            APP_PATH: /app
-            SOURCE_DIR: source-${{ inputs.service }}
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          envs: REPOSITORY,APP_PATH,SOURCE_DIR
-          script: |
-            git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
-            $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ inputs.service }}.sh
+      - run: echo ${{ toJSON(inputs) }}
+
+#     steps:
+#       - name: Deploy ${{ inputs.service }}
+#         uses: appleboy/ssh-action@v0.1.7
+#         env:
+#             REPOSITORY: ${{ github.repository }}
+#             APP_PATH: /app
+#             SOURCE_DIR: source-${{ inputs.service }}
+#         with:
+#           host: ${{ secrets.HOST }}
+#           username: ${{ secrets.USERNAME }}
+#           password: ${{ secrets.PASSWORD }}
+#           envs: REPOSITORY,APP_PATH,SOURCE_DIR
+#           script: |
+#             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
+#             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ inputs.service }}.sh
 
   purge-cache:
     needs: deploy
-    if: inputs.service == 'client'
+    if: inputs.client
 
     name: Purge cloudflare cache
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Purge cloudflare cache
-        uses: nathanvaughn/actions-cloudflare-purge@v3.1.0
-        with:
-          cf_zone: ${{ secrets.CLOUDFLARE_ZONE }}
-          cf_auth: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
+      - run: echo hI!
+
+#     steps:
+#       - name: Purge cloudflare cache
+#         uses: nathanvaughn/actions-cloudflare-purge@v3.1.0
+#         with:
+#           cf_zone: ${{ secrets.CLOUDFLARE_ZONE }}
+#           cf_auth: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
