@@ -19,7 +19,7 @@ jobs:
     name: Deploy
     
     steps:
-      - run: echo ${{ toJSON(inputs) }}
+      - run: echo "${{ toJSON(inputs) }}"
 
 #     steps:
 #       - name: Deploy ${{ inputs.service }}
