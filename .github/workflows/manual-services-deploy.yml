@@ -1,4 +1,4 @@
-name: Deploy service
+name: Deploy services
 
 on: 
   workflow_dispatch:
@@ -16,10 +16,17 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Deploy services
     
     steps:
-      - run: echo "${{ toJSON(inputs) }}"
+      - run: |
+          for service in client server load-balancer
+          do
+            if [[ $(echo "${{ toJSON(inputs)}}" | jq ".$service") = "true" ]]
+            then
+              echo $service
+            fi
+          done
 
 #     steps:
 #       - name: Deploy ${{ inputs.service }}
