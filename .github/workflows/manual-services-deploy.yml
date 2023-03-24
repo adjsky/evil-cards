@@ -27,26 +27,23 @@ jobs:
             run: ${{ inputs.server }}
           - name: load-balancer
             run: ${{ inputs.load-balancer }}
-    
-    steps:
-      - run: echo ${{ matrix.service.name }}
-        if: matrix.service.run
 
-#     steps:
-#       - name: Deploy ${{ inputs.service }}
-#         uses: appleboy/ssh-action@v0.1.7
-#         env:
-#             REPOSITORY: ${{ github.repository }}
-#             APP_PATH: /app
-#             SOURCE_DIR: source-${{ inputs.service }}
-#         with:
-#           host: ${{ secrets.HOST }}
-#           username: ${{ secrets.USERNAME }}
-#           password: ${{ secrets.PASSWORD }}
-#           envs: REPOSITORY,APP_PATH,SOURCE_DIR
-#           script: |
-#             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
-#             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ inputs.service }}.sh
+    steps:
+      - name: Deploy ${{ matrix.service.name }}
+        if: matrix.service.run
+        uses: appleboy/ssh-action@v0.1.7
+        env:
+            REPOSITORY: ${{ github.repository }}
+            APP_PATH: /app
+            SOURCE_DIR: source-${{ matrix.service.name }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          envs: REPOSITORY,APP_PATH,SOURCE_DIR
+          script: |
+            git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
+            $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service.name }}.sh
 
   purge-cache:
     needs: deploy
