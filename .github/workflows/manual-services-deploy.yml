@@ -27,7 +27,7 @@ jobs:
           - name: server
             run: ${{ inputs.server }}
           - name: load-balancer
-            run: ${{ inputs["load-balancer"] }}
+            run: ${{ inputs.load-balancer }}
     
     steps:
       - run: echo ${{ matrix.service.name }}
