@@ -16,18 +16,21 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy services
+    name: Deploy ${{ matrix.service.name }}
+    if: matrix.service.run
+    
+    strategy:
+      matrix:
+        service:
+          - name: client
+            run: ${{ inputs.client }}
+          - name: server
+            run: ${{ inputs.server }}
+          - name: load-balancer
+            run: ${{ inputs["load-balancer"] }}
     
     steps:
-      - run: |
-          echo "${{ toJSON(inputs)}}"
-          for service in client server load-balancer
-          do
-            if [[ ${{ inputs[$service] }} = "true" ]]
-            then
-              echo $service
-            fi
-          done
+      - run: echo ${{ matrix.service.name }}
 
 #     steps:
 #       - name: Deploy ${{ inputs.service }}
