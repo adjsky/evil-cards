@@ -35,6 +35,14 @@ jest.mock("next/router", () => ({
   useRouter: () => ({
     beforePopState() {
       //
+    },
+    events: {
+      on() {
+        //
+      },
+      off() {
+        //
+      }
     }
   })
 }))

@@ -37,6 +37,7 @@ module.exports = {
         900: "#236F2B"
       },
       blue: "#93C5FD",
+      black: "#000000",
       current: "currentcolor"
     },
     extend: {

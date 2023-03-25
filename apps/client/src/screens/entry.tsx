@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
-import { useRouter } from "next/router"
+import SingletonRouter, { useRouter } from "next/router"
 
 import { nicknameAtom, avatarAtom } from "@/lib/atoms"
 import { useSocket, useScreenFactor } from "@/lib/hooks"
@@ -55,8 +55,11 @@ const Entry: React.FC = () => {
         router.push("/room", undefined, { shallow: true })
       }
     },
-    onClose(_, manually) {
-      if (manually) {
+    onOpen() {
+      updateSnackbar({ open: false })
+    },
+    onClose(_, manually, reconnecting) {
+      if (manually || reconnecting) {
         return
       }
 
@@ -66,8 +69,12 @@ const Entry: React.FC = () => {
       updateSnackbar({
         message: "Не удалось подключиться к серверу",
         open: true,
-        severity: "error"
+        severity: "error",
+        infinite: false
       })
+    },
+    shouldReconnect() {
+      return SingletonRouter.pathname != "/"
     }
   })
 
@@ -91,7 +98,8 @@ const Entry: React.FC = () => {
         updateSnackbar({
           message: startErrors[error],
           open: true,
-          severity: "error"
+          severity: "error",
+          infinite: false
         })
         setWaiting(false)
       },
