@@ -130,6 +130,7 @@ class Session implements ISession {
       }
 
       existingPlayer.avatarId = avatarId
+      existingPlayer.sender = sender
 
       this._events.emit("join", existingPlayer)
 
