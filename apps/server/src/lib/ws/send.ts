@@ -33,6 +33,7 @@ export type Joined = {
       redCard: string | null
       votingEndsAt: number | null
       configuration: Configuration
+      votes: Vote[]
     }
   }
 }

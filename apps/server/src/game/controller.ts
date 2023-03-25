@@ -229,7 +229,8 @@ class Controller {
             deck: player.deck,
             redCard: session.redCard,
             votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null,
-            configuration: session.configuration
+            configuration: session.configuration,
+            votes: session.votes
           }
         }
       })

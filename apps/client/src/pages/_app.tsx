@@ -123,7 +123,6 @@ const useSocketEvents = () => {
         case "join":
           setGameState({
             ...message.details.changedState,
-            votes: [],
             winners: null
           })
           break
