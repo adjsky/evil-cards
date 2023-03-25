@@ -6,7 +6,7 @@ import type {
   Card
 } from "../../game/types"
 
-type SendPlayer = Omit<GamePlayer, "sender" | "deck">
+type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">
 
 export type Created = {
   type: "create"

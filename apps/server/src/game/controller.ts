@@ -173,7 +173,7 @@ class Controller {
               status: session.status,
               playerId: player.id,
               players: session.players.map((player) =>
-                omit(player, ["sender", "deck"])
+                omit(player, ["sender", "deck", "leaveTimeout"])
               ),
               configuration: session.configuration
             }
@@ -224,7 +224,7 @@ class Controller {
             status: session.status,
             playerId: player.id,
             players: session.players.map((player) =>
-              omit(player, ["sender", "deck"])
+              omit(player, ["sender", "deck", "leaveTimeout"])
             ),
             deck: player.deck,
             redCard: session.redCard,
@@ -375,7 +375,7 @@ class Controller {
                   changedState: {
                     deck: player.deck,
                     players: session.players.map((player) =>
-                      omit(player, ["sender", "deck"])
+                      omit(player, ["sender", "deck", "leaveTimeout"])
                     ),
                     redCard: session.redCard,
                     status,
@@ -465,7 +465,7 @@ class Controller {
                   changedState: {
                     status,
                     players: session.players.map((player) =>
-                      omit(player, ["sender", "deck"])
+                      omit(player, ["sender", "deck", "leaveTimeout"])
                     )
                   }
                 }
@@ -509,7 +509,7 @@ class Controller {
               changedState: {
                 votes: session.votes,
                 players: session.players.map((player) =>
-                  omit(player, ["sender", "deck"])
+                  omit(player, ["sender", "deck", "leaveTimeout"])
                 )
               }
             }
@@ -531,7 +531,7 @@ class Controller {
               changedState: {
                 votes: session.votes,
                 players: session.players.map((player) =>
-                  omit(player, ["sender", "deck"])
+                  omit(player, ["sender", "deck", "leaveTimeout"])
                 ),
                 deck: player.deck
               }
@@ -572,7 +572,7 @@ class Controller {
             details: {
               changedState: {
                 players: session.players.map((player) =>
-                  omit(player, ["sender", "deck"])
+                  omit(player, ["sender", "deck", "leaveTimeout"])
                 )
               }
             }
@@ -593,7 +593,7 @@ class Controller {
             details: {
               changedState: {
                 players: session.players.map((player) =>
-                  omit(player, ["sender", "deck"])
+                  omit(player, ["sender", "deck", "leaveTimeout"])
                 )
               }
             }
