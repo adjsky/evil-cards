@@ -8,10 +8,6 @@
   transform-style: preserve-3d;
 }
 
-.flipable-author {
-  transform: rotateY(180deg);
-}
-
 .back,
 .front {
   backface-visibility: hidden;
