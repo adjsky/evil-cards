@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import { Transition } from "@headlessui/react"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { useRouter } from "next/router"
 
 import {
@@ -13,7 +13,7 @@ import {
   useLeavePreventer
 } from "@/lib/hooks"
 import { getScoreLabel, copyText } from "@/lib/functions"
-import { soundsAtom } from "@/lib/atoms"
+import { reconnectingGameAtom, soundsAtom } from "@/lib/atoms"
 import { updateSnackbar } from "@/components/snackbar/use"
 
 import FadeIn from "@/components/fade-in"
@@ -42,6 +42,7 @@ const Waiting: React.FC<{
 }> = ({ gameState, onGameStateUpdate }) => {
   useLeavePreventer()
   const [sounds, setSounds] = useAtom(soundsAtom)
+  const setReconnectingGame = useSetAtom(reconnectingGameAtom)
 
   const [visibleMainScreen, setVisibleMainScreen] = useState<
     "configuration" | "rules" | "authors"
@@ -57,7 +58,7 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage, disconnect, connected } = useSocket<
+  const { lastJsonMessage, sendJsonMessage, disconnect } = useSocket<
     SendMessage,
     ReceiveMessage
   >({
@@ -87,10 +88,9 @@ const Waiting: React.FC<{
     const handleAnimationFinish = () => {
       onGameStateUpdate && onGameStateUpdate(null)
       updateSnackbar({ open: false })
+      setReconnectingGame(false)
 
-      if (connected) {
-        disconnect()
-      }
+      disconnect()
     }
 
     leaving.current = true
@@ -109,10 +109,11 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, disconnect, connected])
+  }, [onGameStateUpdate, disconnect, setReconnectingGame])
 
   const router = useRouter()
   useEffect(() => {
+    router.events.on("routeChangeStart", onBack)
     router.beforePopState(({ as }) => {
       if (as !== router.asPath) {
         onBack()
@@ -122,6 +123,7 @@ const Waiting: React.FC<{
     })
 
     return () => {
+      router.events.off("routeChangeStart", onBack)
       router.beforePopState(() => true)
     }
   }, [router, onBack])

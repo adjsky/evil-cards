@@ -9,6 +9,7 @@ import { setDateTimeout } from "../lib/date-timeout"
 import {
   BEST_CARD_VIEW_DURATION_MS,
   GAME_START_DELAY_MS,
+  LEAVE_TIMEOUT_MS,
   MAX_PLAYERS_IN_SESSSION,
   MIN_PLAYERS_TO_START_GAME,
   SESSION_ID_SIZE,
@@ -27,7 +28,8 @@ import {
   HostError,
   NotEnoughPlayersError,
   DisconnectedError,
-  TooManyPlayersError
+  TooManyPlayersError,
+  MultipleLeaveError
 } from "./errors"
 
 import type {
@@ -114,11 +116,19 @@ class Session implements ISession {
     )
 
     if (existingPlayer) {
-      if (!existingPlayer.disconnected) {
+      if (!existingPlayer.disconnected && existingPlayer.leaveTimeout == null) {
         throw new ForbiddenNicknameError()
       }
 
-      existingPlayer.disconnected = false
+      if (existingPlayer.disconnected) {
+        existingPlayer.disconnected = false
+      }
+
+      if (existingPlayer.leaveTimeout) {
+        clearTimeout(existingPlayer.leaveTimeout)
+        existingPlayer.leaveTimeout = null
+      }
+
       existingPlayer.avatarId = avatarId
 
       this._events.emit("join", existingPlayer)
@@ -146,7 +156,8 @@ class Session implements ISession {
       voted: false,
       disconnected: false,
       deck: [],
-      sender
+      sender,
+      leaveTimeout: null
     }
 
     this._players.push(player)
@@ -165,42 +176,50 @@ class Session implements ISession {
       throw new DisconnectedError()
     }
 
-    const isPlaying = this.isPlaying()
-
-    if (isPlaying) {
-      player.disconnected = true
-    } else {
-      this._players = this._players.filter((p) => p.id != playerId)
+    if (!player.disconnected && player.leaveTimeout != null) {
+      throw new MultipleLeaveError()
     }
 
-    const remainingPlayers = this._players.filter((p) => !p.disconnected)
+    player.leaveTimeout = setTimeout(() => {
+      player.leaveTimeout = null
 
-    if (remainingPlayers.length == 0) {
-      this.clearTimeouts()
+      const isPlaying = this.isPlaying()
 
-      this._events.emit("leave", player)
-      this._events.emit("sessionend")
-
-      return
-    }
-
-    if (player.host) {
       if (isPlaying) {
-        player.host = false
+        player.disconnected = true
+      } else {
+        this._players = this._players.filter((p) => p.id != playerId)
       }
 
-      remainingPlayers[0].host = true
-    }
+      const remainingPlayers = this._players.filter((p) => !p.disconnected)
 
-    if (isPlaying && player.master) {
-      this.passMaster()
-    }
+      if (remainingPlayers.length == 0) {
+        this.clearTimeouts()
 
-    this._events.emit("leave", player)
+        this._events.emit("leave", player)
+        this._events.emit("sessionend")
 
-    if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
-      this.endGame()
-    }
+        return
+      }
+
+      if (player.host) {
+        if (isPlaying) {
+          player.host = false
+        }
+
+        remainingPlayers[0].host = true
+      }
+
+      if (isPlaying && player.master) {
+        this.passMaster()
+      }
+
+      this._events.emit("leave", player)
+
+      if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
+        this.endGame()
+      }
+    }, LEAVE_TIMEOUT_MS)
   }
 
   public updateConfiguration(playerId: string, configuration: Configuration) {

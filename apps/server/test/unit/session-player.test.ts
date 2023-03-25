@@ -2,7 +2,7 @@ import { jest } from "@jest/globals"
 import waitForExpect from "wait-for-expect"
 
 import Session from "../../src/game/session"
-import { GAME_START_DELAY_MS } from "../../src/game/constants"
+import { GAME_START_DELAY_MS, LEAVE_TIMEOUT_MS } from "../../src/game/constants"
 
 import type { Player } from "../../src/game/types"
 
@@ -49,13 +49,15 @@ describe("join", () => {
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    jest.useRealTimers()
-
     session.leave(session.players[0].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[0].disconnected).toBeTruthy()
     session.join(sender, "1", 1, false)
     expect(session.players[0].disconnected).toBeFalsy()
+
+    jest.useRealTimers()
 
     session.endGame()
   })
@@ -72,7 +74,12 @@ describe("leave", () => {
     session.join(sender, "qweqwe", 1, false)
     session.join(sender, "asdssd", 1, false)
 
+    jest.useFakeTimers()
+
     session.leave(session.players[0].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    jest.useRealTimers()
 
     await waitForExpect(() => {
       expect(fnMock).toBeCalled()
@@ -83,7 +90,13 @@ describe("leave", () => {
     session.join(sender, "asd", 1, false)
     session.join(sender, "wqe", 1, false)
 
+    jest.useFakeTimers()
+
     session.leave(session.players[0].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    jest.useRealTimers()
+
     expect(session.players.length).toBe(1)
   })
 
@@ -98,9 +111,10 @@ describe("leave", () => {
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    jest.useRealTimers()
-
     session.leave(session.players[1].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    jest.useRealTimers()
 
     expect(session.players[1].disconnected).toBeTruthy()
 
@@ -111,7 +125,13 @@ describe("leave", () => {
     session.join(sender, "wqe", 1, true)
     session.join(sender, "asd", 1, false)
 
+    jest.useFakeTimers()
+
     session.leave(session.players[0].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    jest.useRealTimers()
+
     expect(session.players[0].host).toBeTruthy()
   })
 
@@ -129,8 +149,13 @@ describe("leave", () => {
     session.join(sender, "qweqwe", 1, false)
     session.join(sender, "asdssd", 1, false)
 
+    jest.useFakeTimers()
+
     session.leave(session.players[0].id)
-    session.leave(session.players[0].id)
+    session.leave(session.players[1].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    jest.useRealTimers()
 
     await waitForExpect(() => {
       expect(leaveMock).toBeCalled()
@@ -151,13 +176,17 @@ describe("leave", () => {
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    jest.useRealTimers()
-
     session.leave(session.players[0].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+
     expect(session.players[1].master).toBeTruthy()
 
     session.leave(session.players[1].id)
     session.leave(session.players[2].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+
     expect(session.players[3].master).toBeTruthy()
 
     session.join(sender, "1", 1, false)
@@ -167,6 +196,10 @@ describe("leave", () => {
     session.leave(session.players[3].id)
     session.leave(session.players[4].id)
     session.leave(session.players[5].id)
+
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+
+    jest.useRealTimers()
 
     expect(session.players[0].master).toBeTruthy()
 

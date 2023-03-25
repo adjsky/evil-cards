@@ -42,6 +42,7 @@ export type Player = {
   disconnected: boolean
   deck: Card[]
   sender: PlayerSender
+  leaveTimeout: NodeJS.Timeout | null
 }
 
 export type Card = {

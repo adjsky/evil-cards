@@ -25,3 +25,5 @@ export const gameStateAtom = atom<GameState | null>(null)
 export const nicknameAtom = atomWithSafeStorage("nickname", "Игрок")
 export const avatarAtom = atomWithSafeStorage("avatar", 1)
 export const soundsAtom = atomWithSafeStorage("sounds", true)
+
+export const reconnectingGameAtom = atom(false)

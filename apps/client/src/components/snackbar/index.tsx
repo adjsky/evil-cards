@@ -182,7 +182,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
         borderStyle: "solid",
         borderColor: severityColor.fg
       }}
-      className="fixed top-3 left-1/2 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]"
+      className="fixed top-3 left-1/2 z-50 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]"
       onMouseEnter={() => !state.closeAnimation && stopAutoHide()}
       onMouseLeave={() =>
         !state.closeAnimation &&
