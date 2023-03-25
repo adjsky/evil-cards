@@ -38,6 +38,19 @@ const Configuration: React.FC<{
     setConfigurationCopy(configuration)
   }, [configuration])
 
+  const handleChange = (configuration: Partial<ConfigurationType>) => {
+    setConfigurationCopy((prev) => {
+      const updated = {
+        ...prev,
+        ...configuration
+      }
+
+      onSave && onSave(updated)
+
+      return updated
+    })
+  }
+
   return (
     <div className="flex min-h-0 w-full flex-auto flex-col items-center gap-4">
       <h2 className="text-center text-xl font-bold text-gray-100 sm:text-3xl">
@@ -50,10 +63,7 @@ const Configuration: React.FC<{
             value={configurationCopy["votingDurationSeconds"]}
             disabled={!host}
             onChange={(votingDurationSeconds) =>
-              setConfigurationCopy((prev) => ({
-                ...prev,
-                votingDurationSeconds
-              }))
+              handleChange({ votingDurationSeconds })
             }
           />
         </Row>
@@ -62,9 +72,7 @@ const Configuration: React.FC<{
             options={maxScoreOptions}
             value={configurationCopy["maxScore"]}
             disabled={!host}
-            onChange={(maxScore) =>
-              setConfigurationCopy((prev) => ({ ...prev, maxScore }))
-            }
+            onChange={(maxScore) => handleChange({ maxScore })}
           />
         </Row>
         <Row label="ОЗВУЧКА">
@@ -73,9 +81,7 @@ const Configuration: React.FC<{
             options={readerOptions}
             value={configurationCopy["reader"]}
             disabled={!host}
-            onChange={(reader) =>
-              setConfigurationCopy((prev) => ({ ...prev, reader }))
-            }
+            onChange={(reader) => handleChange({ reader })}
           />
         </Row>
         <Row label="ВЕРСИЯ 18+">
@@ -84,21 +90,10 @@ const Configuration: React.FC<{
             options={version18PlusOptions}
             value={configurationCopy["version18Plus"]}
             disabled={!host}
-            onChange={(version18Plus) =>
-              setConfigurationCopy((prev) => ({ ...prev, version18Plus }))
-            }
+            onChange={(version18Plus) => handleChange({ version18Plus })}
           />
         </Row>
       </div>
-      {host && (
-        <button
-          className="rounded-lg border border-gray-100 bg-gray-100 px-4 py-4 text-base leading-none text-gray-900 transition-colors hover:bg-gray-900 hover:text-gray-100 sm:px-5 sm:text-xl sm:leading-none"
-          onClick={() => onSave && onSave(configurationCopy)}
-          data-testid="save-configuration"
-        >
-          СОХРАНИТЬ
-        </button>
-      )}
     </div>
   )
 }
@@ -172,7 +167,7 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
               left: x ?? 0,
               width: refs.reference.current?.getBoundingClientRect().width
             }}
-            className="z-50 mt-1 overflow-hidden rounded-lg bg-gray-100 py-1"
+            className="z-50 mt-1 overflow-hidden rounded-lg bg-gray-100 py-1 shadow-lg"
           >
             {options.map((option) => (
               <Listbox.Option

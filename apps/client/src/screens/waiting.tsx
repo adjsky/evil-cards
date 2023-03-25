@@ -171,8 +171,6 @@ const Waiting: React.FC<{
                         type: "updateconfiguration",
                         details: configuration
                       })
-
-                      setVisibleMainScreen("rules")
                     }}
                   />
                 )}

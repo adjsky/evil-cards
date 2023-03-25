@@ -121,32 +121,6 @@ it("sends a start message when the start button is clicked", async () => {
   expect(sendJsonMessageMock).toBeCalledWith({ type: "startgame" })
 })
 
-it("hides the save configuration button for players who is not the host", async () => {
-  const user = userEvent.setup()
-
-  const { unmount } = render(
-    <Waiting
-      gameState={gameState}
-      onGameStateUpdate={fakeGameStateUpdateHandler}
-    />
-  )
-
-  await user.click(screen.getByTestId("show-configuration"))
-  expect(screen.getByTestId("save-configuration")).toBeEnabled()
-
-  gameState.players[0].host = false
-  unmount()
-  render(
-    <Waiting
-      gameState={gameState}
-      onGameStateUpdate={fakeGameStateUpdateHandler}
-    />
-  )
-
-  await user.click(screen.getByTestId("show-configuration"))
-  expect(screen.queryByTestId("save-configuration")).not.toBeInTheDocument()
-})
-
 it("toggles the audio button", async () => {
   const user = userEvent.setup()
 
