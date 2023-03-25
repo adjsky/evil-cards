@@ -1,20 +1,30 @@
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
-const sounds: Partial<Record<ReceiveMessage["type"], string>> = {
+const soundPaths: Partial<Record<ReceiveMessage["type"], string>> = {
   gamestart: "/sounds/countdown.wav",
   playerjoin: "/sounds/player-joined.wav",
   choose: "/sounds/flip-card.wav"
 }
 
-export async function processMessageAndPlaySound(message: ReceiveMessage) {
-  const messageSound = sounds[message.type]
+const sounds: Partial<Record<ReceiveMessage["type"], HTMLAudioElement>> = {}
 
-  if (!messageSound) {
+export function preloadSounds() {
+  for (const [key, value] of Object.entries(soundPaths)) {
+    const audio = new Audio(value)
+
+    audio.oncanplaythrough = () => {
+      sounds[key as keyof typeof sounds] = audio
+    }
+  }
+}
+
+export async function processMessageAndPlaySound(message: ReceiveMessage) {
+  const audio = sounds[message.type]
+
+  if (!audio) {
     return
   }
 
-  const audio = new Audio(messageSound)
-  
   try {
     await audio.play()
   } catch (error) {

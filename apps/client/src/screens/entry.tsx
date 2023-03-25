@@ -3,6 +3,7 @@ import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 import SingletonRouter, { useRouter } from "next/router"
 
+import { preloadSounds } from "@/lib/audio"
 import { nicknameAtom, avatarAtom } from "@/lib/atoms"
 import { useSocket, useScreenFactor } from "@/lib/hooks"
 import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
@@ -53,6 +54,7 @@ const Entry: React.FC = () => {
 
       if (message.type == "join" || message.type == "create") {
         router.push("/room", undefined, { shallow: true })
+        preloadSounds()
       }
     },
     onOpen() {
