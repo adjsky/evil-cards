@@ -108,14 +108,12 @@ class Controller {
       } catch (error) {
         logWithCtx(ctx, this.log).error(error, "socket.on message")
 
-        if (socket.readyState == socket.OPEN) {
-          socket.send(
-            stringify({
-              type: "error",
-              details: serializeError(error).message
-            })
-          )
-        }
+        socket.send(
+          stringify({
+            type: "error",
+            details: serializeError(error).message
+          })
+        )
       }
     })
 
