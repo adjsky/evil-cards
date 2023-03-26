@@ -1,7 +1,6 @@
 import EasySpeech from "easy-speech"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
-const allowedLanguages = ["ru", "ru-RU"]
 const allowedNames = ["Google русский"]
 
 export function processMessageAndSpeak(message: ReceiveMessage) {
@@ -31,17 +30,14 @@ export function speak(text: string) {
   }
 
   const voices = EasySpeech.voices()
-  const voice = voices.filter(
-    (voice) =>
-      allowedLanguages.includes(voice.lang) && allowedNames.includes(voice.name)
-  )
+  const voice = voices.find((voice) => allowedNames.includes(voice.name))
 
-  if (!voice[0]) {
+  if (!voice) {
     return
   }
 
   EasySpeech.speak({
     text,
-    voice: voice[0]
+    voice: voice
   }).catch((error) => console.error(error))
 }
