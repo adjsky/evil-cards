@@ -25,6 +25,7 @@ importers:
       '@testing-library/jest-dom': ^5.16.5
       '@testing-library/react': ^13.4.0
       '@testing-library/user-event': ^14.4.3
+      '@types/easy-speech': ^1.2.0
       '@types/jest': ^29.2.3
       '@types/node': 18.0.0
       '@types/react': 18.0.14
@@ -35,6 +36,7 @@ importers:
       clsx: ^1.2.1
       cross-env: ^7.0.3
       dotenv: ^16.0.3
+      easy-speech: ^2.0.0
       eslint: ^8.28.0
       eslint-config-next: 13.0.2
       identity-obj-proxy: ^3.0.0
@@ -65,6 +67,7 @@ importers:
       '@headlessui/tailwindcss': 0.1.1_tailwindcss@3.2.2
       '@sentry/nextjs': 7.22.0_oi4yo7lpuxjcam3fz4gr3cbiju
       clsx: 1.2.1
+      easy-speech: 2.0.0
       interweave: 13.0.0_react@18.2.0
       jotai: 1.9.1_2exiyaescjxorpwwmy4ejghgte
       next: 13.2.4_pjwopsidmaokadturxaafygjp4
@@ -84,6 +87,7 @@ importers:
       '@testing-library/jest-dom': 5.16.5
       '@testing-library/react': 13.4.0_biqbaboplfbrettd7655fr4n2y
       '@testing-library/user-event': 14.4.3_aaq3sbffpfe3jnxzm2zngsddei
+      '@types/easy-speech': 1.2.0
       '@types/jest': 29.2.3
       '@types/node': 18.0.0
       '@types/react': 18.0.14
@@ -3686,6 +3690,10 @@ packages:
     dependencies:
       '@babel/types': 7.20.7
 
+  /@types/easy-speech/1.2.0:
+    resolution: {integrity: sha512-slOCmKPaD5kV4nU7kjXtnLvlw7jZMUgH+GaQjcKXj8LYGXfDZAIotHRbBeqToJJOztOrtfwDjqsQT8+F+mB5DA==}
+    dev: true
+
   /@types/eslint-scope/3.7.4:
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
     dependencies:
@@ -5679,6 +5687,11 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.0
       stream-shift: 1.0.1
+    dev: false
+
+  /easy-speech/2.0.0:
+    resolution: {integrity: sha512-QTQ4jt9T20iAo7HZBLwuZn0FYBczq54Ti/lHJlPMxFVbDVbMhlSaIe1Q0Ku3H03VxPGuPmxhWABiQONTYqlxfw==}
+    engines: {node: '>= 14.x'}
     dev: false
 
   /ejs/3.1.8:

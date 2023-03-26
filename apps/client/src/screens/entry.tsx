@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 import SingletonRouter, { useRouter } from "next/router"
+import EasySpeech from "easy-speech"
 import packageJson from "../../package.json"
 
 import { preloadSounds } from "@/lib/audio"
@@ -54,7 +55,9 @@ const Entry: React.FC = () => {
         }
       } else if (message.type == "join" || message.type == "create") {
         router.push("/room", undefined, { shallow: true })
+
         preloadSounds()
+        EasySpeech.init().catch((error) => console.error(error))
       }
     },
     onOpen() {

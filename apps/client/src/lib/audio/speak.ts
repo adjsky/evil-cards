@@ -1,4 +1,8 @@
+import EasySpeech from "easy-speech"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+
+const allowedLanguages = ["ru", "ru-RU"]
+const allowedNames = ["Google русский"]
 
 export function processMessageAndSpeak(message: ReceiveMessage) {
   switch (message.type) {
@@ -20,14 +24,24 @@ export function processMessageAndSpeak(message: ReceiveMessage) {
 }
 
 export function speak(text: string) {
-  if (!("speechSynthesis" in window)) {
+  const status = EasySpeech.status()
+
+  if (!status.initialized) {
     return
   }
 
-  const utterance = new SpeechSynthesisUtterance()
-  utterance.text = text
-  utterance.lang = "ru"
-  utterance.rate = 0.95
+  const voices = EasySpeech.voices()
+  const voice = voices.filter(
+    (voice) =>
+      allowedLanguages.includes(voice.lang) && allowedNames.includes(voice.name)
+  )
 
-  window.speechSynthesis.speak(utterance)
+  if (!voice[0]) {
+    return
+  }
+
+  EasySpeech.speak({
+    text,
+    voice: voice[0]
+  }).catch((error) => console.error(error))
 }
