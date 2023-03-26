@@ -157,6 +157,7 @@ importers:
       '@jest/globals': ^29.3.1
       '@types/jest': ^29.2.3
       '@types/node': ^18.8.4
+      '@types/semver': ^7.3.13
       '@types/websocket': ^1.0.5
       '@types/ws': ^8.5.4
       c8: ^7.12.0
@@ -173,6 +174,7 @@ importers:
       pino-pretty: ^9.1.1
       prettier: ^2.8.0
       redis: ^4.6.5
+      semver: ^7.3.8
       serialize-error: ^11.0.0
       ts-jest: ^29.0.3
       ts-node: ^10.9.1
@@ -192,6 +194,7 @@ importers:
       jest-mock-extended: 3.0.3_r24ewcothphvclnu77pxb4u4se
       nanoid: 4.0.0
       redis: 4.6.5
+      semver: 7.3.8
       serialize-error: 11.0.0
       ws: 8.13.0
       zod: 3.20.6
@@ -200,6 +203,7 @@ importers:
       '@jest/globals': 29.3.1
       '@types/jest': 29.2.3
       '@types/node': 18.11.3
+      '@types/semver': 7.3.13
       '@types/websocket': 1.0.5
       '@types/ws': 8.5.4
       c8: 7.12.0
@@ -3804,6 +3808,10 @@ packages:
   /@types/semver/7.3.12:
     resolution: {integrity: sha512-WwA1MW0++RfXmCr12xeYOOC5baSC9mSb0ZqCquFzKhcoF4TvHu5MKOuXsncgZcpVFhB1pXd5hZmM0ryAoCp12A==}
     dev: false
+
+  /@types/semver/7.3.13:
+    resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
+    dev: true
 
   /@types/stack-utils/2.0.1:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}

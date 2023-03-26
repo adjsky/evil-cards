@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
 import SingletonRouter, { useRouter } from "next/router"
+import packageJson from "../../package.json"
 
 import { preloadSounds } from "@/lib/audio"
 import { nicknameAtom, avatarAtom } from "@/lib/atoms"
@@ -33,13 +34,14 @@ const Entry: React.FC = () => {
     py: 40,
     disableOnMobile: true
   })
-  const { sendJsonMessage, connect, clearMessageQueue } = useSocket<
+  const { sendJsonMessage, connect, clearMessageQueue, disconnect } = useSocket<
     SendMessage,
     ReceiveMessage
   >({
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
+        disconnect()
 
         let ignore = false
 
@@ -50,9 +52,7 @@ const Entry: React.FC = () => {
         if (!ignore) {
           router.replace("/", undefined, { shallow: true })
         }
-      }
-
-      if (message.type == "join" || message.type == "create") {
+      } else if (message.type == "join" || message.type == "create") {
         router.push("/room", undefined, { shallow: true })
         preloadSounds()
       }
@@ -114,7 +114,8 @@ const Entry: React.FC = () => {
             details: {
               nickname,
               sessionId,
-              avatarId
+              avatarId,
+              appVersion: packageJson.version
             }
           })
         } else {
@@ -122,7 +123,8 @@ const Entry: React.FC = () => {
             type: "createsession",
             details: {
               nickname,
-              avatarId
+              avatarId,
+              appVersion: packageJson.version
             }
           })
         }

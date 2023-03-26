@@ -111,3 +111,9 @@ export class InternalError extends Error {
     super("internal error")
   }
 }
+
+export class VersionMismatchError extends Error {
+  constructor() {
+    super("session and client version mismatch")
+  }
+}
