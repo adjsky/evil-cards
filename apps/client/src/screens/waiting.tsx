@@ -113,18 +113,16 @@ const Waiting: React.FC<{
 
   const router = useRouter()
   useEffect(() => {
-    router.events.on("routeChangeStart", onBack)
-    router.beforePopState(({ as }) => {
-      if (as !== router.asPath) {
+    const handler = (path: string) => {
+      if (path == "/") {
         onBack()
       }
+    }
 
-      return true
-    })
+    router.events.on("routeChangeStart", handler)
 
     return () => {
-      router.events.off("routeChangeStart", onBack)
-      router.beforePopState(() => true)
+      router.events.off("routeChangeStart", handler)
     }
   }, [router, onBack])
 
