@@ -1,18 +1,26 @@
 import z from "zod"
+import semverValid from "semver/functions/valid"
 import { implement } from "../zod-implements"
 
 import type { Configuration } from "../../game/types"
 
+const semverString = () =>
+  z.string().refine((version) => semverValid(version) != null, {
+    message: "invalid semver"
+  })
+
 export const createSessionSchema = z.object({
   nickname: z.string(),
-  avatarId: z.number()
+  avatarId: z.number(),
+  appVersion: semverString()
 })
 export type CreateSession = z.TypeOf<typeof createSessionSchema>
 
 export const joinSessionSchema = z.object({
   nickname: z.string(),
   sessionId: z.string(),
-  avatarId: z.number()
+  avatarId: z.number(),
+  appVersion: semverString()
 })
 export type JoinSession = z.TypeOf<typeof joinSessionSchema>
 

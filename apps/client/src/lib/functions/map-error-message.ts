@@ -3,7 +3,9 @@ const errorMessages: Record<string, string | undefined> = {
   "session not found": "Комната не найдена",
   "the game has already started": "Упс, игра уже началась",
   "need more players": "Нельзя начать игру, пока не наберется хотя бы 3 игрока",
-  "too many players": "Комната заполнена"
+  "too many players": "Комната заполнена",
+  "session and client version mismatch":
+    "Сессия создана на устаревшей версии клиента"
 }
 
 function mapErrorMessage(message: string) {

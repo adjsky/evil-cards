@@ -1,5 +1,6 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
+import semverSatisfies from "semver/functions/satisfies"
 
 import { messageSchema } from "../lib/ws/receive"
 import stringify from "../lib/ws/stringify"
@@ -12,7 +13,8 @@ import {
   InternalError,
   NoPlayerError,
   NoSessionError,
-  SessionNotFoundError
+  SessionNotFoundError,
+  VersionMismatchError
 } from "./errors"
 import omit from "../functions/omit"
 import { logWithCtx } from "../context"
@@ -42,6 +44,8 @@ class Controller {
   private config: ControllerConfig
   private log: FastifyBaseLogger
 
+  private versionMap: Map<string, string>
+
   public constructor(
     sessionManager: ISessionManager,
     redisClient: RedisClientWithLogs,
@@ -53,6 +57,8 @@ class Controller {
     this.redisClient = redisClient
     this.config = config
     this.log = log.child({ component: "game controller" })
+
+    this.versionMap = new Map()
 
     this.events.on("createsession", this.createSession.bind(this))
     this.events.on("joinsession", this.joinSession.bind(this))
@@ -102,7 +108,7 @@ class Controller {
       } catch (error) {
         logWithCtx(ctx, this.log).error(error, "socket.on message")
 
-        if (socket.OPEN) {
+        if (socket.readyState == socket.OPEN) {
           socket.send(
             stringify({
               type: "error",
@@ -122,7 +128,8 @@ class Controller {
     ctx,
     socket,
     nickname,
-    avatarId
+    avatarId,
+    appVersion
   }: ServerEvent["createsession"]) {
     if (socket.session) {
       throw new InSessionError()
@@ -156,6 +163,8 @@ class Controller {
 
       const player = session.join(socket, nickname, avatarId, true)
       socket.player = player
+
+      this.versionMap.set(session.id, appVersion)
 
       this.setupSessionListeners(session)
       session.events.on("sessionend", handleSessionEnd)
@@ -194,7 +203,8 @@ class Controller {
     socket,
     nickname,
     avatarId,
-    sessionId
+    sessionId,
+    appVersion
   }: ServerEvent["joinsession"]) {
     if (socket.session) {
       throw new InSessionError()
@@ -204,6 +214,12 @@ class Controller {
 
     if (!session) {
       throw new SessionNotFoundError()
+    }
+
+    const sessionVersion = this.versionMap.get(session.id)
+
+    if (sessionVersion && !semverSatisfies(appVersion, `^${sessionVersion}`)) {
+      throw new VersionMismatchError()
     }
 
     const player = session.join(socket, nickname, avatarId, false)

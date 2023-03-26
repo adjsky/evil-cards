@@ -38,6 +38,28 @@ describe("join", () => {
     })
   })
 
+  it("reassigns avatar and sender if player reconnects", () => {
+    session.join(sender, "1", 0, true)
+    session.join(sender, "2", 0, false)
+    session.join(sender, "3", 0, false)
+    const player4 = session.join(sender, "4", 0, false)
+
+    expect(player4.sender).toBe(sender)
+    expect(player4.avatarId).toBe(0)
+
+    const newFakeSender = {
+      send() {
+        //
+      }
+    }
+
+    session.leave(player4.id)
+    const reconnectedPlayer4 = session.join(newFakeSender, "4", 4, false)
+
+    expect(reconnectedPlayer4.sender).toBe(newFakeSender)
+    expect(reconnectedPlayer4.avatarId).toBe(4)
+  })
+
   it("reconnects players while playing", () => {
     session.join(sender, "1", 0, true)
     session.join(sender, "2", 0, false)

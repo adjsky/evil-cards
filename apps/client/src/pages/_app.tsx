@@ -5,6 +5,7 @@ import { useAtom, useAtomValue } from "jotai"
 import { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
 import { Transition } from "@headlessui/react"
+import packageJson from "../../package.json"
 
 import getMetaTags from "@/lib/seo"
 import { gameStateAtom, soundsAtom, reconnectingGameAtom } from "@/lib/atoms"
@@ -182,7 +183,8 @@ const useSocketEvents = () => {
           details: {
             avatarId: player.avatarId,
             nickname: player.nickname,
-            sessionId: gameState.id
+            sessionId: gameState.id,
+            appVersion: packageJson.version
           }
         })
       }
