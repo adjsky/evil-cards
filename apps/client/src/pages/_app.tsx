@@ -136,12 +136,6 @@ const useSocketEvents = () => {
             winners: null
           })
           break
-        case "votingstart":
-          setGameState((prev) => ({
-            ...prev!,
-            ...message.details.changedState
-          }))
-          break
         default:
           if (message.type != "ping" && message.type != "error") {
             setGameState((prev) => {
