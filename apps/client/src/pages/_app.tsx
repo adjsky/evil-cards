@@ -154,11 +154,17 @@ const useSocketEvents = () => {
                   .slice(0, 3)
               }
 
+              const votingEndsAt =
+                message.type == "choosingstart"
+                  ? null
+                  : "votingEndsAt" in message.details.changedState
+                  ? message.details.changedState.votingEndsAt
+                  : prev.votingEndsAt
+
               return {
                 ...prev,
                 ...message.details.changedState,
-                votingEndsAt:
-                  message.type == "choosingstart" ? null : prev.votingEndsAt,
+                votingEndsAt,
                 winners
               }
             })
