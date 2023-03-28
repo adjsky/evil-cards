@@ -146,6 +146,7 @@ class Controller {
         // errors are automatically logged in the client
       })
 
+      this.versionMap.delete(session.id)
       this.sessionManager.delete(session.id)
     }
 
