@@ -107,6 +107,7 @@ const useSocketEvents = () => {
       if (message.type == "error" && message.details) {
         updateSnackbar({
           message: mapErrorMessage(message.details),
+          severity: "information",
           open: true,
           infinite: false
         })
