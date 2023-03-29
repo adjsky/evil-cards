@@ -103,10 +103,14 @@ const Entry: React.FC = () => {
         updateSnackbar({
           message: startErrors[error],
           open: true,
-          severity: "error",
+          severity: error == "nosession" ? "information" : "error",
           infinite: false
         })
         setWaiting(false)
+
+        if (error == "nosession") {
+          router.replace("/", undefined, { shallow: true })
+        }
       },
       ok(wsHost) {
         connect(wsHost)
