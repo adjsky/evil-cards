@@ -1,0 +1,5 @@
+services:
+  redis:
+    extends:
+      file: common.yml
+      service: redis

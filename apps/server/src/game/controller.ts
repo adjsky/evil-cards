@@ -34,7 +34,7 @@ import type { ReqContext } from "../context"
 import type { RedisClientWithLogs } from "../redis-client-with-logs"
 
 export type ControllerConfig = {
-  serverNumber: string
+  serverNumber: number
 }
 
 class Controller {

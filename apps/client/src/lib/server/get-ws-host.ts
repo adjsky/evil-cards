@@ -3,7 +3,7 @@ import { ok, err } from "@/core/fp/result"
 
 import type { Result } from "@/core/fp/result"
 
-type Error = "nobalancerpath" | "nosession" | "fetcherror"
+type Error = "nosession" | "fetcherror"
 
 type SuccessLoadBalancerResponse = {
   message: "ok"
@@ -15,11 +15,7 @@ async function getWSHost(sessionId?: string): Promise<Result<string, Error>> {
     return ok(env.NEXT_PUBLIC_WS_HOST)
   }
 
-  if (!env.NEXT_PUBLIC_LOAD_BALANCER_PATH) {
-    return err("nobalancerpath")
-  }
-
-  let loadBalancerPath = env.NEXT_PUBLIC_LOAD_BALANCER_PATH
+  let loadBalancerPath = "/api/server"
   if (sessionId) {
     loadBalancerPath += `?sessionId=${sessionId}`
   }

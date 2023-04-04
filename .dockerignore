@@ -22,11 +22,11 @@ deploy
 **/.idea
 **/.vscode
 
-# CLIENT
-apps/client/.next
+# App related
+**/test
+**/dist
+**/coverage
+**/.nyc_output
 
-# SERVER
-apps/server/coverage
-apps/server/dist
-apps/server/test
-apps/server/.nyc_output
+# NextJS related
+**/.next

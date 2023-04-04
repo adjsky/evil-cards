@@ -1,6 +1,6 @@
 name: Deploy services
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       client:
@@ -12,12 +12,21 @@ on:
       load-balancer:
         description: load-balancer
         type: boolean
+      deploy-env:
+        description: Environment
+        type: choice
+        options:
+          - prod
+          - stage
+      servers-to-deploy:
+        description: How many servers to start (for server and prod env only)
+        default: 2
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy ${{ matrix.service.name }}
-    
+
     strategy:
       matrix:
         service:
@@ -33,14 +42,16 @@ jobs:
         if: matrix.service.run
         uses: appleboy/ssh-action@v0.1.7
         env:
-            REPOSITORY: ${{ github.repository }}
-            APP_PATH: /app
-            SOURCE_DIR: source-${{ matrix.service.name }}
+          REPOSITORY: ${{ github.repository }}
+          APP_PATH: /app
+          SOURCE_DIR: source-${{ matrix.service.name }}
+          SERVERS_TO_START: ${{ inputs.servers-to-deploy }}
+          DEPLOY_ENV: ${{ inputs.deploy-env }}
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          envs: REPOSITORY,APP_PATH,SOURCE_DIR
+          host: ${{ inputs.deploy-env == 'prod' && secrets.PROD_HOST || secrets.STAGE_HOST }}
+          username: ${{ inputs.deploy-env == 'prod' && secrets.PROD_USERNAME || secrets.STAGE_USERNAME }}
+          password: ${{ inputs.deploy-env == 'prod' && secrets.PROD_PASSWORD || secrets.STAGE_PASSWORD }}
+          envs: REPOSITORY,APP_PATH,SOURCE_DIR,SERVERS_TO_START,DEPLOY_ENV
           script: |
             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service.name }}.sh

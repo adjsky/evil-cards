@@ -1,0 +1,95 @@
+
+###################################################################
+# Stage 1: Install all necessary dependencies                     #
+###################################################################
+
+FROM node:16-alpine AS deps
+
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /evil-cards
+COPY . .
+
+RUN yarn global add pnpm@~8.1 && pnpm --filter=@evil-cards/client... --frozen-lockfile install
+
+###################################################################
+# Stage 2: Build client (production)                              #
+###################################################################
+
+FROM node:16-alpine AS builder-production
+
+WORKDIR /evil-cards
+COPY --from=deps /evil-cards .
+
+WORKDIR /evil-cards/apps/client
+
+ENV BUILD_STANDALONE true
+
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+  export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+  npm run build:production && \
+  npm run generate-sitemap
+
+###################################################################
+# Stage 2: Build client (stage)                                   #
+###################################################################
+
+FROM node:16-alpine AS builder-stage
+
+WORKDIR /evil-cards
+COPY --from=deps /evil-cards .
+
+WORKDIR /evil-cards/apps/client
+
+ENV BUILD_STANDALONE true
+
+RUN npm run build:stage && \
+  npm run generate-sitemap
+
+###################################################################
+# Stage 3: Run client (prod)                                      #
+###################################################################
+
+FROM node:16-alpine AS runner-prod
+
+WORKDIR /evil-cards
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder-production /evil-cards/apps/client/public ./apps/client/public
+COPY --from=builder-production --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
+COPY --from=builder-production --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+
+CMD ["node", "apps/client/server.js"]
+
+###################################################################
+# Stage 3: Run client (stage)                                     #
+###################################################################
+
+FROM node:16-alpine AS runner-stage
+
+WORKDIR /evil-cards
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder-stage /evil-cards/apps/client/public ./apps/client/public
+COPY --from=builder-stage --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
+COPY --from=builder-stage --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+
+CMD ["node", "apps/client/server.js"]

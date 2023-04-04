@@ -13,9 +13,9 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   PORT: z.coerce.number().default(8000),
   LOG_MEMORY: z.coerce.boolean(),
-  SERVER_NUMBER: z.string(),
+  SERVER_NUMBER: z.coerce.number().default(1),
   REDIS_URL: z.string().url(),
-  SITE_URL: z.string().url()
+  CORS_ORIGIN: z.string()
 })
 
 const formatErrors = (errors: ZodFormattedError<Map<string, string>, string>) =>

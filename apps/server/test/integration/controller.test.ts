@@ -33,7 +33,7 @@ it("terminates connection after two failed pings", async () => {
     sessionManager,
     redisClient,
     {
-      serverNumber: "1"
+      serverNumber: 1
     },
     log
   )
@@ -60,7 +60,7 @@ it("checks app and session versions", async () => {
     sessionManager,
     redisClient,
     {
-      serverNumber: "1"
+      serverNumber: 1
     },
     log
   )

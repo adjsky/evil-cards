@@ -27,12 +27,7 @@ const fastify = Fastify({
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {
-  origin:
-    env.NODE_ENV == "development"
-      ? "*"
-      : `${env.SITE_PROTOCOL}://${env.SITE_DOMAIN}${
-          env.SITE_PORT ? ":" + env.SITE_PORT : ""
-        }`
+  origin: env.CORS_ORIGIN
 })
 
 const redis = createClient({ url: env.REDIS_URL })
@@ -43,7 +38,9 @@ await Promise.all([redis.connect(), subscriber.connect()])
 async function getServerNumbersFromRedis() {
   const rawServers = await redis.get("servers")
 
-  let parsedServerNumbers = ["1", "2"]
+  let parsedServerNumbers = Array.from({
+    length: env.INITIAL_AVAILABLE_SERVERS
+  }).map((_, index) => (index + 1).toString())
 
   if (rawServers) {
     parsedServerNumbers = rawServers.split(" ")
