@@ -3,14 +3,15 @@ name: Build and push service
 on:
   workflow_dispatch:
     inputs:
-      service:
-        description: "Service?"
-        required: true
-        type: choice
-        options:
-          - server
-          - client
-          - load-balancer
+      client:
+        description: client
+        type: boolean
+      server:
+        description: server
+        type: boolean
+      load-balancer:
+        description: load-balancer
+        type: boolean
       deploy-env:
         description: Environment
         type: choice
@@ -19,9 +20,30 @@ on:
           - stage
 
 jobs:
-  build-and-push:
+  generate-matrix:
     runs-on: ubuntu-latest
-    name: Build and push ${{ inputs.service }}
+    name: Generate service matrix
+
+    outputs:
+      matrix: ${{ steps.generate-service-matrix.outputs.matrix }}
+
+    steps:
+      - name: Generate service matrix
+        id: generate-service-matrix
+        run: |
+          MATRIX_ARRAY=$(node -e 'console.log(JSON.parse(process.argv[1])' '${{ toJSON(inputs) }}')
+          echo ::set-output name=matrix::${MATRIX_ARRAY}
+
+  build-and-push:
+    if: false
+    runs-on: ubuntu-latest
+    name: Build and push ${{ matrix.service }}
+    needs:
+      - generate-matrix
+
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout repo
@@ -38,28 +60,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}/${{ inputs.service }}-${{ inputs.deploy-env }}
+          images: ghcr.io/${{ github.repository }}/${{ matrix.service }}-${{ inputs.deploy-env }}
 
-      - name: Build and push client with sentry auth
+      - name: Build and push ${{ matrix.service }}
         uses: docker/build-push-action@v3
-        if: inputs.service == 'client'
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: deploy/dockerfiles/Dockerfile.client
+          file: deploy/dockerfiles/Dockerfile.${{ matrix.service }}
           platforms: linux/amd64
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
-          target: runner-${{ inputs.deploy-env }}
-
-      - name: Build and push ${{ inputs.service }}
-        uses: docker/build-push-action@v3
-        if: inputs.service != 'client'
-        with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: deploy/dockerfiles/Dockerfile.${{ inputs.service }}
-          platforms: linux/amd64
           target: runner-${{ inputs.deploy-env }}
