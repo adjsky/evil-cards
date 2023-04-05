@@ -41,13 +41,15 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     }
   }, [])
 
+  const domain = new URL(env.NEXT_PUBLIC_SITE_HOST).host
+
   return (
     <>
       <Head>{getMetaTags(router.asPath)}</Head>
       <PlausibleProvider
-        domain={env.NEXT_PUBLIC_PRODUCTION_HOST}
+        domain={domain}
         enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
-        customDomain={`https://analytics.${env.NEXT_PUBLIC_PRODUCTION_HOST}`}
+        customDomain={`https://analytics.${domain}`}
         selfHosted
       >
         <PreviousPathnameProvider>

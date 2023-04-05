@@ -13,9 +13,7 @@ function getMetaTags(route: string /* router.asPath */) {
       <meta name="description" content={description} />
       <meta
         property="og:url"
-        content={`https://${env.NEXT_PUBLIC_PRODUCTION_HOST}${
-          path == "/" ? "" : path
-        }`}
+        content={`${env.NEXT_PUBLIC_SITE_HOST}${path == "/" ? "" : path}`}
       />
       <meta property="og:site_name" content={title} />
       <meta property="og:type" content="website" />
@@ -23,7 +21,7 @@ function getMetaTags(route: string /* router.asPath */) {
       <meta property="og:description" content={description} />
       <meta
         property="og:image"
-        content={`https://${env.NEXT_PUBLIC_PRODUCTION_HOST}/icons/og-preview.png`}
+        content={`${env.NEXT_PUBLIC_SITE_HOST}/icons/og-preview.png`}
       />
       <link rel="apple-touch-icon" href="/icons/apple-touch.png" />
       <link rel="icon" sizes="any" href="/favicon.ico" />

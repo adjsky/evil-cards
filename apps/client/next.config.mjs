@@ -7,7 +7,9 @@ import getWithBundleAnalyzer from "@next/bundle-analyzer"
 // @ts-expect-error @types/next-pwa are broken, due to that we have to suppress TS error
 import getWithPWA from "next-pwa"
 
-const clientEnv = (await import("./src/lib/env/client.mjs")).env
+if (!process.env.SKIP_CLIENT_ENV_VALIDATION) {
+  await import("./src/lib/env/client.mjs")
+}
 const serverEnv = (await import("./src/lib/env/server.mjs")).env
 
 const workspaceRoot = path.resolve(
@@ -70,6 +72,6 @@ export default withSentryConfig(
   withPWA(withStandaloneBuild(withBundleAnalyzer(nextConfig))),
   {
     silent: true,
-    dryRun: !clientEnv.NEXT_PUBLIC_WITH_SENTRY
+    dryRun: !process.env.NEXT_PUBLIC_WITH_SENTRY
   }
 )

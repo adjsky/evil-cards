@@ -1,0 +1,29 @@
+services:
+  redis:
+    extends:
+      file: common.yml
+      service: redis
+
+  server:
+    extends:
+      file: common.yml
+      service: server
+    image: adjsky/evil-cards_server_stage:latest
+    depends_on:
+      - redis
+
+  client:
+    extends:
+      file: common.yml
+      service: client
+    image: adjsky/evil-cards_client_stage:latest
+
+  nginx:
+    extends:
+      file: common.yml
+      service: nginx
+    volumes:
+      - ../nginx/default.stage.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - client
+      - server

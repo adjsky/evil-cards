@@ -17,7 +17,8 @@ const config = {
     "\\.svg$": "<rootDir>/test/config/svgr-mock.tsx",
     "^@/(.*)$": "<rootDir>/src/$1",
     "\\.css$": "identity-obj-proxy",
-    "@formkit/auto-animate/react": "<rootDir>/test/config/auto-animate.ts"
+    "@formkit/auto-animate/react": "<rootDir>/test/config/auto-animate.ts",
+    "easy-speech": "<rootDir>/test/config/easy-speech.ts"
   },
   clearMocks: true
 }

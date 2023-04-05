@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMPOSE_PATH=$APP_PATH/$SOURCE_DIR/deploy/docker-compose.yml
+COMPOSE_PATH=$APP_PATH/$SOURCE_DIR/deploy/compose/docker-compose.$DEPLOY_ENV.yml
 
 $APP_PATH/$SOURCE_DIR/deploy/scripts/swap-envs.sh
 

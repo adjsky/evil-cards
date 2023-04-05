@@ -216,7 +216,6 @@ const UserCard: React.FC = () => {
 
 const startErrors = {
   nosession: "Комната не найдена",
-  nobalancerpath: "nobalancerpath",
   fetcherror: "Не удалось получить доступные сервера"
 }
 

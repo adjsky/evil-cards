@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis:7.0.9
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: always
+
+  server:
+    restart: always
+    env_file:
+      - ../envs/server.env
+
+  load-balancer:
+    restart: always
+    env_file:
+      - ../envs/load-balancer.env
+
+  client:
+    restart: always
+
+  nginx:
+    image: nginx:1.23
+    volumes:
+      - /etc/ssl:/etc/ssl:ro
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+
+volumes:
+  db-data:
+    driver: local
+  event-data:
+    driver: local
