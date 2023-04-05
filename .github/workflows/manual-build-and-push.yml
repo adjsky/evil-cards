@@ -38,7 +38,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}/client-${{ inputs.deploy-env }}
+          images: ghcr.io/${{ github.repository }}/${{ inputs.service }}-${{ inputs.deploy-env }}
 
       - name: Build and push client with sentry auth
         uses: docker/build-push-action@v3

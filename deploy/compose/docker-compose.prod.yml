@@ -43,7 +43,7 @@ services:
     extends:
       file: common.yml
       service: server
-    image: adjsky/evil-cards_server_prod:latest
+    image: ghcr.io/evil-cards/server-prod:${GITHUB_BRANCH:-master}
     deploy:
       replicas: 2
     depends_on:
@@ -53,7 +53,7 @@ services:
     extends:
       file: common.yml
       service: load-balancer
-    image: adjsky/evil-cards_load-balancer_prod:latest
+    image: ghcr.io/evil-cards/load-balancer-prod:${GITHUB_BRANCH:-master}
     depends_on:
       - redis
       - server
@@ -62,7 +62,7 @@ services:
     extends:
       file: common.yml
       service: client
-    image: adjsky/evil-cards_client_prod:latest
+    image: ghcr.io/evil-cards/client-prod:${GITHUB_BRANCH:-master}
     depends_on:
       - plausible
 
