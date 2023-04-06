@@ -90,10 +90,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy ${{ matrix.service }} (${{ inputs.deploy-env }})
-    if: inputs.deploy
     needs:
       - generate-matrix
       - build-and-push
+
+    if: |
+      always() &&
+      inputs.deploy &&
+      (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped')
 
     strategy:
       matrix:
