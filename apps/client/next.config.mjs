@@ -61,6 +61,9 @@ const nextConfig = {
   },
   sentry: {
     hideSourceMaps: true
+  },
+  eslint: {
+    ignoreDuringBuilds: true
   }
 }
 

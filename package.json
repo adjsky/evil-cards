@@ -2,9 +2,9 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "test:ci": "lerna run test:ci --parallel"
+    "test:ci": "turbo test:ci"
   },
   "devDependencies": {
-    "lerna": "^6.0.1"
+    "turbo": "^1.8.8"
   }
 }
