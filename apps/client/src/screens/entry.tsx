@@ -150,7 +150,7 @@ const Entry: React.FC = () => {
       <div
         ref={containerRef}
         style={screenStyles}
-        className="flex flex-col items-center justify-center gap-8 sm:w-[20.625rem]"
+        className="flex flex-col items-center justify-center gap-8 sm:w-[21.25rem]"
       >
         <Logo />
         <UserCard />
