@@ -1,3 +1,5 @@
+name: deploy
+
 services:
   redis:
     extends:
@@ -8,7 +10,7 @@ services:
     extends:
       file: common.yml
       service: server
-    image: ghcr.io/evil-cards/server-stage:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/server-stage:${GITHUB_BRANCH:-master}
     depends_on:
       - redis
 
@@ -16,7 +18,7 @@ services:
     extends:
       file: common.yml
       service: client
-    image: ghcr.io/evil-cards/client-stage:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/client-stage:${GITHUB_BRANCH:-master}
 
   nginx:
     extends:
