@@ -21,6 +21,9 @@ on:
       deploy:
         description: Deploy services
         type: boolean
+      skip-build:
+        description: Skip build job
+        type: boolean
 
 jobs:
   generate-matrix:
@@ -49,6 +52,7 @@ jobs:
     name: Build and push ${{ matrix.service }} (${{ inputs.deploy-env }})
     needs:
       - generate-matrix
+    if: ${{ !inputs.skip-build }}
 
     strategy:
       matrix:
@@ -88,6 +92,7 @@ jobs:
     name: Deploy ${{ matrix.service }} (${{ inputs.deploy-env }})
     if: inputs.deploy
     needs:
+      - generate-matrix
       - build-and-push
 
     strategy:
