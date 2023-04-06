@@ -35,10 +35,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+
       - name: Generate service matrix
         id: generate-service-matrix
         run: |
-          MATRIX_ARRAY=$(node -e 'console.log(JSON.parse(process.argv[1])' '${{ toJSON(inputs) }}')
+          JSON='${{ toJSON(inputs) }}'
+          SERVICES=client,server,load-balancer
+          MATRIX_ARRAY=$(node -e "const services = '$SERVICES'.split(',');console.log(Object.entries($JSON).filter((e) => services.includes(e[0]) && Boolean(e[1])).map((e) => e[0]))")
           echo ::set-output name=matrix::${MATRIX_ARRAY}
 
   build-and-push:
