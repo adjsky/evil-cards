@@ -1,5 +1,6 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
-export default {
+import type { JestConfigWithTsJest } from "ts-jest"
+
+const config: JestConfigWithTsJest = {
   preset: "ts-jest/presets/default-esm",
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1"
@@ -15,3 +16,5 @@ export default {
   testEnvironment: "node",
   clearMocks: true
 }
+
+export default config

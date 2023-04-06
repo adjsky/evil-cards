@@ -24,9 +24,20 @@ function getMockLog() {
 }
 
 const sessionManager = new SessionManager(new SessionFactory())
-const redisClient = mock<RedisClientWithLogs>()
+const redisClient = mock<RedisClientWithLogs>({
+  del() {
+    return Promise.resolve(0)
+  },
+  set() {
+    return Promise.resolve(null)
+  }
+})
 const log = getMockLog()
 const ctx = mock<ReqContext>()
+
+afterEach(() => {
+  jest.useRealTimers()
+})
 
 it("terminates connection after two failed pings", async () => {
   const controller = new Controller(
@@ -65,8 +76,12 @@ it("checks app and session versions", async () => {
     log
   )
 
+  jest.useFakeTimers()
+
   const socket = new WebSocket("")
   controller.handleConnection(ctx, socket)
+
+  jest.useRealTimers()
 
   socket.emit(
     "message",
@@ -97,8 +112,12 @@ it("checks app and session versions", async () => {
     sessionId = data.details.changedState.id
   })
 
+  jest.useFakeTimers()
+
   const joinSocket = new WebSocket("")
   controller.handleConnection(ctx, joinSocket)
+
+  jest.useRealTimers()
 
   joinSocket.emit(
     "message",
