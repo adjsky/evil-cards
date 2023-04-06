@@ -1,4 +1,4 @@
-name: Build and push service
+name: Build, push and deploy service
 
 on:
   workflow_dispatch:
