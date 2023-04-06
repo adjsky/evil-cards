@@ -133,7 +133,7 @@ jobs:
   purge-cache:
     needs:
       - deploy
-    if: inputs.client && inputs.deploy
+    if: (inputs.client && inputs.deploy)
 
     name: Purge cloudflare cache
     runs-on: ubuntu-latest
