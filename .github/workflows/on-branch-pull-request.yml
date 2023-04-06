@@ -5,6 +5,10 @@ on:
     types: [opened, reopened, synchronize]
     branches: [master]
 
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
