@@ -27,7 +27,8 @@ import type {
   Status,
   Vote,
   Configuration,
-  Player
+  Player,
+  BroadcastCallback
 } from "./types"
 import type { FastifyBaseLogger } from "fastify"
 import type { ReqContext } from "../context"
@@ -68,6 +69,7 @@ class Controller {
     this.events.on("choosewinner", this.chooseWinner.bind(this))
     this.events.on("startgame", this.startGame.bind(this))
     this.events.on("vote", this.vote.bind(this))
+    this.events.on("discardcards", this.discardCards.bind(this))
     this.events.on("close", ({ ctx, socket }) => {
       try {
         this.disconnect(socket)
@@ -354,140 +356,110 @@ class Controller {
     session.chooseWinner(player.id, playerId)
   }
 
+  private discardCards({ socket }: ServerEvent["discardcards"]) {
+    const session = socket.session
+
+    if (!session) {
+      throw new NoSessionError()
+    }
+
+    const player = socket.player
+
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    session.discardCards(player.id)
+  }
+
   private setupSessionListeners(session: ISession) {
     const handleStatusChange = (status: Status) => {
       switch (status) {
         case "starting": {
-          session.players.forEach((player) => {
-            if (player.disconnected) {
-              return
+          this.broadcast(session, () => ({
+            type: "gamestart",
+            details: {
+              changedState: {
+                status
+              }
             }
-
-            player.sender.send(
-              stringify({
-                type: "gamestart",
-                details: {
-                  changedState: {
-                    status
-                  }
-                }
-              })
-            )
-          })
+          }))
 
           break
         }
 
         case "voting": {
-          session.players.forEach((player) => {
-            if (player.disconnected || !session.redCard) {
+          this.broadcast(session, (players, player) => {
+            if (!session.redCard) {
               return
             }
 
-            player.sender.send(
-              stringify({
-                type: "votingstart",
-                details: {
-                  changedState: {
-                    deck: player.deck,
-                    players: session.players.map((player) =>
-                      omit(player, ["sender", "deck", "leaveTimeout"])
-                    ),
-                    redCard: session.redCard,
-                    status,
-                    votes: session.votes,
-                    votingEndsAt:
-                      session.getTimeoutDate("voting")?.getTime() ?? null
-                  }
+            return {
+              type: "votingstart",
+              details: {
+                changedState: {
+                  deck: player.deck,
+                  players,
+                  redCard: session.redCard,
+                  status,
+                  votes: session.votes,
+                  votingEndsAt:
+                    session.getTimeoutDate("voting")?.getTime() ?? null
                 }
-              })
-            )
+              }
+            }
           })
 
           break
         }
 
         case "choosing": {
-          session.players.forEach((player) => {
-            if (player.disconnected) {
-              return
+          this.broadcast(session, (_, player) => ({
+            type: "choosingstart",
+            details: {
+              changedState: {
+                status,
+                votes: session.votes,
+                deck: player.deck
+              }
             }
-
-            player.sender.send(
-              stringify({
-                type: "choosingstart",
-                details: {
-                  changedState: {
-                    status,
-                    votes: session.votes,
-                    deck: player.deck
-                  }
-                }
-              })
-            )
-          })
+          }))
 
           break
         }
 
         case "choosingwinner": {
-          session.players.forEach((player) => {
-            if (player.disconnected) {
-              return
-            }
-
-            player.sender.send(
-              stringify({
-                type: "choosingwinnerstart",
-                details: { changedState: { status } }
-              })
-            )
-          })
+          this.broadcast(session, () => ({
+            type: "choosingwinnerstart",
+            details: { changedState: { status } }
+          }))
 
           break
         }
 
         case "winnercardview": {
-          session.players.forEach((player) => {
-            if (player.disconnected) {
-              return
+          this.broadcast(session, () => ({
+            type: "winnercardview",
+            details: {
+              changedState: {
+                status
+              }
             }
-
-            player.sender.send(
-              stringify({
-                type: "winnercardview",
-                details: {
-                  changedState: {
-                    status
-                  }
-                }
-              })
-            )
-          })
+          }))
 
           break
         }
 
         case "end": {
-          session.players.forEach((player) => {
-            if (player.disconnected) {
-              return
+          this.broadcast(session, (players) => ({
+            type: "gameend",
+            details: {
+              changedState: {
+                status,
+                players
+              }
             }
-
-            player.sender.send(
-              stringify({
-                type: "gameend",
-                details: {
-                  changedState: {
-                    status,
-                    players: session.players.map((player) =>
-                      omit(player, ["sender", "deck", "leaveTimeout"])
-                    )
-                  }
-                }
-              })
-            )
-          })
+          }))
 
           break
         }
@@ -495,127 +467,92 @@ class Controller {
     }
 
     const handleChoose = (vote: Vote) => {
-      session.players.forEach((player) => {
-        if (player.disconnected) {
-          return
+      this.broadcast(session, () => ({
+        type: "choose",
+        details: {
+          changedState: { votes: session.votes },
+          choosedPlayerId: vote.playerId
         }
-
-        player.sender.send(
-          stringify({
-            type: "choose",
-            details: {
-              changedState: { votes: session.votes },
-              choosedPlayerId: vote.playerId
-            }
-          })
-        )
-      })
+      }))
     }
 
     const handleChooseWinner = () => {
-      session.players.forEach((player) => {
-        if (player.disconnected) {
-          return
+      this.broadcast(session, (players) => ({
+        type: "choosewinner",
+        details: {
+          changedState: {
+            votes: session.votes,
+            players
+          }
         }
-
-        player.sender.send(
-          stringify({
-            type: "choosewinner",
-            details: {
-              changedState: {
-                votes: session.votes,
-                players: session.players.map((player) =>
-                  omit(player, ["sender", "deck", "leaveTimeout"])
-                )
-              }
-            }
-          })
-        )
-      })
+      }))
     }
 
     const handleVote = () => {
-      session.players.forEach((player) => {
-        if (player.disconnected) {
-          return
+      this.broadcast(session, (players, player) => ({
+        type: "vote",
+        details: {
+          changedState: {
+            votes: session.votes,
+            players,
+            deck: player.deck
+          }
         }
-
-        player.sender.send(
-          stringify({
-            type: "vote",
-            details: {
-              changedState: {
-                votes: session.votes,
-                players: session.players.map((player) =>
-                  omit(player, ["sender", "deck", "leaveTimeout"])
-                ),
-                deck: player.deck
-              }
-            }
-          })
-        )
-      })
+      }))
     }
 
     const handleConfigurationChange = (configuration: Configuration) => {
-      session.players.forEach((player) => {
-        if (player.disconnected) {
-          return
+      this.broadcast(session, () => ({
+        type: "configurationchange",
+        details: {
+          changedState: {
+            configuration
+          }
         }
-
-        player.sender.send(
-          stringify({
-            type: "configurationchange",
-            details: {
-              changedState: {
-                configuration
-              }
-            }
-          })
-        )
-      })
+      }))
     }
 
     const handleJoin = (joinedPlayer: Player) => {
-      session.players.forEach((player) => {
-        if (player.disconnected || joinedPlayer.id == player.id) {
+      this.broadcast(session, (players, player) => {
+        if (joinedPlayer.id == player.id) {
           return
         }
 
-        player.sender.send(
-          stringify({
-            type: "playerjoin",
-            details: {
-              changedState: {
-                players: session.players.map((player) =>
-                  omit(player, ["sender", "deck", "leaveTimeout"])
-                )
-              }
+        return {
+          type: "playerjoin",
+          details: {
+            changedState: {
+              players
             }
-          })
-        )
+          }
+        }
       })
     }
 
     const handleLeave = () => {
-      session.players.forEach((player) => {
-        if (player.disconnected) {
-          return
+      this.broadcast(session, (players) => ({
+        type: "playerleave",
+        details: {
+          changedState: {
+            players
+          }
         }
+      }))
+    }
 
-        player.sender.send(
-          stringify({
-            type: "playerleave",
-            details: {
-              changedState: {
-                players: session.players.map((player) =>
-                  omit(player, ["sender", "deck", "leaveTimeout"])
-                )
-              }
-            }
-          })
-        )
-      })
+    const handleCardsDiscard = (discardedCardsPlayer: Player) => {
+      this.broadcast(session, (players, player) => ({
+        type: "discardcards",
+        details: {
+          changedState: {
+            players,
+            deck:
+              discardedCardsPlayer.id == player.id
+                ? discardedCardsPlayer.deck
+                : undefined
+          }
+        }
+      }))
     }
 
     session.events.on("statuschange", handleStatusChange)
@@ -625,6 +562,27 @@ class Controller {
     session.events.on("configurationchange", handleConfigurationChange)
     session.events.on("join", handleJoin)
     session.events.on("leave", handleLeave)
+    session.events.on("cardsdiscard", handleCardsDiscard)
+  }
+
+  private broadcast(session: ISession, callback: BroadcastCallback) {
+    const sendPlayers = session.players.map((player) =>
+      omit(player, ["sender", "deck", "leaveTimeout"])
+    )
+
+    session.players.forEach((player) => {
+      if (player.disconnected) {
+        return
+      }
+
+      const result = callback(sendPlayers, player)
+
+      if (!result) {
+        return
+      }
+
+      player.sender.send(stringify(result))
+    })
   }
 }
 

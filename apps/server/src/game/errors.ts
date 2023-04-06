@@ -117,3 +117,15 @@ export class VersionMismatchError extends Error {
     super("session and client version mismatch")
   }
 }
+
+export class DiscardCardsError extends Error {
+  constructor() {
+    super("your score is too low to discard your cards")
+  }
+}
+
+export class NotPlayingError extends Error {
+  constructor() {
+    super("you are not playing")
+  }
+}

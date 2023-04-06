@@ -69,6 +69,9 @@ export const messageSchema = z.discriminatedUnion("type", [
     type: z.literal("pong")
   }),
   z.object({
+    type: z.literal("discardcards")
+  }),
+  z.object({
     type: z.literal("updateconfiguration"),
     details: configurationSchema
   })

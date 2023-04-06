@@ -1,15 +1,16 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
-import type { Message } from "../lib/ws/receive"
+import type { Message as ReceiveMessage } from "../lib/ws/receive"
+import type { Message as SendMessage } from "../lib/ws/send"
 import type { DateTimeout } from "../lib/date-timeout"
 import type { ReqContext } from "../context"
-
 import type { MapDiscriminatedUnion, UnwrapField, With } from "../types/utility"
+import type { SendPlayer } from "../lib/ws/send"
 
 type WithHelperData<T> = With<{ socket: WebSocket; ctx: ReqContext }, T>
 
 export type ServerEvent = WithHelperData<
-  UnwrapField<MapDiscriminatedUnion<Message, "type">, "details">
+  UnwrapField<MapDiscriminatedUnion<ReceiveMessage, "type">, "details">
 >
 
 export type ControllerEvents = Emittery<
@@ -29,6 +30,7 @@ export type SessionEvents = Emittery<{
   vote: Vote
   choose: Vote
   choosewinner: Vote
+  cardsdiscard: Player
 }>
 
 export type Player = {
@@ -77,3 +79,8 @@ export type Timeouts = Record<
   "voting" | "starting" | "choosebest",
   null | DateTimeout
 >
+
+export type BroadcastCallback = (
+  players: SendPlayer[],
+  player: Player
+) => SendMessage | undefined
