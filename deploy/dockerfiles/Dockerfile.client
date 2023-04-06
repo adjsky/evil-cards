@@ -27,8 +27,7 @@ ENV BUILD_STANDALONE true
 
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
   export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
-  npm run build:production && \
-  npm run generate-sitemap
+  npm run build:production
 
 ###################################################################
 # Stage 2: Build client (stage)                                   #
@@ -43,8 +42,7 @@ WORKDIR /evil-cards/apps/client
 
 ENV BUILD_STANDALONE true
 
-RUN npm run build:stage && \
-  npm run generate-sitemap
+RUN npm run build:stage
 
 ###################################################################
 # Stage 3: Run client (prod)                                      #
