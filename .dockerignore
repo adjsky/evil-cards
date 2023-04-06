@@ -13,6 +13,8 @@
 # Stuff
 **/README.md
 LICENSE
+**/out
+**/.turbo
 
 # Docker related
 .dockerignore

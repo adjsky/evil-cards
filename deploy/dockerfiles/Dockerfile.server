@@ -1,32 +1,53 @@
 
 ###################################################################
-# Stage 1: Install server dependencies                            #
+# Stage 1: Prune monorepo                                         #
+###################################################################
+
+FROM node:16-alpine AS prune
+
+RUN apk add --no-cache libc6-compat
+RUN yarn global add turbo@^1.8.8
+
+WORKDIR /evil-cards
+COPY . .
+
+RUN turbo prune --scope=@evil-cards/server --docker
+
+###################################################################
+# Stage 2: Install server dependencies                            #
 ###################################################################
 
 FROM node:16-alpine AS deps
 
 RUN apk add --no-cache libc6-compat
+RUN yarn global add pnpm@~8.1
 
 WORKDIR /evil-cards
-COPY . .
 
-RUN yarn global add pnpm@~8.1 && pnpm --filter=@evil-cards/server... --frozen-lockfile install
+COPY --from=prune /evil-cards/out/json/ .
+COPY --from=prune /evil-cards/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+
+RUN pnpm --frozen-lockfile install
 
 ###################################################################
-# Stage 2: Build server                                           #
+# Stage 3: Build server                                           #
 ###################################################################
 
 FROM node:16-alpine AS builder
 
 WORKDIR /evil-cards
+
+COPY tsconfig.json .
 COPY --from=deps /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/server
 
 RUN npm run build
 
 ###################################################################
-# Stage 3: Run server (prod)                                      #
+# Stage 4: Run server (prod)                                      #
 ###################################################################
 
 FROM node:16-alpine AS runner-prod
@@ -44,7 +65,7 @@ ENV PORT 8000
 CMD ["sh", "start-with-server-number.sh"]
 
 ###################################################################
-# Stage 3: Run server (stage)                                     #
+# Stage 4: Run server (stage)                                     #
 ###################################################################
 
 FROM node:16-alpine AS runner-stage
