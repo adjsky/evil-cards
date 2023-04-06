@@ -77,3 +77,9 @@ services:
       - client
       - server
       - load-balancer
+
+volumes:
+  db-data:
+    driver: local
+  event-data:
+    driver: local
