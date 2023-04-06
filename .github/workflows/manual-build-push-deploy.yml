@@ -46,7 +46,7 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    name: Build and push ${{ matrix.service }}
+    name: Build and push ${{ matrix.service }} (${{ inputs.deploy-env }})
     needs:
       - generate-matrix
 
@@ -85,7 +85,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy ${{ matrix.service }}
+    name: Deploy ${{ matrix.service }} (${{ inputs.deploy-env }})
     if: inputs.deploy
     needs:
       - build-and-push
