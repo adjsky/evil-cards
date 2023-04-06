@@ -18,8 +18,8 @@ on:
         options:
           - prod
           - stage
-      build-only:
-        description: Build only (without deploying)
+      deploy:
+        description: Deploy services
         type: boolean
 
 jobs:
@@ -85,8 +85,8 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy ${{ matrix.service.name }}
-    if: ${{ !inputs.build-only }}
+    name: Deploy ${{ matrix.service }}
+    if: inputs.deploy
     needs:
       - build-and-push
 
@@ -122,7 +122,7 @@ jobs:
 
   purge-cache:
     needs: deploy
-    if: ${{ inputs.client && !inputs.build-only }}
+    if: inputs.client && inputs.deploy
 
     name: Purge cloudflare cache
     runs-on: ubuntu-latest
