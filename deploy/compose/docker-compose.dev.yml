@@ -3,3 +3,5 @@ services:
     extends:
       file: common.yml
       service: redis
+    ports:
+      - 6379:6379

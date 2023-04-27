@@ -1,7 +1,8 @@
-import React, { useEffect, useCallback } from "react"
+import React, { useEffect, useCallback, useState } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
+import { Transition, Dialog } from "@headlessui/react"
 
 import {
   useSocket,
@@ -14,6 +15,8 @@ import PlayerList from "@/components/player-list"
 import Card from "@/components/card"
 import FadeIn from "@/components/fade-in"
 import styles from "./game.module.css"
+import DiscardIcon from "../../assets/discard.svg"
+import ExclamationTriangleIcon from "../../assets/exclamation-triangle.svg"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -41,6 +44,10 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
     }
   }
 
+  const onDiscard = () => {
+    sendJsonMessage({ type: "discardcards" })
+  }
+
   return (
     <FadeIn className="mx-auto h-full sm:relative sm:flex sm:items-center sm:justify-center">
       <div
@@ -51,7 +58,11 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         <div className="w-full sm:hidden">
           <PlayerList players={gameState.players} variant="game" />
         </div>
-        <Board gameState={gameState} onCardClick={onBoardCardClick} />
+        <Board
+          gameState={gameState}
+          onCardClick={onBoardCardClick}
+          onDiscard={onDiscard}
+        />
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden sm:block">
             <PlayerList players={gameState.players} variant="game" />
@@ -80,7 +91,8 @@ const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
 const Board: React.FC<{
   gameState: GameState
   onCardClick?: (userId: string) => void
-}> = ({ gameState, onCardClick }) => {
+  onDiscard?: () => void
+}> = ({ gameState, onCardClick, onDiscard }) => {
   const [boardRefAnimate, enable] = useAutoAnimate(
     (element, action, oldCoords, newCoords) => {
       let keyframes: Keyframe[] = []
@@ -204,6 +216,7 @@ const Board: React.FC<{
           </div>
         )}
       </div>
+      <Discard score={player?.score ?? 0} onDiscard={onDiscard} />
     </div>
   )
 }
@@ -239,6 +252,91 @@ const Deck: React.FC<{
         />
       ))}
     </div>
+  )
+}
+
+const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
+  score,
+  onDiscard
+}) => {
+  const [isOpen, setOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        className="absolute bottom-2 right-2 transition-transform duration-300 hover:rotate-180 sm:bottom-0 sm:right-0"
+        onClick={() => setOpen(true)}
+      >
+        <DiscardIcon />
+      </button>
+      <Transition appear show={isOpen} as={React.Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => setOpen(false)}
+        >
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/75" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={React.Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100 "
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-left align-middle shadow-lg transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-center text-xl font-bold text-gray-900"
+                  >
+                    ЖЕЛАЕТЕ СБРОСИТЬ КАРТЫ?
+                  </Dialog.Title>
+
+                  <ExclamationTriangleIcon className="mx-auto my-3 h-24 w-24 fill-red-500/50" />
+
+                  <p className="text-center font-medium">
+                    Взамен на одно очко вы получите десять новых карт.
+                  </p>
+
+                  <div className="mt-4 flex w-full gap-2">
+                    <button
+                      className="flex-1 rounded-lg border border-gray-900 py-3 leading-none transition-colors hover:bg-gray-900 hover:text-gray-100"
+                      onClick={() => setOpen(false)}
+                    >
+                      НЕТ
+                    </button>
+                    <button
+                      className="flex-1 rounded-lg border border-red-500 bg-red-500 leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 disabled:opacity-50"
+                      onClick={() => {
+                        setOpen(false)
+                        onDiscard && onDiscard()
+                      }}
+                      disabled={score == 0}
+                    >
+                      ДА
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+    </>
   )
 }
 

@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:7.0.9
     volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     restart: always
 
