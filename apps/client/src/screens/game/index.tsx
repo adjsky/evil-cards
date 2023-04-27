@@ -274,10 +274,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
         onClose={() => setOpen(false)}
         className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-left align-middle text-gray-900 shadow-lg transition-all"
       >
-        <Modal.Title
-          as="h3"
-          className="text-center text-xl font-bold"
-        >
+        <Modal.Title as="h3" className="text-center text-xl font-bold">
           ЖЕЛАЕТЕ СБРОСИТЬ КАРТЫ?
         </Modal.Title>
 
