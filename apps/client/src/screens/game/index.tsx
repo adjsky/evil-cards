@@ -272,7 +272,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
       <Modal
         isOpen={isOpen}
         onClose={() => setOpen(false)}
-        className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-gray-900 text-left align-middle shadow-lg transition-all"
+        className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-left align-middle text-gray-900 shadow-lg transition-all"
       >
         <Modal.Title
           as="h3"
