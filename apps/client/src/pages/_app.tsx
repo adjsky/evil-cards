@@ -4,7 +4,6 @@ import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
 import { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
-import { Transition } from "@headlessui/react"
 import packageJson from "../../package.json"
 
 import getMetaTags from "@/lib/seo"
@@ -18,6 +17,7 @@ import { env } from "@/lib/env/client.mjs"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
 
 import ExclamationTriangle from "../assets/exclamation-triangle.svg"
+import Modal from "@/components/modal"
 
 import type { AppProps } from "next/app"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -65,23 +65,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
 const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
   return (
-    <Transition
-      className="fixed inset-0 z-10 flex items-center justify-center bg-black/75 "
-      enter="transition duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="transition duration-300"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-      show={visible}
-      appear
+    <Modal
+      isOpen={visible}
+      className="mx-2 flex flex-col items-center text-center text-xl font-medium text-gray-100"
     >
-      <div className="mx-2 flex flex-col items-center text-center text-xl font-medium text-gray-100">
-        <ExclamationTriangle className="h-24 w-24 animate-pulse fill-red-500" />
-        <span>Упс, пропало соединение.</span>
-        <span>Пытаемся его восстановить.</span>
-      </div>
-    </Transition>
+      <ExclamationTriangle className="h-24 w-24 animate-pulse fill-red-500" />
+      <Modal.Title>Упс, пропало соединение.</Modal.Title>
+      <Modal.Description>Пытаемся его восстановить.</Modal.Description>
+    </Modal>
   )
 }
 

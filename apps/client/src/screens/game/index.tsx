@@ -2,7 +2,6 @@ import React, { useEffect, useCallback, useState } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
-import { Transition, Dialog } from "@headlessui/react"
 
 import {
   useSocket,
@@ -17,6 +16,7 @@ import FadeIn from "@/components/fade-in"
 import styles from "./game.module.css"
 import DiscardIcon from "../../assets/discard.svg"
 import ExclamationTriangleIcon from "../../assets/exclamation-triangle.svg"
+import Modal from "@/components/modal"
 
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
@@ -269,73 +269,40 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
       >
         <DiscardIcon />
       </button>
-      <Transition appear show={isOpen} as={React.Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-50"
-          onClose={() => setOpen(false)}
-        >
-          <Transition.Child
-            as={React.Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setOpen(false)}
+        className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-left align-middle text-gray-900 shadow-lg transition-all"
+      >
+        <Modal.Title as="h3" className="text-center text-xl font-bold">
+          ЖЕЛАЕТЕ СБРОСИТЬ КАРТЫ?
+        </Modal.Title>
+
+        <ExclamationTriangleIcon className="mx-auto my-3 h-24 w-24 fill-red-500/50" />
+
+        <Modal.Description className="text-center font-medium">
+          Взамен на одно очко вы получите десять новых карт.
+        </Modal.Description>
+
+        <div className="mt-4 flex w-full gap-2">
+          <button
+            className="flex-1 rounded-lg border border-gray-900 py-3 leading-none transition-colors hover:bg-gray-900 hover:text-gray-100"
+            onClick={() => setOpen(false)}
           >
-            <div className="fixed inset-0 bg-black/75" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={React.Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100 "
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-left align-middle shadow-lg transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-center text-xl font-bold text-gray-900"
-                  >
-                    ЖЕЛАЕТЕ СБРОСИТЬ КАРТЫ?
-                  </Dialog.Title>
-
-                  <ExclamationTriangleIcon className="mx-auto my-3 h-24 w-24 fill-red-500/50" />
-
-                  <p className="text-center font-medium">
-                    Взамен на одно очко вы получите десять новых карт.
-                  </p>
-
-                  <div className="mt-4 flex w-full gap-2">
-                    <button
-                      className="flex-1 rounded-lg border border-gray-900 py-3 leading-none transition-colors hover:bg-gray-900 hover:text-gray-100"
-                      onClick={() => setOpen(false)}
-                    >
-                      НЕТ
-                    </button>
-                    <button
-                      className="flex-1 rounded-lg border border-red-500 bg-red-500 leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 disabled:opacity-50"
-                      onClick={() => {
-                        setOpen(false)
-                        onDiscard && onDiscard()
-                      }}
-                      disabled={score == 0}
-                    >
-                      ДА
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+            НЕТ
+          </button>
+          <button
+            className="flex-1 rounded-lg border border-red-500 bg-red-500 leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 disabled:opacity-50"
+            onClick={() => {
+              setOpen(false)
+              onDiscard && onDiscard()
+            }}
+            disabled={score == 0}
+          >
+            ДА
+          </button>
+        </div>
+      </Modal>
     </>
   )
 }
