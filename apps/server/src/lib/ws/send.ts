@@ -6,7 +6,7 @@ import type {
   Card
 } from "../../game/types"
 
-type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">
+export type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">
 
 export type Created = {
   type: "create"
@@ -117,6 +117,16 @@ export type GameEnd = {
   details: { changedState: { status: Status; players: SendPlayer[] } }
 }
 
+export type DiscardCards = {
+  type: "discardcards"
+  details: {
+    changedState: {
+      players: SendPlayer[]
+      deck?: Card[]
+    }
+  }
+}
+
 export type Error = {
   type: "error"
   details?: string
@@ -148,6 +158,7 @@ export type Message =
   | Ping
   | ConfigurationChanged
   | WinnerCardView
+  | DiscardCards
 
 export type { Status, Configuration, Vote, Card } from "../../game/types"
 export type Player = SendPlayer

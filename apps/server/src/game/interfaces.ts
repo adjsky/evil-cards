@@ -35,6 +35,7 @@ export interface ISession {
   vote(playerId: string, cardId: string): void
   choose(playerId: string, choosedPlayerId: string): void
   chooseWinner(playerId: string, choosedPlayerId: string): void
+  discardCards(playerId: string): void
   endGame(): void
   getTimeoutDate(name: keyof Timeouts): Date | undefined
 }

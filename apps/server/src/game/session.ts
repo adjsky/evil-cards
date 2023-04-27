@@ -29,7 +29,9 @@ import {
   NotEnoughPlayersError,
   DisconnectedError,
   TooManyPlayersError,
-  MultipleLeaveError
+  MultipleLeaveError,
+  DiscardCardsError,
+  NotPlayingError
 } from "./errors"
 
 import type {
@@ -369,6 +371,34 @@ class Session implements ISession {
     this.startWinnerCardView(didPlayerWin)
   }
 
+  public discardCards(playerId: string) {
+    if (this.isWaiting()) {
+      throw new NotPlayingError()
+    }
+
+    const player = this._players.find((p) => p.id == playerId)
+
+    if (!player) {
+      throw new InvalidPlayerIdError()
+    }
+
+    if (player.score == 0) {
+      throw new DiscardCardsError()
+    }
+
+    if (!this._availableWhiteCards) {
+      throw new Error("received null availableWhiteCards")
+    }
+
+    this._availableWhiteCards = this._availableWhiteCards.concat(player.deck)
+    player.deck = []
+    player.score -= 1
+
+    this.fillPlayerDeck(player)
+
+    this._events.emit("cardsdiscard", player)
+  }
+
   public endGame() {
     this._status = "end"
     this._redCard = null
@@ -394,8 +424,8 @@ class Session implements ISession {
   }
 
   private startVoting() {
-    if (!this._availableWhiteCards || !this._availableRedCards) {
-      throw new Error("received null availableRedCards and availableWhiteCards")
+    if (!this._availableRedCards) {
+      throw new Error("received null availableRedCards")
     }
 
     if (this._availableRedCards.length == 0) {
@@ -415,23 +445,7 @@ class Session implements ISession {
     this._availableRedCards.splice(redCardIndex, 1)
 
     for (const player of this._players) {
-      const deckLength = player.deck.length
-
-      for (let i = 0; i < 10 - deckLength; i++) {
-        if (this._availableWhiteCards.length == 0) {
-          break
-        }
-
-        const randomIndex = getRandomInt(
-          0,
-          this._availableWhiteCards.length - 1
-        )
-
-        const whiteCard = this._availableWhiteCards[randomIndex]
-        player.deck.push(whiteCard)
-
-        this._availableWhiteCards.splice(randomIndex, 1)
-      }
+      this.fillPlayerDeck(player)
     }
 
     this._timeouts.voting = setDateTimeout(() => {
@@ -541,6 +555,27 @@ class Session implements ISession {
 
       return acc
     }, [] as Card[])
+  }
+
+  private fillPlayerDeck(player: Player) {
+    if (!this._availableWhiteCards) {
+      throw new Error("received null availableWhiteCards")
+    }
+
+    const deckLength = player.deck.length
+
+    for (let i = 0; i < 10 - deckLength; i++) {
+      if (this._availableWhiteCards.length == 0) {
+        break
+      }
+
+      const randomIndex = getRandomInt(0, this._availableWhiteCards.length - 1)
+
+      const whiteCard = this._availableWhiteCards[randomIndex]
+      player.deck.push(whiteCard)
+
+      this._availableWhiteCards.splice(randomIndex, 1)
+    }
   }
 
   private clearTimeouts() {
