@@ -7,7 +7,7 @@ import packageJson from "../../package.json"
 
 import { preloadSounds } from "@/lib/audio"
 import { nicknameAtom, avatarAtom } from "@/lib/atoms"
-import { useSocket, useScreenFactor } from "@/lib/hooks"
+import { useSessionSocket, useScreenFactor } from "@/lib/hooks"
 import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import getWSHost from "@/lib/server/get-ws-host"
@@ -19,9 +19,6 @@ import FadeIn from "@/components/fade-in"
 import Arrow from "@/assets/arrow.svg"
 import Logo from "@/components/logo"
 import Loader from "@/components/loader"
-
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
 const errorsToIgnore = ["nickname is taken"]
 
@@ -35,14 +32,11 @@ const Entry: React.FC = () => {
     py: 40,
     disableOnMobile: true
   })
-  const { sendJsonMessage, connect, clearMessageQueue, disconnect } = useSocket<
-    SendMessage,
-    ReceiveMessage
-  >({
+  const { sendJsonMessage, clearMessageQueue, updateUrl } = useSessionSocket({
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
-        disconnect()
+        updateUrl(null)
 
         let ignore = false
 
@@ -113,7 +107,7 @@ const Entry: React.FC = () => {
         }
       },
       ok(wsHost) {
-        connect(wsHost)
+        updateUrl(`${wsHost}/ws/session`)
 
         if (sessionId) {
           sendJsonMessage({
@@ -150,7 +144,7 @@ const Entry: React.FC = () => {
       <div
         ref={containerRef}
         style={screenStyles}
-        className="flex flex-col items-center justify-center gap-8 sm:w-[21.25rem] sm:h-[30.625rem]"
+        className="flex flex-col items-center justify-center gap-8 sm:h-[30.625rem] sm:w-[21.25rem]"
       >
         <Logo />
         <UserCard />

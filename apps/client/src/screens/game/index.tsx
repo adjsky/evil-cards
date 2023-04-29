@@ -4,7 +4,7 @@ import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
 import {
-  useSocket,
+  useSessionSocket,
   useScreenFactor,
   useTimeBar,
   useLeavePreventer
@@ -18,13 +18,11 @@ import DiscardIcon from "../../assets/discard.svg"
 import ExclamationTriangleIcon from "../../assets/exclamation-triangle.svg"
 import Modal from "@/components/modal"
 
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { GameState } from "@/lib/atoms"
 
 const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
+  const { sendJsonMessage } = useSessionSocket()
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,

@@ -6,7 +6,7 @@ import websocketPlugin from "@fastify/websocket"
 import memoryLogPlugin from "./plugins/log-memory"
 import { buildRedisClient } from "./build"
 
-import websocketRoutes from "./routes/ws"
+import gameRoutes from "./routes/game"
 import { env } from "./env"
 import { getRedisClientWithLogs } from "./redis-client-with-logs"
 
@@ -38,7 +38,10 @@ await fastify.register(fastifyCors, {
 
 await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })
 await fastify.register(websocketPlugin)
-await fastify.register(websocketRoutes, { redisClient: redisClientWithLogs })
+await fastify.register(gameRoutes, {
+  redisClient: redisClientWithLogs,
+  prefix: "/ws"
+})
 
 await fastify.listen({
   port: env.PORT,

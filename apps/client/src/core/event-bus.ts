@@ -86,6 +86,8 @@ export function createEventBus<T extends Events>() {
 
   return {
     emit: eventBus.emit.bind(eventBus),
+    subscribe: eventBus.subscribe.bind(eventBus),
+    unsubscribe: eventBus.unsubscribe.bind(eventBus),
     useSubscription<K extends keyof T>(event: K, listener: Listener<T[K]>) {
       useEffect(() => {
         eventBus.subscribe(event, listener)

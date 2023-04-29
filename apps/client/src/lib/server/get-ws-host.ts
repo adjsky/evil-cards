@@ -10,7 +10,7 @@ type SuccessLoadBalancerResponse = {
   host: string
 }
 
-async function getWSHost(sessionId?: string): Promise<Result<string, Error>> {
+async function getWsHost(sessionId?: string): Promise<Result<string, Error>> {
   if (env.NEXT_PUBLIC_WS_HOST) {
     return ok(env.NEXT_PUBLIC_WS_HOST)
   }
@@ -37,4 +37,4 @@ async function getWSHost(sessionId?: string): Promise<Result<string, Error>> {
   }
 }
 
-export default getWSHost
+export default getWsHost

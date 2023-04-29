@@ -8,7 +8,7 @@ import packageJson from "../../package.json"
 
 import getMetaTags from "@/lib/seo"
 import { gameStateAtom, soundsAtom, reconnectingGameAtom } from "@/lib/atoms"
-import { useSocket } from "@/lib/hooks"
+import { useSessionSocket } from "@/lib/hooks"
 import { PreviousPathnameProvider } from "@/lib/contexts/previous-pathname"
 import { useSnackbar, updateSnackbar } from "@/components/snackbar/use"
 import { mapErrorMessage } from "@/lib/functions"
@@ -20,8 +20,6 @@ import ExclamationTriangle from "../assets/exclamation-triangle.svg"
 import Modal from "@/components/modal"
 
 import type { AppProps } from "next/app"
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const { Snackbar, reconnecting } = useSocketEvents()
@@ -85,7 +83,7 @@ const useSocketEvents = () => {
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
+  const { sendJsonMessage } = useSessionSocket({
     onJsonMessage(message) {
       if (reconnectingGame) {
         setReconnectingGame(false)

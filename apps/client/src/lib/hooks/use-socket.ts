@@ -1,27 +1,10 @@
-import { useEffect, useCallback, useState } from "react"
+import { useEffect, useCallback, useState, useRef, useId } from "react"
 import { createEventBus } from "@/core/event-bus"
 
-const browser = typeof window != "undefined"
-
 type JsonLike = Record<string, unknown>
-type SharedWebsocket = {
-  instance: WebSocket | null
-  heartbeatTimeout: NodeJS.Timeout | null
-  reconnectTimeout: NodeJS.Timeout | null
-  lastJsonMessage?: JsonLike
-  messageQueue: unknown[]
-  disconnectedManually: boolean
-  nReconnects: number
-}
-const sharedWebsocket: SharedWebsocket = {
-  instance: null,
-  heartbeatTimeout: null,
-  reconnectTimeout: null,
-  messageQueue: [],
-  disconnectedManually: false,
-  nReconnects: 0
-}
-type SocketOptions<T> = {
+
+export type SocketOptions<T = unknown> = {
+  url?: string | null
   onJsonMessage?: (data: T) => void
   onOpen?: (event: WebSocketEventMap["open"]) => void
   onError?: (event: WebSocketEventMap["error"]) => void
@@ -33,32 +16,52 @@ type SocketOptions<T> = {
   shouldReconnect?: () => boolean
 }
 
-const eventBus = createEventBus<{ connecting: undefined }>()
+type Listener = {
+  id: string
+  shouldReconnect: SocketOptions["shouldReconnect"]
+}
+
+type Connection = {
+  instance: WebSocket | null
+  heartbeatTimeout: NodeJS.Timeout | null
+  reconnectTimeout: NodeJS.Timeout | null
+  lastJsonMessage?: JsonLike
+  listeners: Listener[]
+  disconnectedManually: boolean
+  nReconnects: number
+  eventBus: ReturnType<typeof createEventBus<{ connecting: undefined }>>
+}
+
+const browser = typeof window != "undefined"
+const connections = new Map<string, Connection>()
 
 const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
+  const id = useId()
+
   const [, updateState] = useState({})
-  const forceUpdate = useCallback(() => updateState({}), [])
   const [listenersTrigger, updateListenersTrigger] = useState({})
+
+  const forceUpdate = useCallback(() => updateState({}), [])
   const triggerListeners = useCallback(() => updateListenersTrigger({}), [])
 
-  const connect = useCallback(
-    (path: string) => {
-      const heartbeat = () => {
-        sharedWebsocket.heartbeatTimeout &&
-          clearTimeout(sharedWebsocket.heartbeatTimeout)
+  const connectionRef = useRef<Connection | null>(
+    options?.url ? connections.get(options.url) ?? null : null
+  )
+  const messageQueueRef = useRef<unknown[]>([])
 
-        sharedWebsocket.heartbeatTimeout = setTimeout(() => {
-          sharedWebsocket.instance?.close()
+  const connect = useCallback(
+    (url: string, connection: Connection) => {
+      const heartbeat = () => {
+        if (connection.heartbeatTimeout) {
+          clearTimeout(connection.heartbeatTimeout)
+        }
+
+        connection.heartbeatTimeout = setTimeout(() => {
+          connection.instance?.close()
         }, 60000 + 1000)
       }
       const handleOpen = () => {
-        sharedWebsocket.nReconnects = 0
-
-        let message = sharedWebsocket.messageQueue.shift()
-        while (message != undefined) {
-          sharedWebsocket.instance?.send(JSON.stringify(message))
-          message = sharedWebsocket.messageQueue.shift()
-        }
+        connection.nReconnects = 0
 
         heartbeat()
       }
@@ -68,96 +71,161 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
           // ignore ping messages
           if (parsedData?.type == "ping") {
-            sharedWebsocket.instance?.send(JSON.stringify({ type: "pong" }))
+            connection.instance?.send(JSON.stringify({ type: "pong" }))
             heartbeat()
             return
           }
 
-          sharedWebsocket.lastJsonMessage = parsedData
+          connection.lastJsonMessage = parsedData
           forceUpdate()
         } catch (_) {
           //
         }
       }
       const handleClose = () => {
-        sharedWebsocket.heartbeatTimeout &&
-          clearTimeout(sharedWebsocket.heartbeatTimeout)
-        sharedWebsocket.heartbeatTimeout = null
+        if (connection.heartbeatTimeout) {
+          clearTimeout(connection.heartbeatTimeout)
+        }
+        connection.heartbeatTimeout = null
 
-        sharedWebsocket.instance?.removeEventListener("open", handleOpen)
-        sharedWebsocket.instance?.removeEventListener("message", handleMessage)
-        sharedWebsocket.instance?.removeEventListener("close", handleClose)
+        connection.instance?.removeEventListener("open", handleOpen)
+        connection.instance?.removeEventListener("message", handleMessage)
+        connection.instance?.removeEventListener("close", handleClose)
 
-        const shouldReconnect =
-          options?.shouldReconnect && options.shouldReconnect()
+        const shouldReconnect = connection.listeners.every((listener) =>
+          listener.shouldReconnect ? listener.shouldReconnect() : true
+        )
 
-        if (!sharedWebsocket.disconnectedManually && shouldReconnect) {
-          sharedWebsocket.reconnectTimeout = setTimeout(() => {
-            connect(path)
-            sharedWebsocket.reconnectTimeout = null
-          }, 2 ** sharedWebsocket.nReconnects * 1000)
+        if (!connection.disconnectedManually && shouldReconnect) {
+          connection.reconnectTimeout = setTimeout(() => {
+            connect(url, connection)
+            connection.reconnectTimeout = null
+          }, 2 ** connection.nReconnects * 1000)
 
-          sharedWebsocket.nReconnects += 1
+          connection.nReconnects += 1
         }
       }
 
-      sharedWebsocket.disconnectedManually = false
-      sharedWebsocket.instance = new WebSocket(path)
+      connection.disconnectedManually = false
+      connection.instance = new WebSocket(url)
 
-      sharedWebsocket.instance.addEventListener("open", handleOpen)
-      sharedWebsocket.instance.addEventListener("message", handleMessage)
-      sharedWebsocket.instance.addEventListener("close", handleClose)
+      connection.instance.addEventListener("open", handleOpen)
+      connection.instance.addEventListener("message", handleMessage)
+      connection.instance.addEventListener("close", handleClose)
 
-      eventBus.emit("connecting")
+      connection.eventBus.emit("connecting")
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [forceUpdate, options?.shouldReconnect]
+    [forceUpdate]
   )
 
-  const disconnect = useCallback(() => {
-    sharedWebsocket.disconnectedManually = true
-    sharedWebsocket.nReconnects = 0
+  const disconnect = useCallback((connection: Connection) => {
+    connection.disconnectedManually = true
+    connection.nReconnects = 0
 
-    if (sharedWebsocket.reconnectTimeout) {
-      clearTimeout(sharedWebsocket.reconnectTimeout)
-      sharedWebsocket.reconnectTimeout = null
+    if (connection.reconnectTimeout) {
+      clearTimeout(connection.reconnectTimeout)
+      connection.reconnectTimeout = null
     }
 
-    if (sharedWebsocket.instance) {
-      sharedWebsocket.instance.close()
-      sharedWebsocket.instance = null
+    if (connection.instance) {
+      connection.instance.close()
+      connection.instance = null
     }
   }, [])
 
-  const getInstance = useCallback(() => sharedWebsocket.instance, [])
+  const getInstance = useCallback(() => connectionRef.current?.instance, [])
 
   const sendJsonMessage = useCallback((data: S) => {
+    const connection = connectionRef.current
+
     if (
-      !sharedWebsocket.instance ||
-      sharedWebsocket.instance.readyState != WebSocket.OPEN
+      !connection?.instance ||
+      connection.instance.readyState != WebSocket.OPEN
     ) {
-      sharedWebsocket.messageQueue.push(data)
+      messageQueueRef.current.push(data)
     } else {
-      sharedWebsocket.instance?.send(JSON.stringify(data))
+      connection.instance?.send(JSON.stringify(data))
     }
   }, [])
 
   const clearMessageQueue = useCallback(() => {
-    sharedWebsocket.messageQueue = []
+    messageQueueRef.current = []
   }, [])
 
   useEffect(() => {
-    if (!options || !sharedWebsocket.instance) {
+    if (!options?.url) {
+      return
+    }
+
+    const connection: Connection = connections.get(options.url) ?? {
+      disconnectedManually: false,
+      eventBus: createEventBus(),
+      heartbeatTimeout: null,
+      instance: null,
+      listeners: [],
+      nReconnects: 0,
+      reconnectTimeout: null
+    }
+
+    if (!connections.has(options.url)) {
+      connections.set(options.url, connection)
+    }
+
+    if (!connectionRef.current) {
+      connectionRef.current = connection
+    }
+
+    if (!connection.instance) {
+      connect(options.url, connection)
+    }
+
+    return () => {
+      const nListeners = connection.listeners.length
+
+      if (nListeners == 1) {
+        disconnect(connection)
+      }
+    }
+  }, [options?.url, connect, disconnect, id])
+
+  useEffect(() => {
+    const connection = connectionRef.current
+    if (!connection) {
+      return
+    }
+
+    connection.listeners.push({
+      id,
+      shouldReconnect: options?.shouldReconnect
+    })
+
+    return () => {
+      connection.listeners = connection.listeners.filter(
+        (connection) => connection.id != id
+      )
+    }
+  }, [options, id])
+
+  useEffect(() => {
+    const connection = connectionRef.current
+
+    if (!options || !connection?.instance) {
       return
     }
 
     const handleOpen = (event: WebSocketEventMap["open"]) => {
-      if (options?.onOpen) {
+      let message = messageQueueRef.current.shift()
+      while (message != undefined) {
+        connection.instance?.send(JSON.stringify(message))
+        message = messageQueueRef.current.shift()
+      }
+
+      if (options.onOpen) {
         options.onOpen(event)
       }
     }
     const handleError = (event: WebSocketEventMap["error"]) => {
-      if (options?.onError) {
+      if (options.onError) {
         options.onError(event)
       }
     }
@@ -165,8 +233,8 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
       if (options.onClose) {
         options.onClose(
           event,
-          sharedWebsocket.disconnectedManually,
-          sharedWebsocket.nReconnects > 0
+          connection.disconnectedManually,
+          connection.nReconnects > 0
         )
       }
     }
@@ -181,33 +249,40 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
       }
     }
 
-    sharedWebsocket.instance.addEventListener("open", handleOpen)
-    sharedWebsocket.instance.addEventListener("error", handleError)
-    sharedWebsocket.instance.addEventListener("close", handleClose)
-    sharedWebsocket.instance.addEventListener("message", handleJsonMessage)
+    connection.instance.addEventListener("open", handleOpen)
+    connection.instance.addEventListener("error", handleError)
+    connection.instance.addEventListener("close", handleClose)
+    connection.instance.addEventListener("message", handleJsonMessage)
 
     return () => {
-      sharedWebsocket.instance?.removeEventListener("open", handleOpen)
-      sharedWebsocket.instance?.removeEventListener("error", handleError)
-      sharedWebsocket.instance?.removeEventListener("close", handleClose)
-      sharedWebsocket.instance?.removeEventListener(
-        "message",
-        handleJsonMessage
-      )
+      connection.instance?.removeEventListener("open", handleOpen)
+      connection.instance?.removeEventListener("error", handleError)
+      connection.instance?.removeEventListener("close", handleClose)
+      connection.instance?.removeEventListener("message", handleJsonMessage)
     }
   }, [options, listenersTrigger])
 
-  eventBus.useSubscription("connecting", triggerListeners)
+  useEffect(() => {
+    const connection = connectionRef.current
+
+    if (!connection) {
+      return
+    }
+
+    connection.eventBus.subscribe("connecting", triggerListeners)
+
+    return () => {
+      connection.eventBus.unsubscribe("connecting", triggerListeners)
+    }
+  })
 
   return {
-    connect,
-    disconnect,
     getInstance,
     sendJsonMessage,
     clearMessageQueue,
-    lastJsonMessage: sharedWebsocket.lastJsonMessage as R | undefined,
+    lastJsonMessage: connectionRef.current?.lastJsonMessage as R | undefined,
     connected: browser
-      ? sharedWebsocket.instance?.readyState == WebSocket.OPEN
+      ? connectionRef.current?.instance?.readyState == WebSocket.OPEN
       : false
   }
 }

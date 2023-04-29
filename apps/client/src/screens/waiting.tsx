@@ -6,7 +6,7 @@ import { useAtom, useSetAtom } from "jotai"
 import { useRouter } from "next/router"
 
 import {
-  useSocket,
+  useSessionSocket,
   useToggle,
   useCountdown,
   useScreenFactor,
@@ -29,11 +29,7 @@ import Gear from "@/assets/gear.svg"
 import Close from "@/assets/waiting-close.svg"
 import Author from "@/assets/author.svg"
 
-import type {
-  Message as ReceiveMessage,
-  Player
-} from "@evil-cards/server/src/lib/ws/send"
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
+import type { Player } from "@evil-cards/server/src/lib/ws/send"
 import type { GameState } from "@/lib/atoms"
 
 const Waiting: React.FC<{
@@ -58,10 +54,7 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage, disconnect } = useSocket<
-    SendMessage,
-    ReceiveMessage
-  >({
+  const { lastJsonMessage, sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
@@ -90,7 +83,7 @@ const Waiting: React.FC<{
       updateSnackbar({ open: false })
       setReconnectingGame(false)
 
-      disconnect()
+      updateUrl(null)
     }
 
     leaving.current = true
@@ -109,7 +102,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, disconnect, setReconnectingGame])
+  }, [onGameStateUpdate, updateUrl, setReconnectingGame])
 
   const router = useRouter()
   useEffect(() => {

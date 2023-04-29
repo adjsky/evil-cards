@@ -7,7 +7,7 @@ import { createCtxFromReq } from "../context"
 import type { FastifyPluginCallback } from "fastify"
 import type { RedisClientWithLogs } from "../redis-client-with-logs"
 
-const websocketRoutes: FastifyPluginCallback<{
+const gameRoutes: FastifyPluginCallback<{
   redisClient: RedisClientWithLogs
 }> = (fastify, { redisClient }, done) => {
   const sessionFactory = new SessionFactory()
@@ -21,7 +21,7 @@ const websocketRoutes: FastifyPluginCallback<{
     fastify.log
   )
 
-  fastify.get("/ws", { websocket: true }, ({ socket }, req) => {
+  fastify.get("/session", { websocket: true }, ({ socket }, req) => {
     const ctx = createCtxFromReq(req)
 
     controller.handleConnection(ctx, socket)
@@ -30,4 +30,4 @@ const websocketRoutes: FastifyPluginCallback<{
   done()
 }
 
-export default websocketRoutes
+export default gameRoutes
