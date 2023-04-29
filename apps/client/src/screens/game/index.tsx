@@ -264,7 +264,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
   return (
     <>
       <button
-        className="absolute bottom-2 right-2 transition-transform duration-300 hover:rotate-180 sm:bottom-0 sm:right-0"
+        className="absolute bottom-2 right-2 transition-transform duration-300 hover:-rotate-180 sm:bottom-0 sm:right-0"
         onClick={() => setOpen(true)}
       >
         <DiscardIcon />
