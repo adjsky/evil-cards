@@ -15,9 +15,9 @@ jobs:
           APP_PATH: /app
           SOURCE_DIR: source-services-start
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR
           script: |
             git clone https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
