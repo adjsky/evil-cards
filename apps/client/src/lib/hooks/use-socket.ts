@@ -32,7 +32,6 @@ type Connection = {
   eventBus: ReturnType<typeof createEventBus<{ connecting: undefined }>>
 }
 
-const browser = typeof window != "undefined"
 const connections = new Map<string, Connection>()
 
 const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
@@ -133,7 +132,10 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     }
   }, [])
 
-  const getInstance = useCallback(() => connectionRef.current?.instance, [])
+  const getInstance = useCallback(
+    () => connectionRef.current?.instance ?? null,
+    []
+  )
 
   const sendJsonMessage = useCallback((data: S) => {
     const connection = connectionRef.current
@@ -280,10 +282,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     getInstance,
     sendJsonMessage,
     clearMessageQueue,
-    lastJsonMessage: connectionRef.current?.lastJsonMessage as R | undefined,
-    connected: browser
-      ? connectionRef.current?.instance?.readyState == WebSocket.OPEN
-      : false
+    lastJsonMessage: connectionRef.current?.lastJsonMessage as R | undefined
   }
 }
 
