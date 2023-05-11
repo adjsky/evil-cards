@@ -1,6 +1,5 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["**/*.ts", "**/*.cjs", "**/*.mjs"],
-  "exclude": ["node_modules/**/*"],
-  "ts-node": { "esm": true, "files": true }
+  "exclude": ["node_modules/**/*"]
 }

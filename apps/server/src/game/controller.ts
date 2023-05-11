@@ -1,13 +1,13 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
-import semverSatisfies from "semver/functions/satisfies"
+import semverSatisfies from "semver/functions/satisfies.js"
 
-import { messageSchema } from "../lib/ws/receive"
-import stringify from "../lib/ws/stringify"
+import { messageSchema } from "../lib/ws/receive.ts"
+import stringify from "../lib/ws/stringify.ts"
 import {
   ALIVE_CHECK_INTERVAL_MS,
   SESSION_REDIS_EXPIRE_SECONDS
-} from "./constants"
+} from "./constants.ts"
 import {
   InSessionError,
   InternalError,
@@ -15,12 +15,12 @@ import {
   NoSessionError,
   SessionNotFoundError,
   VersionMismatchError
-} from "./errors"
-import omit from "../functions/omit"
-import { logWithCtx } from "../context"
+} from "./errors.ts"
+import omit from "../functions/omit.ts"
+import { logWithCtx } from "../context.ts"
 
 import type { WebSocket } from "ws"
-import type { ISessionManager, ISession } from "./interfaces"
+import type { ISessionManager, ISession } from "./interfaces.ts"
 import type {
   ControllerEvents,
   ServerEvent,
@@ -29,10 +29,10 @@ import type {
   Configuration,
   Player,
   BroadcastCallback
-} from "./types"
+} from "./types.ts"
 import type { FastifyBaseLogger } from "fastify"
-import type { ReqContext } from "../context"
-import type { RedisClientWithLogs } from "../redis-client-with-logs"
+import type { ReqContext } from "../context.ts"
+import type { RedisClientWithLogs } from "../redis-client-with-logs.ts"
 
 export type ControllerConfig = {
   serverNumber: number

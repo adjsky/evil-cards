@@ -1,11 +1,11 @@
-import Controller from "../game/controller"
-import SessionManager from "../game/session-manager"
-import { SessionFactory } from "../game/session"
-import { env } from "../env"
-import { createCtxFromReq } from "../context"
+import Controller from "../game/controller.ts"
+import SessionManager from "../game/session-manager.ts"
+import { SessionFactory } from "../game/session.ts"
+import { env } from "../env.ts"
+import { createCtxFromReq } from "../context.ts"
 
 import type { FastifyPluginCallback } from "fastify"
-import type { RedisClientWithLogs } from "../redis-client-with-logs"
+import type { RedisClientWithLogs } from "../redis-client-with-logs.ts"
 
 const gameRoutes: FastifyPluginCallback<{
   redisClient: RedisClientWithLogs

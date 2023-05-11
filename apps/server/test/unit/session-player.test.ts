@@ -1,10 +1,13 @@
 import { jest } from "@jest/globals"
 import waitForExpect from "wait-for-expect"
 
-import Session from "../../src/game/session"
-import { GAME_START_DELAY_MS, LEAVE_TIMEOUT_MS } from "../../src/game/constants"
+import Session from "../../src/game/session.ts"
+import {
+  GAME_START_DELAY_MS,
+  LEAVE_TIMEOUT_MS
+} from "../../src/game/constants.ts"
 
-import type { Player } from "../../src/game/types"
+import type { Player } from "../../src/game/types.ts"
 
 const sender = {
   send() {

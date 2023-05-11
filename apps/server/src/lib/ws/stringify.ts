@@ -1,4 +1,4 @@
-import type { Message } from "./send"
+import type { Message } from "./send.ts"
 
 /**
  * Wrapper around JSON.stringify,

@@ -4,7 +4,7 @@ import fastifyCors from "@fastify/cors"
 import { createClient } from "redis"
 import { SequentialRoundRobin } from "round-robin-js"
 
-import { env } from "./env"
+import { env } from "./env.ts"
 import { z } from "zod"
 
 const envLogger = {

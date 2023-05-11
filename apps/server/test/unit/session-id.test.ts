@@ -4,7 +4,7 @@ const plannedId = "fakeId"
 jest.unstable_mockModule("nanoid", () => ({
   nanoid: jest.fn(() => plannedId)
 }))
-const Session = (await import("../../src/game/session")).default
+const Session = (await import("../../src/game/session.ts")).default
 const nanoid = (await import("nanoid")).nanoid
 
 test("session creates with random id provided by nanoid", async () => {

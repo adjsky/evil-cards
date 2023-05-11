@@ -3,12 +3,12 @@ import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
 
 import websocketPlugin from "@fastify/websocket"
-import memoryLogPlugin from "./plugins/log-memory"
-import { buildRedisClient } from "./build"
+import memoryLogPlugin from "./plugins/log-memory.ts"
+import { buildRedisClient } from "./build.ts"
 
-import gameRoutes from "./routes/game"
-import { env } from "./env"
-import { getRedisClientWithLogs } from "./redis-client-with-logs"
+import gameRoutes from "./routes/game.ts"
+import { env } from "./env.ts"
+import { getRedisClientWithLogs } from "./redis-client-with-logs.ts"
 
 const envLogger = {
   development: {

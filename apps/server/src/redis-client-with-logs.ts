@@ -1,8 +1,8 @@
-import { logWithCtx } from "./context"
+import { logWithCtx } from "./context.ts"
 
 import type { FastifyBaseLogger } from "fastify"
 import type { RedisClientType } from "redis"
-import type { ReqContext } from "./context"
+import type { ReqContext } from "./context.ts"
 
 export type RedisClientWithLogs = {
   [Command in CommandToLog]: (

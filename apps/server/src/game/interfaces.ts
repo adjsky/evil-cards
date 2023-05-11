@@ -6,7 +6,7 @@ import type {
   SessionEvents,
   PlayerSender,
   Timeouts
-} from "./types"
+} from "./types.ts"
 
 type PublicEvents = {
   on: SessionEvents["on"]

@@ -4,7 +4,7 @@ import type {
   Configuration,
   Vote,
   Card
-} from "../../game/types"
+} from "../../game/types.ts"
 
 export type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">
 

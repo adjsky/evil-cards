@@ -1,0 +1,11 @@
+{
+  "name": "@evil-cards/redis-session",
+  "private": true,
+  "main": "lib/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "@evil-cards/eslint-config-monorepo": "*",
+    "typescript": "^5.0.4"
+  }
+}

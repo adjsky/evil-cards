@@ -1,5 +1,5 @@
-import type { Player } from "../game/types"
-import type { ISession } from "../game/interfaces"
+import type { Player } from "../game/types.ts"
+import type { ISession } from "../game/interfaces.ts"
 
 declare module "ws" {
   class _WS extends WebSocket {}

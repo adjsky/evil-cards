@@ -1,5 +1,5 @@
 import redis from "redis"
-import { env } from "./env"
+import { env } from "./env.ts"
 
 import type { RedisClientType } from "redis"
 

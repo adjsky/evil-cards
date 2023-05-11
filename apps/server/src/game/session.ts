@@ -2,10 +2,10 @@ import { nanoid } from "nanoid"
 import Emittery from "emittery"
 import dayjs from "dayjs"
 
-import { whiteCards, redCards } from "./cards"
-import getRandomInt from "../functions/get-random-int"
-import shuffleArray from "../functions/shuffle-array"
-import { setDateTimeout } from "../lib/date-timeout"
+import { whiteCards, redCards } from "./cards.ts"
+import getRandomInt from "../functions/get-random-int.ts"
+import shuffleArray from "../functions/shuffle-array.ts"
+import { setDateTimeout } from "../lib/date-timeout.ts"
 import {
   BEST_CARD_VIEW_DURATION_MS,
   GAME_START_DELAY_MS,
@@ -14,7 +14,7 @@ import {
   MIN_PLAYERS_TO_START_GAME,
   SESSION_ID_SIZE,
   USER_ID_SIZE
-} from "./constants"
+} from "./constants.ts"
 import {
   ForbiddenNicknameError,
   ForbiddenToChooseError,
@@ -32,7 +32,7 @@ import {
   MultipleLeaveError,
   DiscardCardsError,
   NotPlayingError
-} from "./errors"
+} from "./errors.ts"
 
 import type {
   Card,
@@ -43,9 +43,9 @@ import type {
   SessionEvents,
   PlayerSender,
   Timeouts
-} from "./types"
-import type { Card as StoredCard } from "./cards"
-import type { ISession, ISessionFactory } from "./interfaces"
+} from "./types.ts"
+import type { Card as StoredCard } from "./cards.ts"
+import type { ISession, ISessionFactory } from "./interfaces.ts"
 
 class Session implements ISession {
   private _id: string

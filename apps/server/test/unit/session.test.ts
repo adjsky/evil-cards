@@ -2,12 +2,12 @@ import dayjs from "dayjs"
 import { jest } from "@jest/globals"
 import waitForExpect from "wait-for-expect"
 
-import Session from "../../src/game/session"
+import Session from "../../src/game/session.ts"
 import {
   GAME_START_DELAY_MS,
   BEST_CARD_VIEW_DURATION_MS,
   LEAVE_TIMEOUT_MS
-} from "../../src/game/constants"
+} from "../../src/game/constants.ts"
 
 let session: Session
 const sender = {

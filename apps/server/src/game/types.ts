@@ -1,11 +1,15 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
-import type { Message as ReceiveMessage } from "../lib/ws/receive"
-import type { Message as SendMessage } from "../lib/ws/send"
-import type { DateTimeout } from "../lib/date-timeout"
-import type { ReqContext } from "../context"
-import type { MapDiscriminatedUnion, UnwrapField, With } from "../types/utility"
-import type { SendPlayer } from "../lib/ws/send"
+import type { Message as ReceiveMessage } from "../lib/ws/receive.ts"
+import type { Message as SendMessage } from "../lib/ws/send.ts"
+import type { DateTimeout } from "../lib/date-timeout.ts"
+import type { ReqContext } from "../context.ts"
+import type {
+  MapDiscriminatedUnion,
+  UnwrapField,
+  With
+} from "../types/utility.ts"
+import type { SendPlayer } from "../lib/ws/send.ts"
 
 type WithHelperData<T> = With<{ socket: WebSocket; ctx: ReqContext }, T>
 

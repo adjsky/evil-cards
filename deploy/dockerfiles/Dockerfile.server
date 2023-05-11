@@ -3,7 +3,7 @@
 # Stage 1: Prune monorepo                                         #
 ###################################################################
 
-FROM node:16-alpine AS prune
+FROM node:20-alpine AS prune
 
 RUN apk add --no-cache libc6-compat
 RUN yarn global add turbo@^1.8.8
@@ -17,10 +17,10 @@ RUN turbo prune --scope=@evil-cards/server --docker
 # Stage 2: Install server dependencies                            #
 ###################################################################
 
-FROM node:16-alpine AS deps
+FROM node:20-alpine AS deps
 
 RUN apk add --no-cache libc6-compat
-RUN yarn global add pnpm@~8.1
+RUN corepack enable
 
 WORKDIR /evil-cards
 
@@ -31,31 +31,17 @@ COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm --frozen-lockfile install
 
 ###################################################################
-# Stage 3: Build server                                           #
+# Stage 3: Run server (prod)                                      #
 ###################################################################
 
-FROM node:16-alpine AS builder
-
-WORKDIR /evil-cards
-
-COPY tsconfig.json .
-COPY --from=deps /evil-cards .
-COPY --from=prune /evil-cards/out/full/ .
-
-WORKDIR /evil-cards/apps/server
-
-RUN npm run build
-
-###################################################################
-# Stage 4: Run server (prod)                                      #
-###################################################################
-
-FROM node:16-alpine AS runner-prod
+FROM node:20-alpine AS runner-prod
 
 RUN apk --no-cache add bind-tools
 
 WORKDIR /evil-cards
-COPY --from=builder /evil-cards .
+COPY tsconfig.json .
+COPY --from=deps /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/server
 
@@ -65,13 +51,15 @@ ENV PORT 8000
 CMD ["sh", "./scripts/start-with-server-number.sh"]
 
 ###################################################################
-# Stage 4: Run server (stage)                                     #
+# Stage 3: Run server (stage)                                     #
 ###################################################################
 
-FROM node:16-alpine AS runner-stage
+FROM node:20-alpine AS runner-stage
 
 WORKDIR /evil-cards
-COPY --from=builder /evil-cards .
+COPY tsconfig.json .
+COPY --from=deps /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/server
 
