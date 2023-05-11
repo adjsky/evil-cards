@@ -18,11 +18,11 @@ on:
         options:
           - prod
           - stage
+      build:
+        description: Build services
+        type: boolean
       deploy:
         description: Deploy services
-        type: boolean
-      skip-build:
-        description: Skip build job
         type: boolean
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
     name: Build and push ${{ matrix.service }} (${{ inputs.deploy-env }})
     needs:
       - generate-matrix
-    if: ${{ !inputs.skip-build }}
+    if: inputs.build
 
     strategy:
       matrix:
