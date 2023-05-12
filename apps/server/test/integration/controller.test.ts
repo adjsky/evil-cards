@@ -5,9 +5,9 @@ import waitForExpect from "wait-for-expect"
 import SessionManager from "../../src/game/session-manager.ts"
 import { SessionFactory } from "../../src/game/session.ts"
 
-import type { RedisClientWithLogs } from "../../src/redis-client-with-logs.ts"
+import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 import type { FastifyBaseLogger } from "fastify"
-import type { ReqContext } from "../../src/context.ts"
+import type { ReqContext } from "@evil-cards/ctx-log"
 
 jest.unstable_mockModule(
   "ws",

@@ -2,10 +2,10 @@ import Controller from "../game/controller.ts"
 import SessionManager from "../game/session-manager.ts"
 import { SessionFactory } from "../game/session.ts"
 import { env } from "../env.ts"
-import { createCtxFromReq } from "../context.ts"
+import { createCtxFromReq } from "@evil-cards/ctx-log"
 
 import type { FastifyPluginCallback } from "fastify"
-import type { RedisClientWithLogs } from "../redis-client-with-logs.ts"
+import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 const gameRoutes: FastifyPluginCallback<{
   redisClient: RedisClientWithLogs

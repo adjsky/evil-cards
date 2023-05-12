@@ -64,7 +64,8 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true
-  }
+  },
+  transpilePackages: ["@evil-cards/fp"]
 }
 
 const withBundleAnalyzer = getWithBundleAnalyzer({ enabled: serverEnv.ANALYZE })

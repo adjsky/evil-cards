@@ -1,0 +1,15 @@
+{
+  "name": "@evil-cards/fp",
+  "private": true,
+  "main": "./lib/index.ts",
+  "types": "./lib/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "@evil-cards/eslint-config": "workspace:^",
+    "typescript": "^5.0.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.4"
+  }
+}

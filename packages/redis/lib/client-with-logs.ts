@@ -1,8 +1,7 @@
-import { logWithCtx } from "./context.ts"
+import { logWithCtx } from "@evil-cards/ctx-log"
 
-import type { FastifyBaseLogger } from "fastify"
 import type { RedisClientType } from "redis"
-import type { ReqContext } from "./context.ts"
+import type { Logger, ReqContext } from "@evil-cards/ctx-log"
 
 export type RedisClientWithLogs = {
   [Command in CommandToLog]: (
@@ -16,7 +15,7 @@ type CommandToLog = typeof commandsToLog[number]
 
 export function getRedisClientWithLogs(
   redisClient: RedisClientType,
-  baseLog: FastifyBaseLogger
+  baseLog: Logger
 ) {
   const log = baseLog.child({ component: "redis" })
 

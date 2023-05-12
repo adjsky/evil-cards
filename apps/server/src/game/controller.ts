@@ -1,13 +1,12 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
 import semverSatisfies from "semver/functions/satisfies.js"
+import { omit } from "@evil-cards/fp"
+import { logWithCtx } from "@evil-cards/ctx-log"
 
 import { messageSchema } from "../lib/ws/receive.ts"
 import stringify from "../lib/ws/stringify.ts"
-import {
-  ALIVE_CHECK_INTERVAL_MS,
-  SESSION_REDIS_EXPIRE_SECONDS
-} from "./constants.ts"
+import { ALIVE_CHECK_INTERVAL_MS } from "./constants.ts"
 import {
   InSessionError,
   InternalError,
@@ -16,8 +15,6 @@ import {
   SessionNotFoundError,
   VersionMismatchError
 } from "./errors.ts"
-import omit from "../functions/omit.ts"
-import { logWithCtx } from "../context.ts"
 
 import type { WebSocket } from "ws"
 import type { ISessionManager, ISession } from "./interfaces.ts"
@@ -31,8 +28,8 @@ import type {
   BroadcastCallback
 } from "./types.ts"
 import type { FastifyBaseLogger } from "fastify"
-import type { ReqContext } from "../context.ts"
-import type { RedisClientWithLogs } from "../redis-client-with-logs.ts"
+import type { ReqContext } from "@evil-cards/ctx-log"
+import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 export type ControllerConfig = {
   serverNumber: number
@@ -162,7 +159,7 @@ class Controller {
         `sessionserver:${session.id}`,
         this.config.serverNumber,
         {
-          EX: SESSION_REDIS_EXPIRE_SECONDS
+          EX: 123123
         }
       )
 

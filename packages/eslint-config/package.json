@@ -1,5 +1,5 @@
 {
-  "name": "@evil-cards/eslint-config-monorepo",
+  "name": "@evil-cards/eslint-config",
   "main": "index.js",
   "type": "commonjs",
   "dependencies": {

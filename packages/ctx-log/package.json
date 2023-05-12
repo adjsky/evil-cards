@@ -1,0 +1,16 @@
+{
+  "name": "@evil-cards/ctx-log",
+  "private": true,
+  "main": "./lib/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "@evil-cards/eslint-config": "workspace:^",
+    "fastify": "^4.8.1",
+    "typescript": "^5.0.4"
+  },
+  "peerDependencies": {
+    "fastify": "^4.8.1",
+    "typescript": "^5.0.4"
+  }
+}

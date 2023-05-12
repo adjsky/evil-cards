@@ -3,7 +3,7 @@ import type { WebSocket } from "ws"
 import type { Message as ReceiveMessage } from "../lib/ws/receive.ts"
 import type { Message as SendMessage } from "../lib/ws/send.ts"
 import type { DateTimeout } from "../lib/date-timeout.ts"
-import type { ReqContext } from "../context.ts"
+import type { ReqContext } from "@evil-cards/ctx-log"
 import type {
   MapDiscriminatedUnion,
   UnwrapField,

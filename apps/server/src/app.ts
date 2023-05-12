@@ -8,7 +8,7 @@ import { buildRedisClient } from "./build.ts"
 
 import gameRoutes from "./routes/game.ts"
 import { env } from "./env.ts"
-import { getRedisClientWithLogs } from "./redis-client-with-logs.ts"
+import { getRedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 const envLogger = {
   development: {

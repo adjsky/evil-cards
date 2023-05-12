@@ -1,7 +1,7 @@
 import { env } from "../env/client.mjs"
-import { ok, err } from "@/core/fp/result"
+import { ok, err } from "@evil-cards/fp"
 
-import type { Result } from "@/core/fp/result"
+import type { Result } from "@evil-cards/fp"
 
 type Error = "nosession" | "fetcherror"
 
