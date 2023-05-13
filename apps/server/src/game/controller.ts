@@ -1,7 +1,7 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
 import semverSatisfies from "semver/functions/satisfies.js"
-import { omit } from "@evil-cards/fp"
+import { omit } from "ramda"
 import { logWithCtx } from "@evil-cards/ctx-log"
 
 import { messageSchema } from "../lib/ws/receive.ts"
@@ -184,7 +184,7 @@ class Controller {
               status: session.status,
               playerId: player.id,
               players: session.players.map((player) =>
-                omit(player, ["sender", "deck", "leaveTimeout"])
+                omit(["sender", "deck", "leaveTimeout"], player)
               ),
               configuration: session.configuration
             }
@@ -242,7 +242,7 @@ class Controller {
             status: session.status,
             playerId: player.id,
             players: session.players.map((player) =>
-              omit(player, ["sender", "deck", "leaveTimeout"])
+              omit(["sender", "deck", "leaveTimeout"], player)
             ),
             deck: player.deck,
             redCard: session.redCard,
@@ -568,7 +568,7 @@ class Controller {
 
   private broadcast(session: ISession, callback: BroadcastCallback) {
     const sendPlayers = session.players.map((player) =>
-      omit(player, ["sender", "deck", "leaveTimeout"])
+      omit(["sender", "deck", "leaveTimeout"], player)
     )
 
     session.players.forEach((player) => {

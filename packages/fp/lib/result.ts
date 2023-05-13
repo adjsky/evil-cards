@@ -1,7 +1,10 @@
-export type Match<O, E, T> = {
+type Match<O, E, T> = {
   ok: (val: O) => T
   err: (val: E) => T
 }
+
+type LazyArg<T> = () => T
+type AsyncLazyArg<T> = () => Promise<T>
 
 export type Result<O, E> = {
   match<T>(fn: Match<O, E, T>): T
@@ -18,7 +21,7 @@ export type Result<O, E> = {
     }
 )
 
-export function ok<O, E>(value: O): Result<O, E> {
+function ok<O, E>(value: O): Result<O, E> {
   return {
     ok: true,
     unwrap() {
@@ -33,7 +36,7 @@ export function ok<O, E>(value: O): Result<O, E> {
   }
 }
 
-export function err<O, E>(err: E): Result<O, E> {
+function err<O, E>(err: E): Result<O, E> {
   return {
     ok: false,
     unwrap() {
@@ -46,4 +49,31 @@ export function err<O, E>(err: E): Result<O, E> {
       return matchObject.err(err)
     }
   }
+}
+
+function tryCatch<O, E = Error>(
+  f: LazyArg<Exclude<O, Promise<unknown>>>
+): Result<O, E> {
+  try {
+    return ok(f())
+  } catch (error) {
+    return err(error as E)
+  }
+}
+
+async function asyncTryCatch<O, E = Error>(
+  f: AsyncLazyArg<O>
+): Promise<Result<O, E>> {
+  try {
+    return ok(await f())
+  } catch (error) {
+    return err(error as E)
+  }
+}
+
+export const Result = {
+  err,
+  ok,
+  tryCatch,
+  asyncTryCatch
 }

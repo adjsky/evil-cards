@@ -10,7 +10,7 @@ export type RedisClientWithLogs = {
   ) => ReturnType<RedisClientType[Command]>
 }
 
-const commandsToLog = ["set", "del"] as const
+const commandsToLog = ["set", "del", "get"] as const
 type CommandToLog = typeof commandsToLog[number]
 
 export function getRedisClientWithLogs(
