@@ -4,7 +4,7 @@ import { sessionWsUrlAtom } from "../atoms"
 
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
-import type { SocketOptions } from "./use-socket"
+import type { SocketOptions } from "./use-socket/hook"
 
 const useSessionSocket = (
   options?: Omit<SocketOptions<ReceiveMessage>, "url">

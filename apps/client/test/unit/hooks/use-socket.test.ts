@@ -28,34 +28,19 @@ describe("single instance", () => {
     })
   })
 
-  describe("incoming messages", () => {
-    it("receives incoming messages (lastJsonMessage)", async () => {
-      const { result } = renderHook(() => useSocket({ url }))
-      await server.connected
+  it("receives incoming messages", async () => {
+    const callback = jest.fn()
 
-      const message = { message: "AasdasdASDASDASDASD" }
+    renderHook(() => useSocket({ url, onJsonMessage: callback }))
+    await server.connected
 
-      act(() => {
-        server.send(JSON.stringify(message))
-      })
+    const message = { message: "AasdasdASDASDASDASD" }
 
-      expect(result.current.lastJsonMessage).toEqual(message)
+    act(() => {
+      server.send(JSON.stringify(message))
     })
 
-    it("receives incoming messages (callbacks)", async () => {
-      const callback = jest.fn()
-
-      renderHook(() => useSocket({ url, onJsonMessage: callback }))
-      await server.connected
-
-      const message = { message: "AasdasdASDASDASDASD" }
-
-      act(() => {
-        server.send(JSON.stringify(message))
-      })
-
-      expect(callback).toBeCalledWith(message)
-    })
+    expect(callback).toBeCalledWith(message)
   })
 })
 
@@ -91,41 +76,22 @@ describe("multiple instances", () => {
     })
   })
 
-  describe("incoming messages", () => {
-    it("receives incoming messages (lastJsonMessage)", async () => {
-      const hook1 = renderHook(() => useSocket({ url }))
-      await server.connected
+  it("receives incoming messages (callbacks)", async () => {
+    const callback = jest.fn()
 
-      const hook2 = renderHook(() => useSocket({ url }))
-      await server.connected
+    renderHook(() => useSocket({ url, onJsonMessage: callback }))
+    await server.connected
 
-      const message = { message: "AasdasdASDASDASDASD" }
+    renderHook(() => useSocket({ url, onJsonMessage: callback }))
+    await server.connected
 
-      act(() => {
-        server.send(JSON.stringify(message))
-      })
+    const message = { message: "AasdasdASDASDASDASD" }
 
-      expect(hook1.result.current.lastJsonMessage).toEqual(message)
-      expect(hook2.result.current.lastJsonMessage).toEqual(message)
+    act(() => {
+      server.send(JSON.stringify(message))
     })
 
-    it("receives incoming messages (callbacks)", async () => {
-      const callback = jest.fn()
-
-      renderHook(() => useSocket({ url, onJsonMessage: callback }))
-      await server.connected
-
-      renderHook(() => useSocket({ url, onJsonMessage: callback }))
-      await server.connected
-
-      const message = { message: "AasdasdASDASDASDASD" }
-
-      act(() => {
-        server.send(JSON.stringify(message))
-      })
-
-      expect(callback).toBeCalledTimes(2)
-      expect(callback).toBeCalledWith(message)
-    })
+    expect(callback).toBeCalledTimes(2)
+    expect(callback).toBeCalledWith(message)
   })
 })

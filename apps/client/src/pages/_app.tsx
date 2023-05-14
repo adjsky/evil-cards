@@ -163,12 +163,12 @@ const useSocketEvents = () => {
           }
       }
     },
-    onClose(_, manually, reconnectingSocket) {
-      if (manually || reconnectingSocket == undefined) {
+    onClose(_, { manually, reconnecting }) {
+      if (manually || reconnecting == undefined) {
         return
       }
 
-      setReconnectingGame(reconnectingSocket)
+      setReconnectingGame(reconnecting)
     },
     onOpen() {
       const player = gameState?.players.find(

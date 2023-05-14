@@ -40,6 +40,8 @@ const Waiting: React.FC<{
   const [sounds, setSounds] = useAtom(soundsAtom)
   const setReconnectingGame = useSetAtom(reconnectingGameAtom)
 
+  const [isStarting, setIsStarting] = useState(false)
+
   const [visibleMainScreen, setVisibleMainScreen] = useState<
     "configuration" | "rules" | "authors"
   >("rules")
@@ -54,11 +56,13 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage, updateUrl } = useSessionSocket({
+  const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
       }
+
+      setIsStarting(data.type == "gamestart")
     }
   })
 
@@ -197,11 +201,9 @@ const Waiting: React.FC<{
                 <StartButton
                   lowerOpacity={lowerButtonOpacity}
                   onClick={onStart}
-                  disabled={
-                    lastJsonMessage?.type == "gamestart" || !player?.host
-                  }
+                  disabled={isStarting || !player?.host}
                   secondsLeft={secondsLeft}
-                  withCountdown={lastJsonMessage?.type == "gamestart"}
+                  withCountdown={isStarting}
                 />
               </div>
             </div>

@@ -57,7 +57,7 @@ const Entry: React.FC = () => {
     onOpen() {
       updateSnackbar({ open: false })
     },
-    onClose(_, manually, reconnecting) {
+    onClose(_, { manually, reconnecting }) {
       if (manually || reconnecting) {
         return
       }
