@@ -61,16 +61,9 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
   const disconnect = useCallback((connection: Connection<R>) => {
     connection.disconnectedManually = true
-    connection.nReconnects = 0
-
-    if (connection.reconnectTimeout) {
-      clearTimeout(connection.reconnectTimeout)
-      connection.reconnectTimeout = null
-    }
 
     if (connection.instance) {
       connection.instance.close()
-      connection.instance = null
     }
   }, [])
 

@@ -68,8 +68,13 @@ function attachListeners<T>({
   const handleClose = (event: WebSocketEventMap["close"]) => {
     if (connection.heartbeatTimeout) {
       clearTimeout(connection.heartbeatTimeout)
+      connection.heartbeatTimeout = null
     }
-    connection.heartbeatTimeout = null
+
+    if (connection.reconnectTimeout) {
+      clearTimeout(connection.reconnectTimeout)
+      connection.reconnectTimeout = null
+    }
 
     connection.instance?.removeEventListener("open", handleOpen)
     connection.instance?.removeEventListener("message", handleMessage)
@@ -94,6 +99,7 @@ function attachListeners<T>({
 
       connection.nReconnects += 1
     } else {
+      connection.nReconnects = 0
       connection.instance = null
     }
   }
