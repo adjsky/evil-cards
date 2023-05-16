@@ -1,3 +1,5 @@
+name: evil-cards-dev
+
 services:
   redis:
     extends:

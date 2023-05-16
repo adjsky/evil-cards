@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react"
 import { useAtomValue, useAtom } from "jotai"
 import clsx from "clsx"
-import SingletonRouter, { useRouter } from "next/router"
+import { useRouter } from "next/router"
 import EasySpeech from "easy-speech"
 import packageJson from "../../package.json"
 
@@ -62,6 +62,8 @@ const Entry: React.FC = () => {
         return
       }
 
+      updateUrl(null)
+
       setWaiting(false)
       clearMessageQueue()
 
@@ -71,9 +73,6 @@ const Entry: React.FC = () => {
         severity: "error",
         infinite: false
       })
-    },
-    shouldReconnect() {
-      return SingletonRouter.pathname != "/"
     }
   })
 

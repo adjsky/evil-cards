@@ -129,3 +129,9 @@ export class NotPlayingError extends Error {
     super("you are not playing")
   }
 }
+
+export class SessionCacheSynchronizeError extends Error {
+  constructor() {
+    super("failed to syncronize session cache")
+  }
+}

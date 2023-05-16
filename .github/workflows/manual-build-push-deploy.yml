@@ -120,12 +120,11 @@ jobs:
           SERVERS_TO_START: 2
           DEPLOY_ENV: ${{ inputs.deploy-env }}
           GITHUB_BRANCH: ${{ github.ref_name }}
-          COMPOSE_PROJECT_NAME: deploy
         with:
           host: ${{ inputs.deploy-env == 'prod' && secrets.PROD_HOST || secrets.STAGE_HOST }}
           username: ${{ inputs.deploy-env == 'prod' && secrets.PROD_USERNAME || secrets.STAGE_USERNAME }}
           password: ${{ inputs.deploy-env == 'prod' && secrets.PROD_PASSWORD || secrets.STAGE_PASSWORD }}
-          envs: REPOSITORY,APP_PATH,SOURCE_DIR,SERVERS_TO_START,DEPLOY_ENV,GITHUB_BRANCH,COMPOSE_PROJECT_NAME
+          envs: REPOSITORY,APP_PATH,SOURCE_DIR,SERVERS_TO_START,DEPLOY_ENV,GITHUB_BRANCH
           script: |
             git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service }}.sh

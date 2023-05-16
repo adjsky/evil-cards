@@ -4,6 +4,7 @@
   "exports": {
     "./*": "./lib/*.ts"
   },
+  "main": "./lib/index.ts",
   "type": "module",
   "license": "MIT",
   "devDependencies": {

@@ -38,6 +38,8 @@ export interface ISession {
   discardCards(playerId: string): void
   endGame(): void
   getTimeoutDate(name: keyof Timeouts): Date | undefined
+  isPlaying(): boolean
+  isWaiting(): boolean
 }
 
 export interface ISessionFactory {

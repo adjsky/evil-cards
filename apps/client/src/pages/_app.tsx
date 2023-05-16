@@ -2,7 +2,7 @@ import "@/styles/globals.css"
 import React, { useEffect } from "react"
 import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
-import { useRouter } from "next/router"
+import SingletonRouter, { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
 import packageJson from "../../package.json"
 
@@ -186,6 +186,9 @@ const useSocketEvents = () => {
           }
         })
       }
+    },
+    shouldReconnect() {
+      return SingletonRouter.pathname != "/"
     }
   })
 

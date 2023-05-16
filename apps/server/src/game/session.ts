@@ -423,6 +423,14 @@ class Session implements ISession {
     return this._timeouts[name]?.date
   }
 
+  public isWaiting() {
+    return this._status == "waiting" || this._status == "end"
+  }
+
+  public isPlaying() {
+    return !this.isWaiting()
+  }
+
   private startVoting() {
     if (!this._availableRedCards) {
       throw new Error("received null availableRedCards")
@@ -587,18 +595,6 @@ class Session implements ISession {
       value.clear()
       this._timeouts[key as keyof Timeouts] = null
     }
-  }
-
-  private isWaiting() {
-    return (
-      this._status == "waiting" ||
-      this._status == "end" ||
-      this._status == "starting"
-    )
-  }
-
-  private isPlaying() {
-    return !this.isWaiting()
   }
 }
 

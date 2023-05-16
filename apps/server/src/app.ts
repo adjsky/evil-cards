@@ -8,7 +8,7 @@ import { buildRedisClient } from "./build.ts"
 
 import gameRoutes from "./routes/game.ts"
 import { env } from "./env.ts"
-import { getRedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
+import { getClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 const envLogger = {
   development: {
@@ -29,7 +29,7 @@ const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
 const redisClient = buildRedisClient()
 await redisClient.connect()
 
-const redisClientWithLogs = getRedisClientWithLogs(redisClient, fastify.log)
+const redisClientWithLogs = getClientWithLogs(redisClient, fastify.log)
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {

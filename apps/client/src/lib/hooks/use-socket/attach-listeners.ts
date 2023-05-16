@@ -93,6 +93,8 @@ function attachListeners<T>({
       }, 2 ** connection.nReconnects * 1000)
 
       connection.nReconnects += 1
+    } else {
+      connection.instance = null
     }
   }
 
