@@ -23,15 +23,20 @@ function getMockLog() {
   })
 }
 
+function getRedisClientWithLogs() {
+  return mock<RedisClientWithLogs>({
+    hDel() {
+      return Promise.resolve(1)
+    },
+    hSet() {
+      return Promise.resolve(1)
+    },
+    withContext: getRedisClientWithLogs
+  })
+}
+
 const sessionManager = new SessionManager(new SessionFactory())
-const redisClient = mock<RedisClientWithLogs>({
-  del() {
-    return Promise.resolve(0)
-  },
-  set() {
-    return Promise.resolve(null)
-  }
-})
+const redisClient = getRedisClientWithLogs()
 const log = getMockLog()
 const ctx = mock<ReqContext>()
 
