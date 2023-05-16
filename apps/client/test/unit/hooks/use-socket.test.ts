@@ -41,6 +41,8 @@ describe("single instance", () => {
     })
 
     expect(callback).toBeCalledWith(message)
+
+    server.close()
   })
 })
 
@@ -93,5 +95,7 @@ describe("multiple instances", () => {
 
     expect(callback).toBeCalledTimes(2)
     expect(callback).toBeCalledWith(message)
+
+    server.close()
   })
 })
