@@ -69,8 +69,8 @@ export function initializeSessionCache(
         return false
       }
 
-      const subscribed = await Option.asyncTryCatch(async () => {
-        await subscriber
+      const subscribed = await Option.asyncTryCatch(() =>
+        subscriber
           .unwrap()
           .pSubscribe(`__keyspace@*__:${hashKey}`, async () => {
             const rawSessions = await Option.asyncTryCatch(() =>
@@ -87,7 +87,7 @@ export function initializeSessionCache(
               listener(sessions.data)
             }
           })
-      })
+      )
 
       return subscribed.some
     }
