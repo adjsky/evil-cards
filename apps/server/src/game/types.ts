@@ -10,8 +10,18 @@ import type {
   With
 } from "../types/utility.ts"
 import type { SendPlayer } from "../lib/ws/send.ts"
+import type { ISession } from "./interfaces.ts"
 
-type WithHelperData<T> = With<{ socket: WebSocket; ctx: ReqContext }, T>
+export type ControllerWebSocket = WebSocket & {
+  session?: ISession | null
+  player?: Player | null
+  alive?: boolean
+}
+
+type WithHelperData<T> = With<
+  { socket: ControllerWebSocket; ctx: ReqContext },
+  T
+>
 
 export type ServerEvent = WithHelperData<
   UnwrapField<MapDiscriminatedUnion<ReceiveMessage, "type">, "details">

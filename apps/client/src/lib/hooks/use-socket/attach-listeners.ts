@@ -88,7 +88,7 @@ function attachListeners<T>({
     })
 
     const shouldReconnect = connection.listeners.some((listener) => {
-      listener.options.current?.shouldReconnect?.()
+      listener.options.current?.shouldReconnect?.(connection.nReconnects)
     })
 
     if (!connection.disconnectedManually && shouldReconnect) {

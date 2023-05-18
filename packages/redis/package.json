@@ -7,19 +7,18 @@
   "main": "./lib/index.ts",
   "type": "module",
   "license": "MIT",
-  "devDependencies": {
-    "@evil-cards/eslint-config": "workspace:^",
+  "dependencies": {
     "@evil-cards/ctx-log": "workspace:^",
     "@evil-cards/fp": "workspace:^",
-    "redis": "^4.6.5",
-    "typescript": "^5.0.4",
     "zod": "^3.20.6"
   },
-  "peerDependencies": {
-    "@evil-cards/ctx-log": "workspace:^",
-    "@evil-cards/fp": "workspace:^",
+  "devDependencies": {
+    "@evil-cards/eslint-config": "workspace:^",
     "redis": "^4.6.5",
-    "typescript": "^5.0.4",
-    "zod": "^3.20.6"
+    "typescript": "^5.0.4"
+  },
+  "peerDependencies": {
+    "redis": "^4.6.5",
+    "typescript": "^5.0.4"
   }
 }

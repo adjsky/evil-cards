@@ -6,6 +6,8 @@ import type {
   Card
 } from "../../game/types.ts"
 
+export type { CachedSession } from "@evil-cards/redis/session"
+
 export type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">
 
 export type Created = {

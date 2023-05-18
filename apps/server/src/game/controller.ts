@@ -17,9 +17,9 @@ import {
   VersionMismatchError
 } from "./errors.ts"
 
-import type { WebSocket } from "ws"
 import type { ISessionManager, ISession } from "./interfaces.ts"
 import type {
+  ControllerWebSocket,
   ControllerEvents,
   ServerEvent,
   Status,
@@ -40,11 +40,15 @@ export type ControllerConfig = {
 class Controller {
   private sessionManager: ISessionManager
   private events: ControllerEvents
-  private sessionCache: SessionCache
+  private _sessionCache: SessionCache
   private config: ControllerConfig
   private log: FastifyBaseLogger
 
   private versionMap: Map<string, string>
+
+  public get sessionCache() {
+    return this._sessionCache
+  }
 
   public constructor(
     sessionManager: ISessionManager,
@@ -54,7 +58,7 @@ class Controller {
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
-    this.sessionCache = initializeSessionCache(redisClient)
+    this._sessionCache = initializeSessionCache(redisClient)
     this.config = config
     this.log = log.child({ component: "game controller" })
 
@@ -78,7 +82,7 @@ class Controller {
     })
   }
 
-  public handleConnection(ctx: ReqContext, socket: WebSocket) {
+  public handleConnection(ctx: ReqContext, socket: ControllerWebSocket) {
     socket.alive = true
     const interval = setInterval(() => {
       if (!socket.alive) {
@@ -146,7 +150,7 @@ class Controller {
 
       session.events.clearListeners()
 
-      this.sessionCache.del(ctx, session.id)
+      this._sessionCache.del(ctx, session.id)
 
       this.versionMap.delete(session.id)
       this.sessionManager.delete(session.id)
@@ -244,7 +248,7 @@ class Controller {
     )
   }
 
-  private disconnect(socket: WebSocket) {
+  private disconnect(socket: ControllerWebSocket) {
     const session = socket.session
 
     if (!session) {
@@ -584,7 +588,7 @@ class Controller {
   }
 
   private syncSessionCache(ctx: ReqContext, session: ISession) {
-    return this.sessionCache.set(ctx, {
+    return this._sessionCache.set(ctx, {
       id: session.id,
       players: session.players.length,
       playing: session.isPlaying(),

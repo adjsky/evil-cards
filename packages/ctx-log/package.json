@@ -6,11 +6,11 @@
   "license": "MIT",
   "devDependencies": {
     "@evil-cards/eslint-config": "workspace:^",
-    "fastify": "^4.8.1",
+    "fastify": "^4.17.0",
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "fastify": "^4.8.1",
+    "fastify": "^4.17.0",
     "typescript": "^5.0.4"
   }
 }

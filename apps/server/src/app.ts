@@ -27,9 +27,8 @@ const envLogger = {
 const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
 
 const redisClient = buildRedisClient()
-await redisClient.connect()
-
 const redisClientWithLogs = getClientWithLogs(redisClient, fastify.log)
+await redisClientWithLogs.connect()
 
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {

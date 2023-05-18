@@ -15,11 +15,18 @@ const sessionsSchema = z.array(sessionSchema)
 
 export type CachedSession = z.infer<typeof sessionSchema>
 
+type Listener = (sessions: CachedSession[]) => void
+
+type Subscriber = (listener: Listener) => Cleanup
+
+type Cleanup = () => void
+
 export type SessionCache = {
   set(ctx: ReqContext, session: CachedSession): Promise<boolean>
   get(ctx: ReqContext, id: string): Promise<Option<CachedSession>>
+  getAll(ctx: ReqContext): Promise<Option<CachedSession[]>>
   del(ctx: ReqContext, id: string): Promise<Option<number>>
-  subscribe(listener: (sessions: CachedSession[]) => void): Promise<boolean>
+  initializeSubscriber(): Promise<Option<[Subscriber, Cleanup]>>
 }
 
 const hashKey = "session"
@@ -37,7 +44,7 @@ export function initializeSessionCache(
 
       return result.some
     },
-    async get(ctx: ReqContext, id: string) {
+    async get(ctx, id) {
       const rawSessionOption = await Option.asyncTryCatch(() =>
         redis.withContext(ctx).hGet(hashKey, id)
       )
@@ -52,12 +59,28 @@ export function initializeSessionCache(
 
       return parseRawSession(rawSession)
     },
+    async getAll(ctx) {
+      const rawSessions = await Option.asyncTryCatch(() =>
+        redis.withContext(ctx).hGetAll(hashKey)
+      )
+
+      if (rawSessions.none) {
+        return Option.none()
+      }
+
+      const sessions = sessionsSchema.safeParse(rawSessions.unwrap())
+      if (!sessions.success) {
+        return Option.none()
+      }
+
+      return Option.some(sessions.data)
+    },
     del(ctx, id) {
       return Option.asyncTryCatch(() =>
         redis.withContext(ctx).hDel(hashKey, id)
       )
     },
-    async subscribe(listener) {
+    async initializeSubscriber() {
       const subscriber = await Option.asyncTryCatch(async () => {
         const subscriber = redis.duplicate()
         await subscriber.connect()
@@ -66,30 +89,49 @@ export function initializeSessionCache(
       })
 
       if (subscriber.none) {
-        return false
+        return Option.none()
+      }
+
+      let listeners: Listener[] = []
+
+      const rawListener = async () => {
+        const rawSessions = await Option.asyncTryCatch(() =>
+          redis.hGetAll(hashKey)
+        )
+
+        if (rawSessions.none) {
+          return
+        }
+
+        const sessions = sessionsSchema.safeParse(rawSessions.unwrap())
+
+        if (sessions.success) {
+          listeners.forEach((listener) => listener(sessions.data))
+        }
       }
 
       const subscribed = await Option.asyncTryCatch(() =>
-        subscriber
-          .unwrap()
-          .pSubscribe(`__keyspace@*__:${hashKey}`, async () => {
-            const rawSessions = await Option.asyncTryCatch(() =>
-              redis.hGetAll(hashKey)
-            )
-
-            if (rawSessions.none) {
-              return
-            }
-
-            const sessions = sessionsSchema.safeParse(rawSessions.unwrap())
-
-            if (sessions.success) {
-              listener(sessions.data)
-            }
-          })
+        subscriber.unwrap().pSubscribe(`__keyspace@*__:${hashKey}`, rawListener)
       )
 
-      return subscribed.some
+      if (subscribed.none) {
+        return Option.none()
+      }
+
+      return Option.some([
+        (listener) => {
+          listeners.push(listener)
+
+          return () => {
+            listeners = listeners.filter((l) => listener != l)
+          }
+        },
+        () => {
+          subscriber
+            .unwrap()
+            .pUnsubscribe(`__keyspace@*__:${hashKey}`, rawListener)
+        }
+      ])
     }
   }
 }

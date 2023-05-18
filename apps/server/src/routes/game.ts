@@ -6,10 +6,12 @@ import { createCtxFromReq } from "@evil-cards/ctx-log"
 
 import type { FastifyPluginCallback } from "fastify"
 import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
+import type { CachedSession } from "../lib/ws/send.ts"
+import type { WebSocket } from "ws"
 
 const gameRoutes: FastifyPluginCallback<{
   redisClient: RedisClientWithLogs
-}> = (fastify, { redisClient }, done) => {
+}> = async (fastify, { redisClient }, done) => {
   const sessionFactory = new SessionFactory()
   const sessionManager = new SessionManager(sessionFactory)
   const controller = new Controller(
@@ -21,10 +23,41 @@ const gameRoutes: FastifyPluginCallback<{
     fastify.log
   )
 
-  fastify.get("/session", { websocket: true }, ({ socket }, req) => {
-    const ctx = createCtxFromReq(req)
+  const subscriber = await controller.sessionCache.initializeSubscriber()
 
-    controller.handleConnection(ctx, socket)
+  subscriber.match({
+    none() {
+      throw new Error("Could not initialize sessionCache subscriber")
+    },
+    some([subscribe]) {
+      fastify.get("/session", { websocket: true }, ({ socket }, req) => {
+        const ctx = createCtxFromReq(req)
+
+        controller.handleConnection(ctx, socket)
+      })
+
+      fastify.get("/sessions", { websocket: true }, async (connection, req) => {
+        // https://github.com/fastify/fastify-websocket/pull/259
+        const socket: WebSocket = connection.socket
+        const ctx = createCtxFromReq(req)
+
+        const sessions = await controller.sessionCache.getAll(ctx)
+        if (sessions.none) {
+          socket.close()
+          return
+        }
+
+        socket.send(JSON.stringify(sessions.unwrap()))
+
+        const listener = (sessions: CachedSession[]) => {
+          socket.send(JSON.stringify(sessions))
+        }
+
+        const cleanup = subscribe(listener)
+
+        socket.on("close", cleanup)
+      })
+    }
   })
 
   done()

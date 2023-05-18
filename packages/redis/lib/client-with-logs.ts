@@ -34,6 +34,8 @@ export function getClientWithLogs(
 ): RedisClientWithLogs {
   const log = baseLog.child({ component: "redis" })
 
+  const originalDuplicate = redisClient.duplicate.bind(redisClient)
+
   const proxy = new Proxy(redisClient, {
     get(target, command, receiver) {
       if (!isCommand(target, command)) {
@@ -57,7 +59,7 @@ export function getClientWithLogs(
       })
     },
     duplicate(...args: Parameters<RedisClientType["duplicate"]>) {
-      const duplicatedClient = redisClient.duplicate(...args)
+      const duplicatedClient = originalDuplicate(...args)
 
       return getClientWithLogs(duplicatedClient, baseLog)
     }
@@ -69,10 +71,8 @@ function getCommandWithLogs(
   command: RedisCommand,
   log: Logger
 ) {
-  return async (...args: unknown[]) => {
-    try {
-      const result = await Reflect.apply(target[command], target, args)
-
+  return (...args: unknown[]) => {
+    const logResult = (result: unknown) => {
       log.info(
         {
           command,
@@ -81,9 +81,9 @@ function getCommandWithLogs(
         },
         "finished redis command"
       )
+    }
 
-      return result
-    } catch (error) {
+    const logError = (error: unknown) => {
       log.error(
         {
           err: error,
@@ -92,6 +92,23 @@ function getCommandWithLogs(
         },
         "received a redis error"
       )
+    }
+
+    try {
+      const result = Reflect.apply(target[command], target, args)
+
+      if (result instanceof Promise) {
+        result.then(logResult).catch((error) => {
+          logError(error)
+          throw error
+        })
+      } else {
+        logResult(result)
+      }
+
+      return result
+    } catch (error) {
+      logError(error)
 
       throw error
     }
