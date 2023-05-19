@@ -23,12 +23,7 @@ export interface ISession {
   events: PublicEvents
   configuration: Configuration
 
-  join(
-    sender: PlayerSender,
-    nickname: string,
-    avatarId: number,
-    host: boolean
-  ): Player
+  join(sender: PlayerSender, nickname: string, avatarId: number): Player
   leave(playerId: string): void
   updateConfiguration(playerId: string, configuration: Configuration): void
   startGame(playerId: string): void

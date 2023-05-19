@@ -58,7 +58,6 @@ export type Player = {
   disconnected: boolean
   deck: Card[]
   sender: PlayerSender
-  leaveTimeout: NodeJS.Timeout | null
 }
 
 export type Card = {
@@ -90,7 +89,7 @@ export type Configuration = {
 }
 
 export type Timeouts = Record<
-  "voting" | "starting" | "choosebest",
+  "voting" | "starting" | "choosebest" | "endsesion",
   null | DateTimeout
 >
 

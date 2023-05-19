@@ -100,12 +100,6 @@ export class DisconnectedError extends Error {
   }
 }
 
-export class MultipleLeaveError extends Error {
-  constructor() {
-    super("you can't leave more than once")
-  }
-}
-
 export class InternalError extends Error {
   constructor() {
     super("internal error")

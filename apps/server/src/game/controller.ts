@@ -156,7 +156,7 @@ class Controller {
       this.sessionManager.delete(session.id)
     }
 
-    const player = session.join(socket, nickname, avatarId, true)
+    const player = session.join(socket, nickname, avatarId)
     socket.player = player
 
     const isSynchronized = await this.syncSessionCache(ctx, session)
@@ -184,7 +184,7 @@ class Controller {
             status: session.status,
             playerId: player.id,
             players: session.players.map((player) =>
-              omit(["sender", "deck", "leaveTimeout"], player)
+              omit(["sender", "deck"], player)
             ),
             configuration: session.configuration
           }
@@ -217,7 +217,7 @@ class Controller {
       throw new VersionMismatchError()
     }
 
-    const player = session.join(socket, nickname, avatarId, false)
+    const player = session.join(socket, nickname, avatarId)
 
     socket.session = session
     socket.player = player
@@ -235,7 +235,7 @@ class Controller {
             status: session.status,
             playerId: player.id,
             players: session.players.map((player) =>
-              omit(["sender", "deck", "leaveTimeout"], player)
+              omit(["sender", "deck"], player)
             ),
             deck: player.deck,
             redCard: session.redCard,
@@ -511,7 +511,9 @@ class Controller {
     }
 
     const handleJoin = (joinedPlayer: Player) => {
-      this.syncSessionCache(ctx, session)
+      if (session.isWaiting()) {
+        this.syncSessionCache(ctx, session)
+      }
 
       this.broadcast(session, (players, player) => {
         if (joinedPlayer.id == player.id) {
@@ -530,7 +532,9 @@ class Controller {
     }
 
     const handleLeave = () => {
-      this.syncSessionCache(ctx, session)
+      if (session.isWaiting()) {
+        this.syncSessionCache(ctx, session)
+      }
 
       this.broadcast(session, (players) => ({
         type: "playerleave",
@@ -569,7 +573,7 @@ class Controller {
 
   private broadcast(session: ISession, callback: BroadcastCallback) {
     const sendPlayers = session.players.map((player) =>
-      omit(["sender", "deck", "leaveTimeout"], player)
+      omit(["sender", "deck"], player)
     )
 
     session.players.forEach((player) => {
