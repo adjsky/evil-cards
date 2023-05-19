@@ -7,7 +7,6 @@ import { createCtxFromReq } from "@evil-cards/ctx-log"
 import type { FastifyPluginCallback } from "fastify"
 import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 import type { CachedSession } from "../lib/ws/send.ts"
-import type { WebSocket } from "ws"
 
 const gameRoutes: FastifyPluginCallback<{
   redisClient: RedisClientWithLogs
@@ -36,18 +35,13 @@ const gameRoutes: FastifyPluginCallback<{
         controller.handleConnection(ctx, socket)
       })
 
-      fastify.get("/sessions", { websocket: true }, async (connection, req) => {
-        // https://github.com/fastify/fastify-websocket/pull/259
-        const socket: WebSocket = connection.socket
+      fastify.get("/sessions", { websocket: true }, async ({ socket }, req) => {
         const ctx = createCtxFromReq(req)
 
         const sessions = await controller.sessionCache.getAll(ctx)
-        if (sessions.none) {
-          socket.close()
-          return
+        if (sessions.some) {
+          socket.send(JSON.stringify(sessions.unwrap()))
         }
-
-        socket.send(JSON.stringify(sessions.unwrap()))
 
         const listener = (sessions: CachedSession[]) => {
           socket.send(JSON.stringify(sessions))

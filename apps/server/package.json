@@ -17,7 +17,7 @@
     "@evil-cards/redis": "workspace:^",
     "@fastify/compress": "^6.3.0",
     "@fastify/cors": "^8.2.1",
-    "@fastify/websocket": "^8.0.0",
+    "@fastify/websocket": "^8.1.0",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.5",
     "dotenv": "^16.0.3",

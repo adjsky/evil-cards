@@ -199,7 +199,6 @@ class Session implements ISession {
       if (remainingPlayers.length == 0) {
         this.clearTimeouts()
 
-        this._events.emit("leave", player)
         this._events.emit("sessionend")
 
         return

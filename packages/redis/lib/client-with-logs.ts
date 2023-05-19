@@ -49,10 +49,16 @@ const syncCommands = arrayOfAllSyncCommands([
   "unref"
 ])
 
+const commandsToIgnore = ["withContext"]
+
 function isAsyncCommand(
   redisClient: RedisClientType,
   command: string | symbol
 ): command is AsyncCommand {
+  if (typeof command == "string" && commandsToIgnore.includes(command)) {
+    return false
+  }
+
   return (
     typeof redisClient[command as Command] == "function" &&
     !isSyncCommand(command)
@@ -60,6 +66,10 @@ function isAsyncCommand(
 }
 
 function isSyncCommand(command: string | symbol): command is SyncCommand {
+  if (typeof command == "string" && commandsToIgnore.includes(command)) {
+    return false
+  }
+
   return syncCommands.findIndex((syncCommand) => syncCommand == command) != -1
 }
 

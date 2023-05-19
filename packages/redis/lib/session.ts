@@ -63,12 +63,20 @@ export function initializeSessionCache(
       const rawSessions = await Option.asyncTryCatch(() =>
         redis.withContext(ctx).hGetAll(hashKey)
       )
-
       if (rawSessions.none) {
         return Option.none()
       }
 
-      const sessions = sessionsSchema.safeParse(rawSessions.unwrap())
+      const parsedRawSessions = Option.tryCatch(() =>
+        Object.values(rawSessions.unwrap()).map((rawSession) =>
+          JSON.parse(rawSession)
+        )
+      )
+      if (parsedRawSessions.none) {
+        return Option.none()
+      }
+
+      const sessions = sessionsSchema.safeParse(parsedRawSessions.unwrap())
       if (!sessions.success) {
         return Option.none()
       }
@@ -98,12 +106,20 @@ export function initializeSessionCache(
         const rawSessions = await Option.asyncTryCatch(() =>
           redis.hGetAll(hashKey)
         )
-
         if (rawSessions.none) {
           return
         }
 
-        const sessions = sessionsSchema.safeParse(rawSessions.unwrap())
+        const parsedRawSessions = Option.tryCatch(() =>
+          Object.values(rawSessions.unwrap()).map((rawSession) =>
+            JSON.parse(rawSession)
+          )
+        )
+        if (parsedRawSessions.none) {
+          return
+        }
+
+        const sessions = sessionsSchema.safeParse(parsedRawSessions.unwrap())
 
         if (sessions.success) {
           listeners.forEach((listener) => listener(sessions.data))
