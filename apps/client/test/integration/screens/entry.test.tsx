@@ -9,17 +9,15 @@ import mockLocation from "../../helpers/mock-location"
 const { changeURL, resetLocationMock } = mockLocation("http://localhost")
 
 const sendJsonMessageMock = jest.fn()
-const connectMock = jest.fn()
-const disconnectMock = jest.fn()
 
-jest.mock("@/lib/hooks/use-socket", () => {
+jest.mock("@/lib/hooks/use-session-socket", () => {
   return {
     __esModule: true,
     default: () => ({
       sendJsonMessage: sendJsonMessageMock,
-      connected: true,
-      connect: connectMock,
-      disconnect: disconnectMock
+      updateUrl: () => {
+        //
+      }
     })
   }
 })

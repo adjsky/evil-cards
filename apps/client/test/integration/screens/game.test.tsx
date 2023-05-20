@@ -9,12 +9,11 @@ import {
 } from "../../helpers/get-fake-game-state"
 
 const sendJsonMessageMock = jest.fn()
-jest.mock("@/lib/hooks/use-socket", () => {
+jest.mock("@/lib/hooks/use-session-socket", () => {
   return {
     __esModule: true,
     default: () => ({
-      sendJsonMessage: sendJsonMessageMock,
-      connected: true
+      sendJsonMessage: sendJsonMessageMock
     })
   }
 })
