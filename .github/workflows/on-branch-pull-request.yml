@@ -23,10 +23,10 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
+      - name: Enable corepack
+        run: |
+          corepack enable pnpm
+          pnpm --version
 
       - name: Install deps
         run: pnpm --frozen-lockfile install
@@ -47,10 +47,10 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
+      - name: Enable corepack
+        run: |
+          corepack enable pnpm
+          pnpm --version
 
       - name: Install deps
         run: pnpm --frozen-lockfile install
