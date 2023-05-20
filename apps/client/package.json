@@ -38,6 +38,7 @@
     "@evil-cards/server": "*",
     "@next/bundle-analyzer": "^13.0.2",
     "@next/env": "^13.1.6",
+    "@playwright/test": "^1.32.2",
     "@svgr/webpack": "^6.5.0",
     "@testing-library/dom": "^8.19.0",
     "@testing-library/jest-dom": "^5.16.5",
