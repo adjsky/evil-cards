@@ -19,6 +19,7 @@ import FadeIn from "@/components/fade-in"
 import Arrow from "@/assets/arrow.svg"
 import Logo from "@/components/logo"
 import Loader from "@/components/loader"
+import AvailableSessions from "@/components/available-sessions"
 
 const errorsToIgnore = ["nickname is taken"]
 
@@ -159,6 +160,7 @@ const Entry: React.FC = () => {
         >
           {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}
         </button>
+        <AvailableSessions />
       </div>
     </FadeIn>
   )

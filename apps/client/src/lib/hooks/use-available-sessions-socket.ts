@@ -6,8 +6,8 @@ import type { Options } from "./use-socket/hook-jotai"
 
 const socketAtom = getBrandNewJotaiAtom()
 
-const useSessionSocket = (options?: Options) => {
+const useAvailableSessionsSocket = (options?: Options) => {
   return useSocketWithUrlAtom(socketAtom, options)
 }
 
-export default useSessionSocket
+export default useAvailableSessionsSocket
