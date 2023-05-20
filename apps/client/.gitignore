@@ -48,7 +48,6 @@ workbox-*.js.map
 # sitemap
 public/robots.txt
 public/sitemap*.xml
-node_modules/
 
 # playwright
 /test-results/
