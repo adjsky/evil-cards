@@ -125,12 +125,12 @@ test("main gameplay", async ({ page }, testInfo) => {
   })
 })
 
-test("nonexistent session", async ({ page }, testInfo) => {
- await page.goto("/?s=qwe")
- //	Нажать кнопку “НАЧАТЬ”
- await page.getByTestId("connect-session").click()
+test("nonexistent session", async ({ page }) => {
+  await page.goto("/?s=qwe")
+  //	Нажать кнопку “НАЧАТЬ”
+  await page.getByTestId("connect-session").click()
 
- await page.waitForSelector('text="Комната не найдена"')
+  await page.waitForSelector('text="Комната не найдена"')
 })
 
 test("nickname", async ({ page }, testInfo) => {
@@ -147,7 +147,7 @@ test("nickname", async ({ page }, testInfo) => {
   })
 })
 
-test("sameNickname", async ({ page }, testInfo) => {
+test("sameNickname", async ({ page }) => {
   await page.goto("/")
   // Ввести никнейм testuser1
   await page.getByTestId("nickname-toggle").click()
@@ -175,10 +175,12 @@ test("sameNickname", async ({ page }, testInfo) => {
   await page2.getByTestId("nickname-input").type("testuser1")
   await page2.getByTestId("connect-session").click()
 
-  await page2.waitForSelector('text="Ой, в комнате уже есть игрок с таким никнеймом"')
+  await page2.waitForSelector(
+    'text="Ой, в комнате уже есть игрок с таким никнеймом"'
+  )
 })
 
-test("fewPlayers", async ({ page }, testInfo) => {
+test("fewPlayers", async ({ page }) => {
   await page.goto("/")
   // Ввести никнейм testuser1 и создать комнату
   await page.getByTestId("nickname-toggle").click()
@@ -188,8 +190,9 @@ test("fewPlayers", async ({ page }, testInfo) => {
   // Нажать кнопку НАЧАТЬ
   await page.getByTestId("start-game").click()
   // Проверить наличие уведомления о ошибке
-  await page.waitForSelector('text="Нельзя начать игру, пока не наберется хотя бы 3 игрока"')
-
+  await page.waitForSelector(
+    'text="Нельзя начать игру, пока не наберется хотя бы 3 игрока"'
+  )
 })
 
 test("timeOut", async ({ page }, testInfo) => {
