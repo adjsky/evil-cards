@@ -21,7 +21,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version-file: ".nvmrc"
 
       - name: Enable corepack
         run: |
@@ -45,7 +45,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version-file: ".nvmrc"
 
       - name: Enable corepack
         run: |
