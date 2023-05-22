@@ -24,7 +24,7 @@ describe("single instance", () => {
       unmount()
       await server.closed
 
-      expect(result.current.getInstance()).toBe(null)
+      expect(result.current.getInstance()?.readyState).toBe(WebSocket.CLOSED)
     })
   })
 
@@ -67,14 +67,22 @@ describe("multiple instances", () => {
       )
 
       hook1.unmount()
-      expect(hook1.result.current.getInstance()).not.toBe(null)
-      expect(hook2.result.current.getInstance()).not.toBe(null)
+      expect(hook1.result.current.getInstance()?.readyState).toBe(
+        WebSocket.OPEN
+      )
+      expect(hook2.result.current.getInstance()?.readyState).toBe(
+        WebSocket.OPEN
+      )
 
       hook2.unmount()
       await server.closed
 
-      expect(hook1.result.current.getInstance()).toBe(null)
-      expect(hook2.result.current.getInstance()).toBe(null)
+      expect(hook1.result.current.getInstance()?.readyState).toBe(
+        WebSocket.CLOSED
+      )
+      expect(hook2.result.current.getInstance()?.readyState).toBe(
+        WebSocket.CLOSED
+      )
     })
   })
 
