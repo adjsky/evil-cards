@@ -50,7 +50,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     connection.disconnectedManually = false
     connection.instance = new WebSocket(url)
 
-    return attachListeners({
+    attachListeners({
       connection,
       messageQueue: messageQueueRef.current,
       onReconnect() {
@@ -116,7 +116,10 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
       options: optionsRef
     })
 
-    if (!connection.instance) {
+    const opened = connection.instance?.readyState == WebSocket.OPEN
+    const connecting = connection.instance?.readyState == WebSocket.CONNECTING
+
+    if (!opened && !connecting) {
       connect(options.url, connection)
     }
 

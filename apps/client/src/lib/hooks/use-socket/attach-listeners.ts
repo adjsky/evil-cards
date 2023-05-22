@@ -78,6 +78,7 @@ function attachListeners<T>({
 
     connection.instance?.removeEventListener("open", handleOpen)
     connection.instance?.removeEventListener("message", handleMessage)
+    connection.instance?.removeEventListener("error", handleError)
     connection.instance?.removeEventListener("close", handleClose)
 
     connection.listeners.forEach((listener) => {
@@ -100,7 +101,6 @@ function attachListeners<T>({
       connection.nReconnects += 1
     } else {
       connection.nReconnects = 0
-      connection.instance = null
     }
   }
 
@@ -108,13 +108,6 @@ function attachListeners<T>({
   connection.instance.addEventListener("error", handleError)
   connection.instance.addEventListener("close", handleClose)
   connection.instance.addEventListener("message", handleMessage)
-
-  return () => {
-    connection.instance?.removeEventListener("open", handleOpen)
-    connection.instance?.removeEventListener("error", handleError)
-    connection.instance?.removeEventListener("close", handleClose)
-    connection.instance?.removeEventListener("message", handleMessage)
-  }
 }
 
 export default attachListeners

@@ -6,7 +6,7 @@ import { createCtxFromReq } from "@evil-cards/ctx-log"
 
 import type { FastifyPluginCallback } from "fastify"
 import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
-import type { CachedSession } from "../lib/ws/send.ts"
+import type { AvailableSession } from "../lib/ws/send.ts"
 
 const gameRoutes: FastifyPluginCallback<{
   redisClient: RedisClientWithLogs
@@ -46,7 +46,7 @@ const gameRoutes: FastifyPluginCallback<{
             socket.send(JSON.stringify(sessions.unwrap()))
           }
 
-          const listener = (sessions: CachedSession[]) => {
+          const listener = (sessions: AvailableSession[]) => {
             socket.send(JSON.stringify(sessions))
           }
 

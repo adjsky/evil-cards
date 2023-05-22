@@ -6,28 +6,27 @@ import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/se
 import type { SocketOptions } from "./hook"
 import type { PrimitiveAtom } from "jotai"
 
-export type Options = Omit<SocketOptions<ReceiveMessage>, "url">
+export type Options<R = ReceiveMessage> = Omit<SocketOptions<R>, "url">
 
 export function getBrandNewJotaiAtom() {
   return atom<string | null>(null)
 }
 
-const useSocketJotai = (
+const useSocketJotai = <S = SendMessage, R = ReceiveMessage>(
   urlAtom: PrimitiveAtom<string | null>,
-  options?: Options
+  options?: Options<R>
 ) => {
   const [url, setUrl] = useAtom(urlAtom)
 
-  const hookResult = useSocket<SendMessage, ReceiveMessage>({
+  const hookResult = useSocket<S, R>({
     url,
     ...options
   })
 
   return {
     ...hookResult,
-    updateUrl(url: string | null) {
-      setUrl(url)
-    }
+    updateUrl: setUrl,
+    url
   }
 }
 

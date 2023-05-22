@@ -148,19 +148,21 @@ const Entry: React.FC = () => {
       >
         <Logo />
         <UserCard />
-        <button
-          onClick={handleStart}
-          className={clsx(
-            "flex h-12 w-32 items-center justify-center rounded-lg bg-red-500 text-xl leading-none text-gray-100",
-            "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
-            disabled && "opacity-80"
-          )}
-          disabled={disabled}
-          data-testid="connect-session"
-        >
-          {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}
-        </button>
-        <AvailableSessions />
+        <div className="flex gap-2">
+          <AvailableSessions />
+          <button
+            onClick={handleStart}
+            className={clsx(
+              "flex h-12 w-32 items-center justify-center rounded-lg bg-red-500 text-xl leading-none text-gray-100",
+              "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
+              disabled && "opacity-80"
+            )}
+            disabled={disabled}
+            data-testid="connect-session"
+          >
+            {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}
+          </button>
+        </div>
       </div>
     </FadeIn>
   )
