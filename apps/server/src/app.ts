@@ -50,7 +50,7 @@ const subscriber = await controller.sessionCache.initializeSubscriber()
 if (subscriber.none) {
   throw new Error("Could not initialize sessionCache subscriber")
 }
-const [subscribe, subscriberCleanup] = subscriber.unwrap()
+const [subscribe] = subscriber.unwrap()
 
 // FASTIFY PLUGINS
 await fastify.register(fastifyCompress)
@@ -71,8 +71,7 @@ await fastify.register(gameRoutes, {
 
 // GRACEFUL SHUTDOWN
 async function gracefullyShutdown() {
-  await controller.gracefullyShutdown()
-  await Promise.all([redisClientWithLogs.disconnect(), subscriberCleanup()])
+  await controller.cleanSessionCache()
 
   process.exit(0)
 }

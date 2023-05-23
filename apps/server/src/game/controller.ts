@@ -39,7 +39,7 @@ export type ControllerConfig = {
 }
 
 class Controller {
-  private _sessionManager: ISessionManager
+  private sessionManager: ISessionManager
   private events: ControllerEvents
   private _sessionCache: SessionCache
   private config: ControllerConfig
@@ -51,10 +51,6 @@ class Controller {
     return this._sessionCache
   }
 
-  public get sessionManager() {
-    return this._sessionManager
-  }
-
   public constructor(
     sessionManager: ISessionManager,
     redisClient: RedisClientWithLogs,
@@ -62,7 +58,7 @@ class Controller {
     log: FastifyBaseLogger
   ) {
     this.events = new Emittery()
-    this._sessionManager = sessionManager
+    this.sessionManager = sessionManager
     this._sessionCache = initializeSessionCache(redisClient)
     this.config = config
     this.log = log.child({ component: "game controller" })
@@ -147,7 +143,7 @@ class Controller {
       throw new InSessionError()
     }
 
-    const session = this._sessionManager.create()
+    const session = this.sessionManager.create()
     socket.session = session
 
     const player = session.join(socket, nickname, avatarId)
@@ -199,7 +195,7 @@ class Controller {
       throw new InSessionError()
     }
 
-    const session = this._sessionManager.get(sessionId)
+    const session = this.sessionManager.get(sessionId)
 
     if (!session) {
       throw new SessionNotFoundError()
@@ -619,19 +615,19 @@ class Controller {
     this._sessionCache.del(ctx, session.id)
 
     this.versionMap.delete(session.id)
-    this._sessionManager.delete(session.id)
+    this.sessionManager.delete(session.id)
   }
 
-  public async gracefullyShutdown() {
-    this.log.info("gracefully shutting down")
-
+  public async cleanSessionCache() {
     const ctx = createInternalCtx()
 
     await Promise.all(
-      this._sessionManager
+      this.sessionManager
         .getAll()
         .map((session) => this._sessionCache.del(ctx, session.id))
     )
+
+    this.log.info("successfully cleaned session cache")
   }
 }
 
