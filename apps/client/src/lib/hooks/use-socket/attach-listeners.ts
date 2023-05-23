@@ -81,15 +81,15 @@ function attachListeners<T>({
     connection.instance?.removeEventListener("error", handleError)
     connection.instance?.removeEventListener("close", handleClose)
 
+    const shouldReconnect = connection.listeners.some((listener) =>
+      listener.options.current?.shouldReconnect?.(connection.nReconnects)
+    )
+
     connection.listeners.forEach((listener) => {
       listener.options.current?.onClose?.(event, {
         manually: connection.disconnectedManually,
-        reconnecting: connection.nReconnects > 0
+        reconnecting: shouldReconnect
       })
-    })
-
-    const shouldReconnect = connection.listeners.some((listener) => {
-      listener.options.current?.shouldReconnect?.(connection.nReconnects)
     })
 
     if (!connection.disconnectedManually && shouldReconnect) {

@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react"
 import { useAtomValue, useAtom } from "jotai"
-import clsx from "clsx"
 import { useRouter } from "next/router"
 import EasySpeech from "easy-speech"
 import packageJson from "../../package.json"
@@ -14,6 +13,7 @@ import getWSHost from "@/lib/server/get-ws-host"
 import { updateSnackbar } from "@/components/snackbar/use"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
 
+import Button from "@/components/button"
 import NicknameInput from "@/components/nickname-input"
 import FadeIn from "@/components/fade-in"
 import Arrow from "@/assets/arrow.svg"
@@ -149,19 +149,16 @@ const Entry: React.FC = () => {
         <Logo />
         <UserCard />
         <div className="flex gap-2">
-          <AvailableSessions />
-          <button
+          {!joining && <AvailableSessions />}
+          <Button
+            variant="filled"
             onClick={handleStart}
-            className={clsx(
-              "flex h-12 w-32 items-center justify-center rounded-lg bg-red-500 text-xl leading-none text-gray-100",
-              "transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500",
-              disabled && "opacity-80"
-            )}
+            className="h-12 w-32"
             disabled={disabled}
             data-testid="connect-session"
           >
-            {waiting ? <Loader /> : joining ? "ВОЙТИ" : "НАЧАТЬ"}
-          </button>
+            {waiting ? <Loader /> : "ИГРАТЬ"}
+          </Button>
         </div>
       </div>
     </FadeIn>

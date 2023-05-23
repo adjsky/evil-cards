@@ -16,6 +16,7 @@ import { getScoreLabel, copyText } from "@/lib/functions"
 import { reconnectingGameAtom, soundsAtom } from "@/lib/atoms"
 import { updateSnackbar } from "@/components/snackbar/use"
 
+import Button from "@/components/button"
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import BackButton from "@/components/back-button"
@@ -196,7 +197,7 @@ const Waiting: React.FC<{
                   </button>
                 )}
               </div>
-              <div className="flex w-full justify-center gap-2 sm:gap-6">
+              <div className="flex w-full justify-center gap-2">
                 <InviteButton id={gameState.id} />
                 <StartButton
                   lowerOpacity={lowerButtonOpacity}
@@ -222,17 +223,15 @@ const StartButton: React.FC<{
   onClick?: () => void
 }> = ({ lowerOpacity, secondsLeft, withCountdown, disabled, onClick }) => {
   return (
-    <button
+    <Button
+      variant="filled"
       onClick={onClick}
-      className={clsx(
-        "w-28 rounded-lg bg-red-500 text-base leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl sm:leading-none",
-        lowerOpacity && "opacity-50"
-      )}
+      className={clsx("w-28 sm:w-32", lowerOpacity && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
       {withCountdown ? secondsLeft : "НАЧАТЬ"}
-    </button>
+    </Button>
   )
 }
 
@@ -251,8 +250,9 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="relative">
-      <button
-        className="rounded-lg border border-gray-100 bg-gray-900 px-4 py-4 text-base leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:px-5 sm:text-xl sm:leading-none"
+      <Button
+        variant="outlined"
+        className="px-4 py-4 sm:px-5"
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
@@ -270,7 +270,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         data-testid="invite-player"
       >
         ПРИГЛАСИТЬ
-      </button>
+      </Button>
       <span
         className={clsx(
           "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold tracking-wider text-gold-500 transition-opacity",

@@ -65,7 +65,7 @@ const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
   return (
     <Modal
       isOpen={visible}
-      className="mx-2 flex flex-col items-center text-center text-xl font-medium text-gray-100"
+      className="flex flex-col items-center text-xl font-medium text-gray-100"
     >
       <ExclamationTriangle className="h-24 w-24 animate-pulse fill-red-500" />
       <Modal.Title>Упс, пропало соединение.</Modal.Title>
@@ -164,18 +164,22 @@ const useSocketEvents = () => {
       }
     },
     onClose(_, { manually, reconnecting }) {
-      if (manually || reconnecting == undefined) {
+      if (manually || !reconnecting) {
         return
       }
 
       setReconnectingGame(reconnecting)
     },
     onOpen() {
-      const player = gameState?.players.find(
+      if (gameState == null) {
+        return
+      }
+
+      const player = gameState.players.find(
         (player) => player.id == gameState.playerId
       )
 
-      if (player && gameState) {
+      if (player) {
         sendJsonMessage({
           type: "joinsession",
           details: {

@@ -6,8 +6,8 @@ import type { MutableRefObject } from "react"
 export type JsonLike = Record<string, unknown>
 
 export type OnCloseDetails = {
-  manually?: boolean
-  reconnecting?: boolean
+  manually: boolean
+  reconnecting: boolean
 }
 
 export type SocketOptions<T = unknown> = {

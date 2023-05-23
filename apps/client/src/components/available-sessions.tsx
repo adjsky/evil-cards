@@ -2,6 +2,8 @@ import React, { useState } from "react"
 import getWsHost from "@/lib/server/get-ws-host"
 import { useToggle, useSocket } from "@/lib/hooks"
 
+import Button from "./button"
+
 import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
 
 const AvailableSessions: React.FC = () => {
@@ -20,7 +22,9 @@ const AvailableSessions: React.FC = () => {
 
   return (
     <>
-      <button
+      <Button
+        variant="outlined"
+        className="px-3.5"
         onClick={() => {
           if (toggled) {
             handleClose()
@@ -29,8 +33,8 @@ const AvailableSessions: React.FC = () => {
           }
         }}
       >
-        TOGGLE ME
-      </button>
+        КОМНАТЫ
+      </Button>
       {toggled && <Modal />}
     </>
   )
