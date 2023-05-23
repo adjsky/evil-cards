@@ -35,8 +35,8 @@ const Rules: React.FC = () => {
 
   return (
     <div className="flex w-full flex-auto flex-col gap-4">
-      <h2 className="text-center text-xl font-bold text-gray-100 sm:text-3xl">
-        ПРАВИЛА
+      <h2 className="text-center text-xl font-bold uppercase text-gray-100 sm:text-3xl">
+        Правила
       </h2>
       <div className="flex flex-auto flex-col items-center justify-center gap-4">
         <div className="flex h-[210px] items-center justify-center">

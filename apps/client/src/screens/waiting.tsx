@@ -27,7 +27,7 @@ import Authors from "@/components/authors"
 import SoundOn from "@/assets/sound-on.svg"
 import SoundOff from "@/assets/sound-off.svg"
 import Gear from "@/assets/gear.svg"
-import Close from "@/assets/waiting-close.svg"
+import Close from "@/assets/close.svg"
 import Author from "@/assets/author.svg"
 
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
@@ -226,11 +226,11 @@ const StartButton: React.FC<{
     <Button
       variant="filled"
       onClick={onClick}
-      className={clsx("w-28 sm:w-32", lowerOpacity && "opacity-50")}
+      className={clsx("w-28 uppercase sm:w-32", lowerOpacity && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
-      {withCountdown ? secondsLeft : "НАЧАТЬ"}
+      {withCountdown ? secondsLeft : "Начать"}
     </Button>
   )
 }
@@ -252,7 +252,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
     <div className="relative">
       <Button
         variant="outlined"
-        className="px-4 py-4 sm:px-5"
+        className="px-4 py-4 uppercase sm:px-5"
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
@@ -269,15 +269,15 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         }}
         data-testid="invite-player"
       >
-        ПРИГЛАСИТЬ
+        Пригласить
       </Button>
       <span
         className={clsx(
-          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold tracking-wider text-gold-500 transition-opacity",
+          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold uppercase tracking-wider text-gold-500 transition-opacity",
           copied ? "opacity-100" : "opacity-0"
         )}
       >
-        СКОПИРОВАНО
+        Скопировано
       </span>
     </div>
   )

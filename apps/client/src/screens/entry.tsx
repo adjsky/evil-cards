@@ -153,11 +153,11 @@ const Entry: React.FC = () => {
           <Button
             variant="filled"
             onClick={handleStart}
-            className="h-12 w-32"
+            className="h-12 w-32 uppercase"
             disabled={disabled}
             data-testid="connect-session"
           >
-            {waiting ? <Loader /> : "ИГРАТЬ"}
+            {waiting ? <Loader /> : "Играть"}
           </Button>
         </div>
       </div>

@@ -4,7 +4,7 @@ import clsx from "clsx"
 
 import { useIsomorphicLayoutEffect } from "@/lib/hooks"
 
-import Close from "@/assets/close.svg"
+import Close from "@/assets/snackbar-close.svg"
 import CrossMark from "@/assets/cross-mark.svg"
 import ExclamationMark from "@/assets/exclamation-mark.svg"
 

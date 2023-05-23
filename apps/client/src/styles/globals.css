@@ -32,21 +32,25 @@ html,
 .scrollable {
   overflow-y: auto;
   overflow-x: hidden;
+}
 
-  padding-right: 0.5rem;
-}
 .scrollable::-webkit-scrollbar {
-  width: 4px;
+  width: 0.75rem;
 }
+
 .scrollable::-webkit-scrollbar-track {
-  background: transparent;
+  box-shadow: inset 0 0 0.75rem 0.75rem transparent;
+  border: solid 0.25rem transparent;
 }
+
 .scrollable::-webkit-scrollbar-thumb {
-  background: theme("colors.gray.200");
-  border-radius: 8px;
+  box-shadow: inset 0 0 0.75rem 0.75rem theme("colors.gray.200");
+  border: solid 0.25rem transparent;
+  border-radius: 0.5rem;
 }
-.scrollable::-webkit-scrollbar-thumb:hover {
-  background: theme("colors.gray.200");
+
+.scrollable::-webkit-scrollbar-button {
+  display: none;
 }
 
 @supports (-moz-appearance: none) {
