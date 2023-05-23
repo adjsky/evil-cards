@@ -80,6 +80,8 @@ class Controller {
         logWithCtx(ctx, this.log).error(error, "this.disconnect")
       }
     })
+
+    // process.on("SIGKI")
   }
 
   public handleConnection(ctx: ReqContext, socket: ControllerWebSocket) {
@@ -145,23 +147,12 @@ class Controller {
     const session = this.sessionManager.create()
     socket.session = session
 
-    const handleSessionEnd = () => {
-      this.log.info({ sessionId: session.id }, "handling session end")
-
-      session.events.clearListeners()
-
-      this._sessionCache.del(ctx, session.id)
-
-      this.versionMap.delete(session.id)
-      this.sessionManager.delete(session.id)
-    }
-
     const player = session.join(socket, nickname, avatarId)
     socket.player = player
 
     const isSynchronized = await this.syncSessionCache(ctx, session)
     if (!isSynchronized) {
-      handleSessionEnd()
+      this.handleSessionEnd(ctx, session)
 
       throw new SessionCacheSynchronizeError()
     }
@@ -169,7 +160,7 @@ class Controller {
     this.versionMap.set(session.id, appVersion)
 
     this.setupSessionListeners(ctx, session)
-    session.events.on("sessionend", handleSessionEnd)
+    session.events.on("sessionend", () => this.handleSessionEnd(ctx, session))
 
     socket.on("close", () => {
       this.events.emit("close", { socket, ctx })
@@ -598,6 +589,17 @@ class Controller {
       playing: session.isPlaying(),
       server: this.config.serverNumber
     })
+  }
+
+  private handleSessionEnd(ctx: ReqContext, session: ISession) {
+    this.log.info({ sessionId: session.id }, "handling session end")
+
+    session.events.clearListeners()
+
+    this._sessionCache.del(ctx, session.id)
+
+    this.versionMap.delete(session.id)
+    this.sessionManager.delete(session.id)
   }
 }
 

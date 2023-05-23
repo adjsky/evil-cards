@@ -45,4 +45,5 @@ export interface ISessionManager {
   create(): ISession
   delete(id: string): boolean
   get(id: string): ISession | undefined
+  getAll(): ISession[]
 }

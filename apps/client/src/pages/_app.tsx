@@ -76,20 +76,19 @@ const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
 
 const useSocketEvents = () => {
   const Snackbar = useSnackbar()
-  const router = useRouter()
 
   const [gameState, setGameState] = useAtom(gameStateAtom)
   const sounds = useAtomValue(soundsAtom)
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage } = useSessionSocket({
+  const { sendJsonMessage, updateUrl, clearMessageQueue } = useSessionSocket({
     onJsonMessage(message) {
       if (reconnectingGame) {
         setReconnectingGame(false)
 
         if (message.type == "error") {
-          router.replace("/")
+          setGameState(null)
 
           return
         }
@@ -164,14 +163,27 @@ const useSocketEvents = () => {
       }
     },
     onClose(_, { manually, reconnecting }) {
-      if (manually || !reconnecting) {
-        return
+      clearMessageQueue()
+
+      if (!manually && !reconnecting) {
+        updateUrl(null)
+
+        updateSnackbar({
+          message: "Не удалось подключиться к серверу",
+          open: true,
+          severity: "error",
+          infinite: false
+        })
+      }
+
+      if (!reconnecting) {
+        setGameState(null)
       }
 
       setReconnectingGame(reconnecting)
     },
     onOpen() {
-      if (gameState == null) {
+      if (gameState == null || !reconnectingGame) {
         return
       }
 
@@ -191,7 +203,11 @@ const useSocketEvents = () => {
         })
       }
     },
-    shouldReconnect() {
+    shouldReconnect(nReconnects, disconnectedManually) {
+      if (nReconnects == 5 || disconnectedManually) {
+        return false
+      }
+
       return SingletonRouter.pathname != "/"
     }
   })

@@ -33,7 +33,7 @@ const Entry: React.FC = () => {
     py: 40,
     disableOnMobile: true
   })
-  const { sendJsonMessage, clearMessageQueue, updateUrl } = useSessionSocket({
+  const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(message) {
       if (message.type == "error" && waiting) {
         setWaiting(false)
@@ -58,22 +58,8 @@ const Entry: React.FC = () => {
     onOpen() {
       updateSnackbar({ open: false })
     },
-    onClose(_, { manually, reconnecting }) {
-      if (manually || reconnecting) {
-        return
-      }
-
-      updateUrl(null)
-
+    onClose() {
       setWaiting(false)
-      clearMessageQueue()
-
-      updateSnackbar({
-        message: "Не удалось подключиться к серверу",
-        open: true,
-        severity: "error",
-        infinite: false
-      })
     }
   })
 
