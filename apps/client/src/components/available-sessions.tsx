@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import getWsHost from "@/lib/server/get-ws-host"
-import { useToggle, useSocket } from "@/lib/hooks"
+import { useSocket } from "@/lib/hooks"
 
 import Button from "./button"
 import Modal from "./modal"
@@ -9,17 +9,16 @@ import Close from "@/assets/close.svg"
 import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
 
 const AvailableSessions: React.FC = () => {
-  const { connect, disconnect, availableSessions, loading } =
-    useAvailableSessions()
-  const [toggled, toggle] = useToggle()
+  const { connect, disconnect, state } = useAvailableSessions()
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleOpen = () => {
-    toggle()
+    setIsOpen(true)
     connect()
   }
 
   const handleClose = () => {
-    toggle()
+    setIsOpen(false)
     disconnect()
   }
 
@@ -32,34 +31,27 @@ const AvailableSessions: React.FC = () => {
       >
         Комнаты
       </Button>
-      <SessionsModal
-        isOpen={toggled}
-        availableSessions={availableSessions}
-        loading={loading}
-        onClose={handleClose}
-      />
+      <SessionsModal isOpen={isOpen} state={state} onClose={handleClose} />
     </>
   )
 }
 
 type SessionModalProps = {
   isOpen?: boolean
-  availableSessions?: AvailableSession[]
-  loading: boolean
+  state: AvailableSessionsState
   onClose?: () => void
 }
 
 const SessionsModal: React.FC<SessionModalProps> = ({
   isOpen,
-  availableSessions,
-  loading,
+  state,
   onClose
 }) => {
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="flex h-full max-h-[500px] w-full max-w-3xl flex-col rounded-xl bg-gray-100 px-6 py-4 text-gray-900 shadow-lg"
+      className="flex h-full max-h-[500px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-6 py-4 text-gray-900 shadow-lg"
     >
       <div className="relative flex justify-center">
         <Modal.Title as="h3" className="text-2xl font-bold uppercase">
@@ -70,30 +62,49 @@ const SessionsModal: React.FC<SessionModalProps> = ({
         </button>
       </div>
       <hr className="border-none py-1" />
-      <div className="scrollable grid flex-grow grid-cols-4 gap-1">
-        {Array.from({ length: 40 }).map((_, index) => (
-          <div key={index} className="border border-gray-900 p-5 rounded-lg"></div>
-        ))}
-      </div>
+      {state.loading && "Loading..."}
+      {!state.loading && state.sessions.length == 0 && "Not found"}
+      {!state.loading && state.sessions.length > 0 && (
+        <div className="scrollable flex flex-grow flex-col gap-1">
+          {state.sessions.map((_, index) => (
+            <div key={index} className="rounded-lg bg-gray-200 p-5"></div>
+          ))}
+        </div>
+      )}
     </Modal>
   )
 }
 
+type AvailableSessionsState =
+  | {
+      sessions: AvailableSession[]
+      loading: false
+    }
+  | {
+      sessions: undefined
+      loading: true
+    }
+
 const useAvailableSessions = () => {
-  const [availableSessions, setAvailableSessions] = useState<
-    AvailableSession[] | undefined
-  >(undefined)
-  const [loading, setLoading] = useState(true)
+  const [state, setState] = useState<AvailableSessionsState>({
+    loading: true,
+    sessions: undefined
+  })
   const [url, setUrl] = useState<string | null>(null)
 
   useSocket<unknown, AvailableSession[]>({
     url,
-    onJsonMessage(data) {
-      setLoading(false)
-      setAvailableSessions(data)
+    onJsonMessage(sessions) {
+      setState({
+        loading: false,
+        sessions
+      })
     },
     onClose() {
-      setLoading(false)
+      setState({
+        loading: false,
+        sessions: []
+      })
     }
   })
 
@@ -102,7 +113,10 @@ const useAvailableSessions = () => {
 
     result.match({
       err() {
-        setLoading(false)
+        setState({
+          loading: true,
+          sessions: undefined
+        })
       },
       ok(wsHost) {
         setUrl(`${wsHost}/ws/available-sessions`)
@@ -114,7 +128,7 @@ const useAvailableSessions = () => {
     setUrl(null)
   }
 
-  return { availableSessions, loading, connect, disconnect }
+  return { connect, disconnect, state }
 }
 
 export default AvailableSessions

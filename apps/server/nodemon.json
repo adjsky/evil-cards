@@ -1,3 +1,4 @@
 {
-  "watch": ["./src", "../../packages"]
+  "watch": ["./src", "../../packages"],
+  "signal": "SIGTERM"
 }

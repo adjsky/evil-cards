@@ -9,3 +9,9 @@ export function createCtxFromReq(req: FastifyRequest): ReqContext {
     reqId: req.id
   }
 }
+
+export function createInternalCtx(): ReqContext {
+  return {
+    reqId: "internal"
+  }
+}

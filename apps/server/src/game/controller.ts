@@ -4,6 +4,7 @@ import semverSatisfies from "semver/functions/satisfies.js"
 import { omit } from "ramda"
 import { logWithCtx } from "@evil-cards/ctx-log"
 import { initializeSessionCache } from "@evil-cards/redis/session"
+import { createInternalCtx } from "@evil-cards/ctx-log"
 
 import { messageSchema } from "../lib/ws/receive.ts"
 import stringify from "../lib/ws/stringify.ts"
@@ -38,7 +39,7 @@ export type ControllerConfig = {
 }
 
 class Controller {
-  private sessionManager: ISessionManager
+  private _sessionManager: ISessionManager
   private events: ControllerEvents
   private _sessionCache: SessionCache
   private config: ControllerConfig
@@ -50,6 +51,10 @@ class Controller {
     return this._sessionCache
   }
 
+  public get sessionManager() {
+    return this._sessionManager
+  }
+
   public constructor(
     sessionManager: ISessionManager,
     redisClient: RedisClientWithLogs,
@@ -57,7 +62,7 @@ class Controller {
     log: FastifyBaseLogger
   ) {
     this.events = new Emittery()
-    this.sessionManager = sessionManager
+    this._sessionManager = sessionManager
     this._sessionCache = initializeSessionCache(redisClient)
     this.config = config
     this.log = log.child({ component: "game controller" })
@@ -80,8 +85,6 @@ class Controller {
         logWithCtx(ctx, this.log).error(error, "this.disconnect")
       }
     })
-
-    // process.on("SIGKI")
   }
 
   public handleConnection(ctx: ReqContext, socket: ControllerWebSocket) {
@@ -144,7 +147,7 @@ class Controller {
       throw new InSessionError()
     }
 
-    const session = this.sessionManager.create()
+    const session = this._sessionManager.create()
     socket.session = session
 
     const player = session.join(socket, nickname, avatarId)
@@ -152,7 +155,7 @@ class Controller {
 
     const isSynchronized = await this.syncSessionCache(ctx, session)
     if (!isSynchronized) {
-      this.handleSessionEnd(ctx, session)
+      this.handleSessionEnd(session)
 
       throw new SessionCacheSynchronizeError()
     }
@@ -160,7 +163,7 @@ class Controller {
     this.versionMap.set(session.id, appVersion)
 
     this.setupSessionListeners(ctx, session)
-    session.events.on("sessionend", () => this.handleSessionEnd(ctx, session))
+    session.events.on("sessionend", () => this.handleSessionEnd(session))
 
     socket.on("close", () => {
       this.events.emit("close", { socket, ctx })
@@ -196,7 +199,7 @@ class Controller {
       throw new InSessionError()
     }
 
-    const session = this.sessionManager.get(sessionId)
+    const session = this._sessionManager.get(sessionId)
 
     if (!session) {
       throw new SessionNotFoundError()
@@ -583,15 +586,32 @@ class Controller {
   }
 
   private syncSessionCache(ctx: ReqContext, session: ISession) {
+    const host = session.players.find((player) => player.host)
+
+    if (!host) {
+      return
+    }
+
     return this._sessionCache.set(ctx, {
       id: session.id,
       players: session.players.length,
       playing: session.isPlaying(),
-      server: this.config.serverNumber
+      server: this.config.serverNumber,
+      adultOnly: session.configuration.version18Plus,
+      hostNickname: host.nickname,
+      hostAvatarId: host.avatarId,
+      speed:
+        session.configuration.votingDurationSeconds == 30
+          ? "slow"
+          : session.configuration.votingDurationSeconds == 60
+          ? "normal"
+          : "fast"
     })
   }
 
-  private handleSessionEnd(ctx: ReqContext, session: ISession) {
+  public handleSessionEnd(session: ISession) {
+    const ctx = createInternalCtx()
+
     this.log.info({ sessionId: session.id }, "handling session end")
 
     session.events.clearListeners()
@@ -599,7 +619,19 @@ class Controller {
     this._sessionCache.del(ctx, session.id)
 
     this.versionMap.delete(session.id)
-    this.sessionManager.delete(session.id)
+    this._sessionManager.delete(session.id)
+  }
+
+  public async gracefullyShutdown() {
+    this.log.info("gracefully shutting down")
+
+    const ctx = createInternalCtx()
+
+    await Promise.all(
+      this._sessionManager
+        .getAll()
+        .map((session) => this._sessionCache.del(ctx, session.id))
+    )
   }
 }
 

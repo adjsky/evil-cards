@@ -11,6 +11,10 @@ export type AvailableSession = {
   server: number
   playing: boolean
   players: number
+  hostNickname: string
+  hostAvatarId: number
+  adultOnly: boolean
+  speed: "normal" | "fast" | "slow"
 }
 
 export type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">

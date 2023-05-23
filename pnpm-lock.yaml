@@ -179,6 +179,12 @@ importers:
 
   apps/load-balancer:
     dependencies:
+      '@evil-cards/ctx-log':
+        specifier: workspace:^
+        version: link:../../packages/ctx-log
+      '@evil-cards/redis':
+        specifier: workspace:^
+        version: link:../../packages/redis
       '@fastify/compress':
         specifier: ^6.3.0
         version: 6.3.0
@@ -7030,6 +7036,7 @@ packages:
   /nodemon@2.0.20:
     resolution: {integrity: sha512-Km2mWHKKY5GzRg6i1j5OxOHQtuvVsgskLfigG25yTtbyfRGn/GNvIbRyOf1PSCKJ2aT/58TiuUsuOU5UToVViw==}
     engines: {node: '>=8.10.0'}
+    hasBin: true
     dependencies:
       chokidar: 3.5.3
       debug: 3.2.7(supports-color@5.5.0)
@@ -7045,6 +7052,7 @@ packages:
 
   /nopt@1.0.10:
     resolution: {integrity: sha512-NWmpvLSqUrgrAC9HCuxEvb+PSloHpqVu+FqcO4eeF2h5qYRhA7ev6KvelyQAKtegUbC6RypJnlEOhd8vloNKYg==}
+    hasBin: true
     dependencies:
       abbrev: 1.1.1
     dev: true
@@ -8507,6 +8515,7 @@ packages:
 
   /touch@3.1.0:
     resolution: {integrity: sha512-WBx8Uy5TLtOSRtIq+M03/sKDrXCLHxwDcquSP2c43Le03/9serjQBIztjRz6FkJez9D/hleyAXTBGLwwZUw9lA==}
+    hasBin: true
     dependencies:
       nopt: 1.0.10
     dev: true

@@ -10,6 +10,8 @@
     "dev": "cross-env NODE_ENV=development nodemon --exec ts-node ./src/app.ts"
   },
   "dependencies": {
+    "@evil-cards/ctx-log": "workspace:^",
+    "@evil-cards/redis": "workspace:^",
     "@fastify/compress": "^6.3.0",
     "@fastify/cors": "^8.2.1",
     "cross-env": "^7.0.3",

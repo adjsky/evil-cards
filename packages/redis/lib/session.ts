@@ -8,25 +8,28 @@ const sessionSchema = z.object({
   id: z.string(),
   server: z.number(),
   playing: z.boolean(),
-  players: z.number()
+  players: z.number(),
+  hostNickname: z.string(),
+  hostAvatarId: z.number(),
+  adultOnly: z.boolean(),
+  speed: z.enum(["fast", "normal", "slow"])
 })
-
-const sessionsSchema = z.array(sessionSchema)
 
 export type CachedSession = z.infer<typeof sessionSchema>
 
 type Listener = (sessions: CachedSession[]) => void
 
-type Subscriber = (listener: Listener) => Cleanup
+export type Subscribe = (listener: Listener) => Cleanup
 
 type Cleanup = () => void
+type AsyncCleanup = () => Promise<void>
 
 export type SessionCache = {
   set(ctx: ReqContext, session: CachedSession): Promise<boolean>
   get(ctx: ReqContext, id: string): Promise<Option<CachedSession>>
   getAll(ctx: ReqContext): Promise<Option<CachedSession[]>>
   del(ctx: ReqContext, id: string): Promise<Option<number>>
-  initializeSubscriber(): Promise<Option<[Subscriber, Cleanup]>>
+  initializeSubscriber(): Promise<Option<[Subscribe, AsyncCleanup]>>
 }
 
 const hashKey = "session"
@@ -76,14 +79,19 @@ export function initializeSessionCache(
         return Option.none()
       }
 
-      const sessions = sessionsSchema.safeParse(parsedRawSessions.unwrap())
-      if (!sessions.success) {
-        return Option.none()
+      const sessions: CachedSession[] = []
+      for (const parsedRawSession of parsedRawSessions.unwrap()) {
+        const result = sessionSchema.safeParse(parsedRawSession)
+
+        if (result.success) {
+          sessions.push(result.data)
+        }
       }
 
-      return Option.some(sessions.data)
+      return Option.some(sessions)
     },
     del(ctx, id) {
+      console.log("deleting ", id)
       return Option.asyncTryCatch(() =>
         redis.withContext(ctx).hDel(hashKey, id)
       )
@@ -119,11 +127,16 @@ export function initializeSessionCache(
           return
         }
 
-        const sessions = sessionsSchema.safeParse(parsedRawSessions.unwrap())
+        const sessions: CachedSession[] = []
+        for (const parsedRawSession of parsedRawSessions.unwrap()) {
+          const result = sessionSchema.safeParse(parsedRawSession)
 
-        if (sessions.success) {
-          listeners.forEach((listener) => listener(sessions.data))
+          if (result.success) {
+            sessions.push(result.data)
+          }
         }
+
+        listeners.forEach((listener) => listener(sessions))
       }
 
       const subscribed = await Option.asyncTryCatch(() =>
@@ -143,9 +156,7 @@ export function initializeSessionCache(
           }
         },
         () => {
-          subscriber
-            .unwrap()
-            .pUnsubscribe(`__keyspace@*__:${hashKey}`, rawListener)
+          return subscriber.unwrap().disconnect()
         }
       ])
     }
