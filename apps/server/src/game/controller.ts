@@ -122,6 +122,10 @@ class Controller {
     socket.on("close", () => {
       clearInterval(interval)
     })
+
+    socket.on("error", (error) =>
+      logWithCtx(ctx, this.log).error(error, "socket.on error")
+    )
   }
 
   private async createSession({
