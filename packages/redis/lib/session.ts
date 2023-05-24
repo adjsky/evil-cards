@@ -1,8 +1,18 @@
 import { Option } from "@evil-cards/fp"
 import { z } from "zod"
+import { createInternalCtx } from "@evil-cards/ctx-log"
 
 import type { RedisClientWithLogs } from "./client-with-logs"
 import type { ReqContext } from "@evil-cards/ctx-log"
+
+export type CachedSession = z.infer<typeof sessionSchema>
+export type Listener = (sessions: CachedSession[]) => void
+export type Subscribe = (listener: Listener) => Cleanup
+
+export type Cleanup = () => void
+export type AsyncCleanup = () => Promise<void>
+
+const hashKey = "session"
 
 const sessionSchema = z.object({
   id: z.string(),
@@ -15,150 +25,124 @@ const sessionSchema = z.object({
   speed: z.enum(["fast", "normal", "slow"])
 })
 
-export type CachedSession = z.infer<typeof sessionSchema>
+export class SessionCache {
+  private redis: RedisClientWithLogs
 
-type Listener = (sessions: CachedSession[]) => void
+  constructor(redis: RedisClientWithLogs) {
+    this.redis = redis
+  }
 
-export type Subscribe = (listener: Listener) => Cleanup
+  public async set(ctx: ReqContext, session: CachedSession) {
+    const result = await Option.asyncTryCatch(() =>
+      this.redis
+        .withContext(ctx)
+        .hSet(hashKey, session.id, JSON.stringify(session))
+    )
 
-type Cleanup = () => void
-type AsyncCleanup = () => Promise<void>
+    return result.some
+  }
 
-export type SessionCache = {
-  set(ctx: ReqContext, session: CachedSession): Promise<boolean>
-  get(ctx: ReqContext, id: string): Promise<Option<CachedSession>>
-  getAll(ctx: ReqContext): Promise<Option<CachedSession[]>>
-  del(ctx: ReqContext, id: string): Promise<Option<number>>
-  initializeSubscriber(): Promise<Option<[Subscribe, AsyncCleanup]>>
-}
-
-const hashKey = "session"
-
-export function initializeSessionCache(
-  redis: RedisClientWithLogs
-): SessionCache {
-  return {
-    async set(ctx, session) {
-      const result = await Option.asyncTryCatch(() =>
-        redis
-          .withContext(ctx)
-          .hSet(hashKey, session.id, JSON.stringify(session))
-      )
-
-      return result.some
-    },
-    async get(ctx, id) {
-      const rawSessionOption = await Option.asyncTryCatch(() =>
-        redis.withContext(ctx).hGet(hashKey, id)
-      )
-      if (rawSessionOption.none) {
-        return Option.none()
-      }
-
-      const rawSession = rawSessionOption.unwrap()
-      if (rawSession == null) {
-        return Option.none()
-      }
-
-      return parseRawSession(rawSession)
-    },
-    async getAll(ctx) {
-      const rawSessions = await Option.asyncTryCatch(() =>
-        redis.withContext(ctx).hGetAll(hashKey)
-      )
-      if (rawSessions.none) {
-        return Option.none()
-      }
-
-      const parsedRawSessions = Option.tryCatch(() =>
-        Object.values(rawSessions.unwrap()).map((rawSession) =>
-          JSON.parse(rawSession)
-        )
-      )
-      if (parsedRawSessions.none) {
-        return Option.none()
-      }
-
-      const sessions: CachedSession[] = []
-      for (const parsedRawSession of parsedRawSessions.unwrap()) {
-        const result = sessionSchema.safeParse(parsedRawSession)
-
-        if (result.success) {
-          sessions.push(result.data)
-        }
-      }
-
-      return Option.some(sessions)
-    },
-    del(ctx, id) {
-      return Option.asyncTryCatch(() =>
-        redis.withContext(ctx).hDel(hashKey, id)
-      )
-    },
-    async initializeSubscriber() {
-      const subscriber = await Option.asyncTryCatch(async () => {
-        const subscriber = redis.duplicate()
-        await subscriber.connect()
-
-        return subscriber
-      })
-
-      if (subscriber.none) {
-        return Option.none()
-      }
-
-      let listeners: Listener[] = []
-
-      const rawListener = async () => {
-        const rawSessions = await Option.asyncTryCatch(() =>
-          redis.hGetAll(hashKey)
-        )
-        if (rawSessions.none) {
-          return
-        }
-
-        const parsedRawSessions = Option.tryCatch(() =>
-          Object.values(rawSessions.unwrap()).map((rawSession) =>
-            JSON.parse(rawSession)
-          )
-        )
-        if (parsedRawSessions.none) {
-          return
-        }
-
-        const sessions: CachedSession[] = []
-        for (const parsedRawSession of parsedRawSessions.unwrap()) {
-          const result = sessionSchema.safeParse(parsedRawSession)
-
-          if (result.success) {
-            sessions.push(result.data)
-          }
-        }
-
-        listeners.forEach((listener) => listener(sessions))
-      }
-
-      const subscribed = await Option.asyncTryCatch(() =>
-        subscriber.unwrap().pSubscribe(`__keyspace@*__:${hashKey}`, rawListener)
-      )
-
-      if (subscribed.none) {
-        return Option.none()
-      }
-
-      return Option.some([
-        (listener) => {
-          listeners.push(listener)
-
-          return () => {
-            listeners = listeners.filter((l) => listener != l)
-          }
-        },
-        () => {
-          return subscriber.unwrap().disconnect()
-        }
-      ])
+  public async get(
+    ctx: ReqContext,
+    id: string
+  ): Promise<Option<CachedSession>> {
+    const rawSessionOption = await Option.asyncTryCatch(() =>
+      this.redis.withContext(ctx).hGet(hashKey, id)
+    )
+    if (rawSessionOption.none) {
+      return Option.none()
     }
+
+    const rawSession = rawSessionOption.unwrap()
+    if (rawSession == null) {
+      return Option.none()
+    }
+
+    return parseRawSession(rawSession)
+  }
+
+  public async getAll(ctx: ReqContext): Promise<Option<CachedSession[]>> {
+    const rawSessions = await Option.asyncTryCatch(() =>
+      this.redis.withContext(ctx).hGetAll(hashKey)
+    )
+    if (rawSessions.none) {
+      return Option.none()
+    }
+
+    const parsedRawSessions = Option.tryCatch(() =>
+      Object.values(rawSessions.unwrap()).map((rawSession) =>
+        JSON.parse(rawSession)
+      )
+    )
+    if (parsedRawSessions.none) {
+      return Option.none()
+    }
+
+    const sessions: CachedSession[] = []
+    for (const parsedRawSession of parsedRawSessions.unwrap()) {
+      const result = sessionSchema.safeParse(parsedRawSession)
+
+      if (result.success) {
+        sessions.push(result.data)
+      }
+    }
+
+    return Option.some(sessions)
+  }
+
+  public async del(ctx: ReqContext, id: string) {
+    return Option.asyncTryCatch(() =>
+      this.redis.withContext(ctx).hDel(hashKey, id)
+    )
+  }
+
+  public async initializeSubscriber(): Promise<
+    Option<[Subscribe, AsyncCleanup]>
+  > {
+    const subscriber = await Option.asyncTryCatch(async () => {
+      const subscriber = this.redis.duplicate()
+      await subscriber.connect()
+
+      return subscriber
+    })
+
+    if (subscriber.none) {
+      return Option.none()
+    }
+
+    let listeners: Listener[] = []
+
+    const rawListener = async () => {
+      const ctx = createInternalCtx()
+      const sessions = await this.getAll(ctx)
+
+      if (sessions.none) {
+        return
+      }
+
+      listeners.forEach((listener) => listener(sessions.unwrap()))
+    }
+
+    const subscribed = await Option.asyncTryCatch(() =>
+      subscriber.unwrap().pSubscribe(`__keyspace@*__:${hashKey}`, rawListener)
+    )
+
+    if (subscribed.none) {
+      return Option.none()
+    }
+
+    return Option.some([
+      (listener) => {
+        listeners.push(listener)
+
+        return () => {
+          listeners = listeners.filter((l) => listener != l)
+        }
+      },
+      () => {
+        return subscriber.unwrap().disconnect()
+      }
+    ])
   }
 }
 
