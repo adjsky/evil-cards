@@ -106,7 +106,9 @@ const SessionsModal: React.FC<SessionModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {session.id == sessionId && connecting && <Loader />}
+                {session.id == sessionId && connecting && (
+                  <Loader className="fill-gray-900" width={25} height={25} />
+                )}
                 <div className="flex items-center gap-1">
                   {session.speed == "fast" ? (
                     <ClockHot />

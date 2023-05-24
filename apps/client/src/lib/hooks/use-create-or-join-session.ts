@@ -91,10 +91,7 @@ const useCreateOrJoinSession = () => {
 
   const createOrJoinSession = async (sessionId?: string) => {
     setConnecting(true)
-
-    if (sessionId) {
-      setSessionId(sessionId)
-    }
+    setSessionId(sessionId ?? null)
 
     const result = await getWSHost(sessionId)
 

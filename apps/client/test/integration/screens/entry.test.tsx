@@ -2,6 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { mockAnimationsApi } from "jsdom-testing-mocks"
 import WS from "jest-websocket-mock"
+import { Provider } from "jotai"
+import { socketAtom } from "@/lib/hooks/use-session-socket"
 
 import { Result } from "@evil-cards/fp"
 import Entry from "@/screens/entry"
@@ -71,7 +73,11 @@ it("sends a join request if 's' query param is provided", async () => {
   changeURL("http://localhost?s=asd")
 
   const user = userEvent.setup()
-  render(<Entry />)
+  render(
+    <Provider initialValues={[[socketAtom, null]]}>
+      <Entry />
+    </Provider>
+  )
 
   await user.click(screen.getByTestId("connect-session"))
   await server.connected
@@ -85,7 +91,11 @@ it("sends a join request if 's' query param is provided", async () => {
 
 it("sends a create request if 's' query param is not provided", async () => {
   const user = userEvent.setup()
-  render(<Entry />)
+  render(
+    <Provider initialValues={[[socketAtom, null]]}>
+      <Entry />
+    </Provider>
+  )
 
   await user.click(screen.getByTestId("connect-session"))
   await server.connected

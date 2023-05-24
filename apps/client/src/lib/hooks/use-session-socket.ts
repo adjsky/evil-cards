@@ -4,7 +4,7 @@ import useSocketWithUrlAtom, {
 
 import type { Options } from "./use-socket/hook-jotai"
 
-const socketAtom = getBrandNewJotaiAtom()
+export const socketAtom = getBrandNewJotaiAtom()
 
 const useSessionSocket = (options?: Options) => {
   return useSocketWithUrlAtom(socketAtom, options)
