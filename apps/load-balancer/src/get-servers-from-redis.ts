@@ -1,5 +1,5 @@
-import makeURLFromServer from "./make-url-from-server"
-import { env } from "./env"
+import makeURLFromServer from "./make-url-from-server.ts"
+import { env } from "./env.ts"
 
 import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
