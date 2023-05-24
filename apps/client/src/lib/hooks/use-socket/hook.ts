@@ -6,8 +6,13 @@ import type { MutableRefObject } from "react"
 export type JsonLike = Record<string, unknown>
 
 export type OnCloseDetails = {
-  manually: boolean
+  gracefully: boolean
   reconnecting: boolean
+}
+
+export type ShouldReconnectDetails = {
+  closedGracefully: boolean
+  nReconnects: number
 }
 
 export type SocketOptions<T = unknown> = {
@@ -16,10 +21,7 @@ export type SocketOptions<T = unknown> = {
   onOpen?: (event: WebSocketEventMap["open"]) => void
   onError?: (event: WebSocketEventMap["error"]) => void
   onClose?: (event: WebSocketEventMap["close"], details: OnCloseDetails) => void
-  shouldReconnect?: (
-    nReconnects: number,
-    disconnectedManually: boolean
-  ) => boolean
+  shouldReconnect?: (details: ShouldReconnectDetails) => boolean
 }
 
 export type Listener<T = unknown> = {
@@ -32,7 +34,7 @@ export type Connection<T = unknown> = {
   heartbeatTimeout: NodeJS.Timeout | null
   reconnectTimeout: NodeJS.Timeout | null
   listeners: Listener<T>[]
-  disconnectedManually: boolean
+  closedGracefully: boolean
   nReconnects: number
 }
 
@@ -49,7 +51,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   optionsRef.current = options
 
   const connect = useCallback((url: string, connection: Connection<R>) => {
-    connection.disconnectedManually = false
+    connection.closedGracefully = false
     connection.instance = new WebSocket(url)
 
     attachListeners({
@@ -61,7 +63,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   }, [])
 
   const disconnect = useCallback((connection: Connection<R>) => {
-    connection.disconnectedManually = true
+    connection.closedGracefully = true
 
     if (connection.instance) {
       connection.instance.close()
@@ -92,7 +94,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     }
 
     const connection: Connection<R> = connections.get(options.url) ?? {
-      disconnectedManually: false,
+      closedGracefully: false,
       heartbeatTimeout: null,
       instance: null,
       listeners: [],

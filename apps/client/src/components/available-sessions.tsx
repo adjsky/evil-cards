@@ -168,6 +168,9 @@ const useAvailableSessions = () => {
         loading: false,
         sessions: state.sessions ?? []
       })
+    },
+    shouldReconnect({ closedGracefully, nReconnects }) {
+      return nReconnects < 5 && !closedGracefully
     }
   })
 

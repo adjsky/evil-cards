@@ -163,8 +163,8 @@ const useSocketEvents = () => {
           }
       }
     },
-    onClose(_, { manually, reconnecting }) {
-      if (!manually && !reconnecting) {
+    onClose(_, { gracefully, reconnecting }) {
+      if (!gracefully && !reconnecting) {
         updateUrl(null)
 
         updateSnackbar({
@@ -202,8 +202,8 @@ const useSocketEvents = () => {
         })
       }
     },
-    shouldReconnect(nReconnects, disconnectedManually) {
-      if (nReconnects == 5 || disconnectedManually) {
+    shouldReconnect({ nReconnects, closedGracefully }) {
+      if (nReconnects == 5 || closedGracefully) {
         return false
       }
 
