@@ -1,34 +1,35 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { mockAnimationsApi } from "jsdom-testing-mocks"
+import WS from "jest-websocket-mock"
 
+import { Result } from "@evil-cards/fp"
 import Entry from "@/screens/entry"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import mockLocation from "../../helpers/mock-location"
 
 const { changeURL, resetLocationMock } = mockLocation("http://localhost")
 
-const sendJsonMessageMock = jest.fn()
+let server: WS
+const host = `ws://localhost:1234`
 
-jest.mock("@/lib/hooks/use-session-socket", () => {
-  return {
-    __esModule: true,
-    default: () => ({
-      sendJsonMessage: sendJsonMessageMock,
-      updateUrl: () => {
-        //
-      }
-    })
-  }
-})
 jest.mock("next/router", () => ({
   useRouter: () => ({
     //
   })
 }))
+jest.mock("@/lib/server/get-ws-host", () => ({
+  __esModule: true,
+  default: () => Promise.resolve(Result.ok(host))
+}))
 mockAnimationsApi()
 
+beforeEach(() => {
+  server = new WS(`${host}/ws/session`)
+})
+
 afterEach(() => {
+  WS.clean()
   resetLocationMock()
 })
 
@@ -73,10 +74,13 @@ it("sends a join request if 's' query param is provided", async () => {
   render(<Entry />)
 
   await user.click(screen.getByTestId("connect-session"))
+  await server.connected
 
-  expect(sendJsonMessageMock).toHaveBeenCalledWith(
-    expect.objectContaining({ type: "joinsession" })
-  )
+  await waitFor(() => {
+    const message = JSON.parse(server.messages[0].toString())
+
+    expect(message).toEqual(expect.objectContaining({ type: "joinsession" }))
+  })
 })
 
 it("sends a create request if 's' query param is not provided", async () => {
@@ -84,8 +88,11 @@ it("sends a create request if 's' query param is not provided", async () => {
   render(<Entry />)
 
   await user.click(screen.getByTestId("connect-session"))
+  await server.connected
 
-  expect(sendJsonMessageMock).toHaveBeenCalledWith(
-    expect.objectContaining({ type: "createsession" })
-  )
+  await waitFor(() => {
+    const message = JSON.parse(server.messages[0].toString())
+
+    expect(message).toEqual(expect.objectContaining({ type: "createsession" }))
+  })
 })
