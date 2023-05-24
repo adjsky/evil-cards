@@ -583,11 +583,21 @@ class Controller {
     })
   }
 
-  private syncSessionCache(ctx: ReqContext, session: ISession) {
+  private async syncSessionCache(ctx: ReqContext, session: ISession) {
     const host = session.players.find((player) => player.host)
 
-    if (!host) {
-      return
+    let hostNickname = host?.nickname
+    let hostAvatarId = host?.avatarId
+
+    if (!hostNickname || !hostAvatarId) {
+      const prevCachedSession = await this._sessionCache.get(ctx, session.id)
+
+      if (prevCachedSession.none) {
+        return false
+      }
+
+      hostNickname = prevCachedSession.unwrap().hostNickname
+      hostAvatarId = prevCachedSession.unwrap().hostAvatarId
     }
 
     return this._sessionCache.set(ctx, {
@@ -596,8 +606,8 @@ class Controller {
       playing: session.isPlaying(),
       server: this.config.serverNumber,
       adultOnly: session.configuration.version18Plus,
-      hostNickname: host.nickname,
-      hostAvatarId: host.avatarId,
+      hostNickname,
+      hostAvatarId,
       speed:
         session.configuration.votingDurationSeconds == 30
           ? "fast"

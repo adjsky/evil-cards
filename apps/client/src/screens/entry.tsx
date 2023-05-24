@@ -1,17 +1,12 @@
-import React, { useState, useRef } from "react"
-import { useAtomValue, useAtom } from "jotai"
-import { useRouter } from "next/router"
-import EasySpeech from "easy-speech"
-import packageJson from "../../package.json"
+import React, { useRef } from "react"
+import { useAtom } from "jotai"
 
-import { preloadSounds } from "@/lib/audio"
 import { nicknameAtom, avatarAtom } from "@/lib/atoms"
-import { useSessionSocket, useScreenFactor } from "@/lib/hooks"
+import { useScreenFactor } from "@/lib/hooks"
 import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
-import getWSHost from "@/lib/server/get-ws-host"
-import { updateSnackbar } from "@/components/snackbar/use"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
+import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
 import Button from "@/components/button"
 import NicknameInput from "@/components/nickname-input"
@@ -21,107 +16,20 @@ import Logo from "@/components/logo"
 import Loader from "@/components/loader"
 import AvailableSessions from "@/components/available-sessions"
 
-const errorsToIgnore = ["nickname is taken"]
-
 const Entry: React.FC = () => {
-  const [waiting, setWaiting] = useState(false)
-  const router = useRouter()
   const unsupported = useRef(isBrowserUnsupported())
-
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
     py: 40,
     disableOnMobile: true
   })
-  const { sendJsonMessage, updateUrl } = useSessionSocket({
-    onJsonMessage(message) {
-      if (message.type == "error" && waiting) {
-        setWaiting(false)
-        updateUrl(null)
-
-        let ignore = false
-
-        if (message.details && errorsToIgnore.includes(message.details)) {
-          ignore = true
-        }
-
-        if (!ignore) {
-          router.replace("/", undefined, { shallow: true })
-        }
-      } else if (message.type == "join" || message.type == "create") {
-        router.push("/room", undefined, { shallow: true })
-
-        preloadSounds()
-        EasySpeech.init().catch((error) => console.error(error))
-      }
-    },
-    onOpen() {
-      updateSnackbar({ open: false })
-
-      const sessionId = searchParams.get("s")
-
-      if (sessionId) {
-        sendJsonMessage({
-          type: "joinsession",
-          details: {
-            nickname,
-            sessionId,
-            avatarId,
-            appVersion: packageJson.version
-          }
-        })
-      } else {
-        sendJsonMessage({
-          type: "createsession",
-          details: {
-            nickname,
-            avatarId,
-            appVersion: packageJson.version
-          }
-        })
-      }
-    },
-    onClose() {
-      setWaiting(false)
-    }
-  })
-
   const previousPathname = usePreviousPathname()
-
-  const nickname = useAtomValue(nicknameAtom)
-  const avatarId = useAtomValue(avatarAtom)
+  const { createOrJoinSession, connecting } = useCreateOrJoinSession()
 
   const searchParams = new URLSearchParams(window.location.search)
-  const joining = searchParams.has("s")
+  const sessionId = searchParams.get("s")
 
-  const handleStart = async () => {
-    setWaiting(true)
-
-    const sessionId = searchParams.get("s")
-
-    const result = await getWSHost(sessionId ?? undefined)
-
-    result.match({
-      err(error) {
-        updateSnackbar({
-          message: startErrors[error],
-          open: true,
-          severity: error == "nosession" ? "information" : "error",
-          infinite: false
-        })
-        setWaiting(false)
-
-        if (error == "nosession") {
-          router.replace("/", undefined, { shallow: true })
-        }
-      },
-      ok(wsHost) {
-        updateUrl(`${wsHost}/ws/session`)
-      }
-    })
-  }
-
-  const disabled = waiting || unsupported.current
+  const disabled = connecting || unsupported.current
 
   return (
     <FadeIn
@@ -137,15 +45,19 @@ const Entry: React.FC = () => {
         <Logo />
         <UserCard />
         <div className="flex gap-2">
-          {!joining && <AvailableSessions />}
+          {sessionId == null && <AvailableSessions />}
           <Button
             variant="filled"
-            onClick={handleStart}
+            onClick={() => createOrJoinSession(sessionId ?? undefined)}
             className="h-12 w-32 uppercase"
             disabled={disabled}
             data-testid="connect-session"
           >
-            {waiting ? <Loader /> : "Играть"}
+            {connecting ? (
+              <Loader className="fill-gray-100 opacity-75" />
+            ) : (
+              "Играть"
+            )}
           </Button>
         </div>
       </div>
@@ -195,11 +107,6 @@ const UserCard: React.FC = () => {
       <NicknameInput value={nickname} onChange={setNickname} />
     </div>
   )
-}
-
-const startErrors = {
-  nosession: "Комната не найдена",
-  fetcherror: "Не удалось получить доступные сервера"
 }
 
 export default Entry

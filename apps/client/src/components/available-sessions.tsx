@@ -2,9 +2,11 @@ import React, { useState } from "react"
 import Image from "next/image"
 import getWsHost from "@/lib/server/get-ws-host"
 import { useSocket } from "@/lib/hooks"
+import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
 import Button from "./button"
 import Modal from "./modal"
+import Loader from "./loader"
 
 import Close from "@/assets/close/line.svg"
 import ClockCold from "@/assets/clocks/cold.svg"
@@ -54,11 +56,14 @@ const SessionsModal: React.FC<SessionModalProps> = ({
   state,
   onClose
 }) => {
+  const { createOrJoinSession, connecting, sessionId } =
+    useCreateOrJoinSession()
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="flex h-full max-h-[500px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-6 py-4 text-gray-900 shadow-lg"
+      className="flex h-full max-h-[560px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-6 pt-5 pb-8 text-gray-900 shadow-lg"
     >
       <div className="relative flex justify-center">
         <Modal.Title as="h3" className="text-3xl font-bold uppercase">
@@ -68,15 +73,25 @@ const SessionsModal: React.FC<SessionModalProps> = ({
           <Close className="fill-gray-900" />
         </button>
       </div>
-      <hr className="border-none py-2" />
-      {state.loading && "Loading..."}
-      {!state.loading && state.sessions.length == 0 && "Not found"}
+      <hr className="border-none py-2.5" />
+      {state.loading && (
+        <div className="flex flex-grow items-center justify-center">
+          <Loader className="fill-gray-900" width={30} height={30} />
+        </div>
+      )}
+      {!state.loading && state.sessions.length == 0 && (
+        <div className="flex flex-grow items-center justify-center text-xl font-medium">
+          Ой, сейчас нет доступных комнат
+        </div>
+      )}
       {!state.loading && state.sessions.length > 0 && (
-        <div className="scrollable flex flex-grow flex-col gap-1">
+        <div className="scrollable flex flex-grow flex-col gap-2">
           {state.sessions.map((session) => (
             <button
               key={session.id}
               className="flex items-center justify-between rounded-lg bg-gray-200 px-3 py-3"
+              onClick={() => createOrJoinSession(session.id)}
+              disabled={connecting}
             >
               <div className="flex items-center gap-2">
                 <Image
@@ -91,6 +106,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                {session.id == sessionId && connecting && <Loader />}
                 <div className="flex items-center gap-1">
                   {session.speed == "fast" ? (
                     <ClockHot />
@@ -150,8 +166,8 @@ const useAvailableSessions = () => {
     result.match({
       err() {
         setState({
-          loading: true,
-          sessions: undefined
+          loading: false,
+          sessions: state.sessions ?? []
         })
       },
       ok(wsHost) {
