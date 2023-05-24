@@ -49,7 +49,8 @@ const Player: React.FC<{
             src={`/avatars/${player.avatarId}.svg`}
             width={44}
             height={44}
-            alt=""
+            alt="Avatar"
+            className="overflow-hidden rounded-full bg-gray-200"
           />
         ) : (
           <Question width={44} height={44} />

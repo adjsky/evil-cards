@@ -57,6 +57,29 @@ const Entry: React.FC = () => {
     },
     onOpen() {
       updateSnackbar({ open: false })
+
+      const sessionId = searchParams.get("s")
+
+      if (sessionId) {
+        sendJsonMessage({
+          type: "joinsession",
+          details: {
+            nickname,
+            sessionId,
+            avatarId,
+            appVersion: packageJson.version
+          }
+        })
+      } else {
+        sendJsonMessage({
+          type: "createsession",
+          details: {
+            nickname,
+            avatarId,
+            appVersion: packageJson.version
+          }
+        })
+      }
     },
     onClose() {
       setWaiting(false)
@@ -94,27 +117,6 @@ const Entry: React.FC = () => {
       },
       ok(wsHost) {
         updateUrl(`${wsHost}/ws/session`)
-
-        if (sessionId) {
-          sendJsonMessage({
-            type: "joinsession",
-            details: {
-              nickname,
-              sessionId,
-              avatarId,
-              appVersion: packageJson.version
-            }
-          })
-        } else {
-          sendJsonMessage({
-            type: "createsession",
-            details: {
-              nickname,
-              avatarId,
-              appVersion: packageJson.version
-            }
-          })
-        }
       }
     })
   }
@@ -169,6 +171,7 @@ const UserCard: React.FC = () => {
             <Arrow className="rotate-180" />
           </button>
           <div
+            className="overflow-hidden rounded-full bg-gray-200"
             style={{
               width: 120,
               height: 120,

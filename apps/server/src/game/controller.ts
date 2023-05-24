@@ -490,6 +490,8 @@ class Controller {
     }
 
     const handleConfigurationChange = (configuration: Configuration) => {
+      this.syncSessionCache(ctx, session)
+
       this.broadcast(session, () => ({
         type: "configurationchange",
         details: {
@@ -598,10 +600,10 @@ class Controller {
       hostAvatarId: host.avatarId,
       speed:
         session.configuration.votingDurationSeconds == 30
-          ? "slow"
+          ? "fast"
           : session.configuration.votingDurationSeconds == 60
           ? "normal"
-          : "fast"
+          : "slow"
     })
   }
 
@@ -619,6 +621,8 @@ class Controller {
   }
 
   public async cleanSessionCache() {
+    this.log.info("cleaning session cache")
+
     const ctx = createInternalCtx()
 
     await Promise.all(

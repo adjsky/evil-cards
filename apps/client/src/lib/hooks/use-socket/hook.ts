@@ -44,7 +44,6 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   const connectionRef = useRef<Connection<R> | null>(
     options?.url ? connections.get(options.url) ?? null : null
   )
-  const messageQueueRef = useRef<unknown[]>([])
 
   const optionsRef = useRef(options)
   optionsRef.current = options
@@ -55,7 +54,6 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
     attachListeners({
       connection,
-      messageQueue: messageQueueRef.current,
       onReconnect() {
         connect(url, connection)
       }
@@ -82,14 +80,10 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
       !connection?.instance ||
       connection.instance.readyState != WebSocket.OPEN
     ) {
-      messageQueueRef.current.push(data)
+      throw new Error("WebSocket connection is not ready to send messages")
     } else {
       connection.instance?.send(JSON.stringify(data))
     }
-  }, [])
-
-  const clearMessageQueue = useCallback(() => {
-    messageQueueRef.current = []
   }, [])
 
   useEffect(() => {
@@ -140,8 +134,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
   return {
     getInstance,
-    sendJsonMessage,
-    clearMessageQueue
+    sendJsonMessage
   }
 }
 

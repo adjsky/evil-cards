@@ -91,7 +91,6 @@ export function initializeSessionCache(
       return Option.some(sessions)
     },
     del(ctx, id) {
-      console.log("deleting ", id)
       return Option.asyncTryCatch(() =>
         redis.withContext(ctx).hDel(hashKey, id)
       )

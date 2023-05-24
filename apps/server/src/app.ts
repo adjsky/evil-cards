@@ -5,6 +5,7 @@ import websocketPlugin from "@fastify/websocket"
 import { getClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 import memoryLogPlugin from "./plugins/log-memory.ts"
+import gracefulShutdown from "./plugins/graceful-shutdown.ts"
 import { buildRedisClient } from "./build.ts"
 import Controller from "./game/controller.ts"
 import SessionManager from "./game/session-manager.ts"
@@ -29,16 +30,15 @@ const envLogger = {
 const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
 
 // REDIS
-const redisClient = buildRedisClient()
-const redisClientWithLogs = getClientWithLogs(redisClient, fastify.log)
-await redisClientWithLogs.connect()
+const redisClient = getClientWithLogs(buildRedisClient(), fastify.log)
+await redisClient.connect()
 
 // GAME
 const sessionFactory = new SessionFactory()
 const sessionManager = new SessionManager(sessionFactory)
 const controller = new Controller(
   sessionManager,
-  redisClientWithLogs,
+  redisClient,
   {
     serverNumber: env.SERVER_NUMBER
   },
@@ -50,7 +50,7 @@ const subscriber = await controller.sessionCache.initializeSubscriber()
 if (subscriber.none) {
   throw new Error("Could not initialize sessionCache subscriber")
 }
-const [subscribe] = subscriber.unwrap()
+const [subscribe, subscriberCleanup] = subscriber.unwrap()
 
 // FASTIFY PLUGINS
 await fastify.register(fastifyCompress)
@@ -60,6 +60,12 @@ await fastify.register(fastifyCors, {
 await fastify.register(websocketPlugin)
 
 // INTERNAL PLUGINS
+await fastify.register(gracefulShutdown, {
+  async onSignal() {
+    await controller.cleanSessionCache()
+    await Promise.all([redisClient.disconnect(), subscriberCleanup()])
+  }
+})
 await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })
 
 // ROUTES
@@ -68,16 +74,6 @@ await fastify.register(gameRoutes, {
   subscribe,
   prefix: "/ws"
 })
-
-// GRACEFUL SHUTDOWN
-async function gracefullyShutdown() {
-  await controller.cleanSessionCache()
-
-  process.exit(0)
-}
-
-process.on("SIGTERM", gracefullyShutdown)
-process.on("SIGINT", gracefullyShutdown)
 
 await fastify.listen({
   port: env.PORT,

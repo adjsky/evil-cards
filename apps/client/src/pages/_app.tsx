@@ -82,7 +82,7 @@ const useSocketEvents = () => {
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage, updateUrl, clearMessageQueue } = useSessionSocket({
+  const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(message) {
       if (reconnectingGame) {
         setReconnectingGame(false)
@@ -163,8 +163,6 @@ const useSocketEvents = () => {
       }
     },
     onClose(_, { manually, reconnecting }) {
-      clearMessageQueue()
-
       if (!manually && !reconnecting) {
         updateUrl(null)
 

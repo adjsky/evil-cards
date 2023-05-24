@@ -2,15 +2,10 @@ import type { Connection } from "./hook"
 
 type Options<T> = {
   connection: Connection<T>
-  messageQueue: unknown[]
   onReconnect?: () => void
 }
 
-function attachListeners<T>({
-  connection,
-  messageQueue,
-  onReconnect
-}: Options<T>) {
+function attachListeners<T>({ connection, onReconnect }: Options<T>) {
   if (!connection.instance) {
     return
   }
@@ -28,12 +23,6 @@ function attachListeners<T>({
   const handleOpen = (event: WebSocketEventMap["open"]) => {
     connection.nReconnects = 0
     heartbeat()
-
-    let message = messageQueue.shift()
-    while (message != undefined) {
-      connection.instance?.send(JSON.stringify(message))
-      message = messageQueue.shift()
-    }
 
     connection.listeners.forEach((listener) => {
       listener.options.current?.onOpen?.(event)
