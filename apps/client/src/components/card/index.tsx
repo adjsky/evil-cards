@@ -4,7 +4,7 @@ import { Interweave } from "interweave"
 
 import { usePrevious } from "@/lib/hooks"
 
-import Cat from "@/assets/cat.svg"
+import Cat from "@/assets/cats/regular.svg"
 import styles from "./card.module.css"
 
 const Card: React.FC<{

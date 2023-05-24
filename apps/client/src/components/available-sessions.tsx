@@ -6,7 +6,7 @@ import { useSocket } from "@/lib/hooks"
 import Button from "./button"
 import Modal from "./modal"
 
-import Close from "@/assets/close.svg"
+import Close from "@/assets/close/line.svg"
 import ClockCold from "@/assets/clocks/cold.svg"
 import ClockNormal from "@/assets/clocks/normal.svg"
 import ClockHot from "@/assets/clocks/hot.svg"

@@ -1,6 +1,6 @@
 import React from "react"
 import Button from "./button"
-import ArrowLeft from "@/assets/arrow-left.svg"
+import ArrowLeft from "@/assets/arrows/left-filled.svg"
 
 const BackButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   return (

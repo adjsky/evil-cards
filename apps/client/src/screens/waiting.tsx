@@ -27,7 +27,7 @@ import Authors from "@/components/authors"
 import SoundOn from "@/assets/sound-on.svg"
 import SoundOff from "@/assets/sound-off.svg"
 import Gear from "@/assets/gear.svg"
-import Close from "@/assets/close.svg"
+import Close from "@/assets/close/line.svg"
 import Author from "@/assets/author.svg"
 
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
