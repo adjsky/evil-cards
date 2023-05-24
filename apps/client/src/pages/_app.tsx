@@ -68,8 +68,8 @@ const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
       className="flex flex-col items-center text-xl font-medium text-gray-100"
     >
       <ExclamationTriangle className="h-24 w-24 animate-pulse fill-red-500" />
-      <Modal.Title>Упс, пропало соединение.</Modal.Title>
-      <Modal.Description>Пытаемся его восстановить.</Modal.Description>
+      <Modal.Title>Упс, пропало соединение</Modal.Title>
+      <Modal.Description>Пытаемся его восстановить</Modal.Description>
     </Modal>
   )
 }
@@ -84,16 +84,6 @@ const useSocketEvents = () => {
 
   const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(message) {
-      if (reconnectingGame) {
-        setReconnectingGame(false)
-
-        if (message.type == "error") {
-          setGameState(null)
-
-          return
-        }
-      }
-
       if (message.type == "error" && message.details) {
         updateSnackbar({
           message: mapErrorMessage(message.details),
@@ -101,6 +91,17 @@ const useSocketEvents = () => {
           open: true,
           infinite: false
         })
+      }
+
+      if (reconnectingGame) {
+        setReconnectingGame(false)
+
+        if (message.type == "error") {
+          setGameState(null)
+          updateUrl(null)
+
+          return
+        }
       }
 
       if (sounds) {
