@@ -7,14 +7,12 @@ type LoaderProps = {
   className?: string
 }
 
-const Loader: React.FC<LoaderProps> = ({
-  width = 20,
-  height = 20,
-  className
-}) => (
+const Loader: React.FC<LoaderProps> = ({ width, height, className }) => (
   <svg
     className={clsx("animate-spin", className)}
-    style={{ width, height }}
+    style={
+      width != undefined && height != undefined ? { width, height } : undefined
+    }
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
   >

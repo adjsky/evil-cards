@@ -63,17 +63,20 @@ const SessionsModal: React.FC<SessionModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="flex h-full max-h-[560px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-6 pt-5 pb-8 text-gray-900 shadow-lg"
+      className="flex h-full max-h-[560px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-3 pt-4 pb-6 text-gray-900 shadow-lg sm:px-6 sm:pb-8 sm:pt-5"
     >
       <div className="relative flex justify-center">
-        <Modal.Title as="h3" className="text-3xl font-bold uppercase">
+        <Modal.Title
+          as="h3"
+          className="text-2xl font-bold uppercase sm:text-3xl"
+        >
           Комнаты
         </Modal.Title>
         <button onClick={onClose} className="absolute -right-1 -top-1 p-1">
           <Close className="fill-gray-900" />
         </button>
       </div>
-      <hr className="border-none py-2.5" />
+      <hr className="border-none py-1.5 sm:py-2.5" />
       {state.loading && (
         <div className="flex flex-grow items-center justify-center">
           <Loader className="fill-gray-900" width={30} height={30} />
@@ -89,37 +92,43 @@ const SessionsModal: React.FC<SessionModalProps> = ({
           {state.sessions.map((session) => (
             <button
               key={session.id}
-              className="flex items-center justify-between rounded-lg bg-gray-200 px-3 py-3"
+              className="flex items-center justify-between rounded-lg bg-gray-200 p-2 sm:p-3"
               onClick={() => createOrJoinSession(session.id)}
               disabled={connecting}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Image
                   src={`/avatars/${session.hostAvatarId}.svg`}
                   width={60}
                   height={60}
                   alt="Avatar"
-                  className="overflow-hidden rounded-full bg-gray-100"
+                  className="w-9 flex-shrink-0 overflow-hidden rounded-full bg-gray-100 sm:w-14"
                 />
-                <span className="text-xl font-bold">
+                <span className="font-bold sm:text-xl">
                   {session.hostNickname}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 {session.id == sessionId && connecting && (
-                  <Loader className="fill-gray-900" width={25} height={25} />
+                  <Loader className="h-4 w-4 fill-gray-900 sm:h-6 sm:w-6" />
                 )}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center sm:gap-1">
                   {session.speed == "fast" ? (
-                    <ClockHot />
+                    <ClockHot className="sm:h-11 sm:w-11" />
                   ) : session.speed == "normal" ? (
-                    <ClockNormal />
+                    <ClockNormal className="sm:h-11 sm:w-11" />
                   ) : (
-                    <ClockCold />
+                    <ClockCold className="sm:h-11 sm:w-11" />
                   )}
-                  {session.adultOnly ? <CatAdult /> : <CatBaby />}
+                  {session.adultOnly ? (
+                    <CatAdult className="sm:h-11 sm:w-11" />
+                  ) : (
+                    <CatBaby className="sm:h-11 sm:w-11" />
+                  )}
                 </div>
-                <span className="text-2xl font-bold">{session.players}/10</span>
+                <span className="text-lg font-bold sm:text-2xl">
+                  {session.players}/10
+                </span>
               </div>
             </button>
           ))}

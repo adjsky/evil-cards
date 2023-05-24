@@ -54,7 +54,11 @@ const Entry: React.FC = () => {
             data-testid="connect-session"
           >
             {connecting ? (
-              <Loader className="fill-gray-100 opacity-75" />
+              <Loader
+                className="fill-gray-100 opacity-75"
+                width={20}
+                height={20}
+              />
             ) : (
               "Играть"
             )}

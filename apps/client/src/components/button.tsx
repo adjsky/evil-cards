@@ -32,7 +32,7 @@ const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
     <button
       className={twMerge(
         "flex items-center justify-center",
-        "rounded-lg text-base leading-none transition-colors sm:text-xl sm:leading-none",
+        "rounded-lg text-xl leading-none transition-colors sm:leading-none",
         variantClasses[variant],
         icon && "group gap-2",
         props.disabled && "opacity-80",
