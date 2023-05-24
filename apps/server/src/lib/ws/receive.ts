@@ -1,8 +1,8 @@
 import z from "zod"
-import semverValid from "semver/functions/valid"
-import { implement } from "../zod-implements"
+import semverValid from "semver/functions/valid.js"
+import { implement } from "../zod-implements.ts"
 
-import type { Configuration } from "../../game/types"
+import type { Configuration } from "../../game/types.ts"
 
 const semverString = () =>
   z.string().refine((version) => semverValid(version) != null, {

@@ -1,13 +1,27 @@
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
-import type { Message as ReceiveMessage } from "../lib/ws/receive"
-import type { Message as SendMessage } from "../lib/ws/send"
-import type { DateTimeout } from "../lib/date-timeout"
-import type { ReqContext } from "../context"
-import type { MapDiscriminatedUnion, UnwrapField, With } from "../types/utility"
-import type { SendPlayer } from "../lib/ws/send"
+import type { Message as ReceiveMessage } from "../lib/ws/receive.ts"
+import type { Message as SendMessage } from "../lib/ws/send.ts"
+import type { DateTimeout } from "../lib/date-timeout.ts"
+import type { ReqContext } from "@evil-cards/ctx-log"
+import type {
+  MapDiscriminatedUnion,
+  UnwrapField,
+  With
+} from "../types/utility.ts"
+import type { SendPlayer } from "../lib/ws/send.ts"
+import type { ISession } from "./interfaces.ts"
 
-type WithHelperData<T> = With<{ socket: WebSocket; ctx: ReqContext }, T>
+export type ControllerWebSocket = WebSocket & {
+  session?: ISession | null
+  player?: Player | null
+  alive?: boolean
+}
+
+type WithHelperData<T> = With<
+  { socket: ControllerWebSocket; ctx: ReqContext },
+  T
+>
 
 export type ServerEvent = WithHelperData<
   UnwrapField<MapDiscriminatedUnion<ReceiveMessage, "type">, "details">
@@ -44,7 +58,6 @@ export type Player = {
   disconnected: boolean
   deck: Card[]
   sender: PlayerSender
-  leaveTimeout: NodeJS.Timeout | null
 }
 
 export type Card = {
@@ -76,7 +89,7 @@ export type Configuration = {
 }
 
 export type Timeouts = Record<
-  "voting" | "starting" | "choosebest",
+  "voting" | "starting" | "choosebest" | "endsesion",
   null | DateTimeout
 >
 

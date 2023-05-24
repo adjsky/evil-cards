@@ -4,7 +4,7 @@ import { Interweave } from "interweave"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 
 import {
-  useSocket,
+  useSessionSocket,
   useScreenFactor,
   useTimeBar,
   useLeavePreventer
@@ -18,13 +18,11 @@ import DiscardIcon from "../../assets/discard.svg"
 import ExclamationTriangleIcon from "../../assets/exclamation-triangle.svg"
 import Modal from "@/components/modal"
 
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { GameState } from "@/lib/atoms"
 
 const Game: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   useLeavePreventer()
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>()
+  const { sendJsonMessage } = useSessionSocket()
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
@@ -272,7 +270,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
       <Modal
         isOpen={isOpen}
         onClose={() => setOpen(false)}
-        className="w-full max-w-sm transform overflow-hidden rounded-xl bg-gray-100 p-6 text-left align-middle text-gray-900 shadow-lg transition-all"
+        className="w-full max-w-sm rounded-xl bg-gray-100 p-6 text-gray-900 shadow-lg"
       >
         <Modal.Title as="h3" className="text-center text-xl font-bold">
           ЖЕЛАЕТЕ СБРОСИТЬ КАРТЫ?

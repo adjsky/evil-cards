@@ -1,4 +1,8 @@
-import type { ISession, ISessionFactory, ISessionManager } from "./interfaces"
+import type {
+  ISession,
+  ISessionFactory,
+  ISessionManager
+} from "./interfaces.ts"
 
 class SessionManager implements ISessionManager {
   private sessions: Map<string, ISession>
@@ -23,6 +27,10 @@ class SessionManager implements ISessionManager {
 
   public get(id: string) {
     return this.sessions.get(id)
+  }
+
+  public getAll() {
+    return Array.from(this.sessions.values())
   }
 }
 

@@ -6,7 +6,7 @@ import type {
   SessionEvents,
   PlayerSender,
   Timeouts
-} from "./types"
+} from "./types.ts"
 
 type PublicEvents = {
   on: SessionEvents["on"]
@@ -23,12 +23,7 @@ export interface ISession {
   events: PublicEvents
   configuration: Configuration
 
-  join(
-    sender: PlayerSender,
-    nickname: string,
-    avatarId: number,
-    host: boolean
-  ): Player
+  join(sender: PlayerSender, nickname: string, avatarId: number): Player
   leave(playerId: string): void
   updateConfiguration(playerId: string, configuration: Configuration): void
   startGame(playerId: string): void
@@ -38,6 +33,8 @@ export interface ISession {
   discardCards(playerId: string): void
   endGame(): void
   getTimeoutDate(name: keyof Timeouts): Date | undefined
+  isPlaying(): boolean
+  isWaiting(): boolean
 }
 
 export interface ISessionFactory {
@@ -48,4 +45,5 @@ export interface ISessionManager {
   create(): ISession
   delete(id: string): boolean
   get(id: string): ISession | undefined
+  getAll(): ISession[]
 }

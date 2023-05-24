@@ -4,7 +4,18 @@ import type {
   Configuration,
   Vote,
   Card
-} from "../../game/types"
+} from "../../game/types.ts"
+
+export type AvailableSession = {
+  id: string
+  server: number
+  playing: boolean
+  players: number
+  hostNickname: string
+  hostAvatarId: number
+  adultOnly: boolean
+  speed: "normal" | "fast" | "slow"
+}
 
 export type SendPlayer = Omit<GamePlayer, "sender" | "deck" | "leaveTimeout">
 

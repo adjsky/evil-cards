@@ -1,27 +1,26 @@
 import { serializeError } from "serialize-error"
 import Emittery from "emittery"
-import semverSatisfies from "semver/functions/satisfies"
+import semverSatisfies from "semver/functions/satisfies.js"
+import { omit } from "ramda"
+import { logWithCtx } from "@evil-cards/ctx-log"
+import { initializeSessionCache } from "@evil-cards/redis/session"
+import { createInternalCtx } from "@evil-cards/ctx-log"
 
-import { messageSchema } from "../lib/ws/receive"
-import stringify from "../lib/ws/stringify"
-import {
-  ALIVE_CHECK_INTERVAL_MS,
-  SESSION_REDIS_EXPIRE_SECONDS
-} from "./constants"
+import { messageSchema } from "../lib/ws/receive.ts"
+import stringify from "../lib/ws/stringify.ts"
+import { ALIVE_CHECK_INTERVAL_MS } from "./constants.ts"
 import {
   InSessionError,
-  InternalError,
   NoPlayerError,
   NoSessionError,
+  SessionCacheSynchronizeError,
   SessionNotFoundError,
   VersionMismatchError
-} from "./errors"
-import omit from "../functions/omit"
-import { logWithCtx } from "../context"
+} from "./errors.ts"
 
-import type { WebSocket } from "ws"
-import type { ISessionManager, ISession } from "./interfaces"
+import type { ISessionManager, ISession } from "./interfaces.ts"
 import type {
+  ControllerWebSocket,
   ControllerEvents,
   ServerEvent,
   Status,
@@ -29,10 +28,11 @@ import type {
   Configuration,
   Player,
   BroadcastCallback
-} from "./types"
+} from "./types.ts"
 import type { FastifyBaseLogger } from "fastify"
-import type { ReqContext } from "../context"
-import type { RedisClientWithLogs } from "../redis-client-with-logs"
+import type { ReqContext } from "@evil-cards/ctx-log"
+import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
+import type { SessionCache } from "@evil-cards/redis/session"
 
 export type ControllerConfig = {
   serverNumber: number
@@ -41,11 +41,15 @@ export type ControllerConfig = {
 class Controller {
   private sessionManager: ISessionManager
   private events: ControllerEvents
-  private redisClient: RedisClientWithLogs
+  private _sessionCache: SessionCache
   private config: ControllerConfig
   private log: FastifyBaseLogger
 
   private versionMap: Map<string, string>
+
+  public get sessionCache() {
+    return this._sessionCache
+  }
 
   public constructor(
     sessionManager: ISessionManager,
@@ -55,7 +59,7 @@ class Controller {
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
-    this.redisClient = redisClient
+    this._sessionCache = initializeSessionCache(redisClient)
     this.config = config
     this.log = log.child({ component: "game controller" })
 
@@ -79,7 +83,7 @@ class Controller {
     })
   }
 
-  public handleConnection(ctx: ReqContext, socket: WebSocket) {
+  public handleConnection(ctx: ReqContext, socket: ControllerWebSocket) {
     socket.alive = true
     const interval = setInterval(() => {
       if (!socket.alive) {
@@ -142,65 +146,41 @@ class Controller {
     const session = this.sessionManager.create()
     socket.session = session
 
-    const handleSessionEnd = () => {
-      this.log.info({ sessionId: session.id }, "handling session end")
+    const player = session.join(socket, nickname, avatarId)
+    socket.player = player
 
-      session.events.clearListeners()
+    const isSynchronized = await this.syncSessionCache(ctx, session)
+    if (!isSynchronized) {
+      this.handleSessionEnd(session)
 
-      this.redisClient.del(ctx, `sessionserver:${session.id}`).catch(() => {
-        // do nothing with errors to prevent crashes
-        // errors are automatically logged in the client
-      })
-
-      this.versionMap.delete(session.id)
-      this.sessionManager.delete(session.id)
+      throw new SessionCacheSynchronizeError()
     }
 
-    try {
-      await this.redisClient.set(
-        ctx,
-        `sessionserver:${session.id}`,
-        this.config.serverNumber,
-        {
-          EX: SESSION_REDIS_EXPIRE_SECONDS
-        }
-      )
+    this.versionMap.set(session.id, appVersion)
 
-      const player = session.join(socket, nickname, avatarId, true)
-      socket.player = player
+    this.setupSessionListeners(ctx, session)
+    session.events.on("sessionend", () => this.handleSessionEnd(session))
 
-      this.versionMap.set(session.id, appVersion)
+    socket.on("close", () => {
+      this.events.emit("close", { socket, ctx })
+    })
 
-      this.setupSessionListeners(session)
-      session.events.on("sessionend", handleSessionEnd)
-
-      socket.on("close", () => {
-        this.events.emit("close", { socket, ctx })
-      })
-
-      socket.send(
-        stringify({
-          type: "create",
-          details: {
-            changedState: {
-              id: session.id,
-              status: session.status,
-              playerId: player.id,
-              players: session.players.map((player) =>
-                omit(player, ["sender", "deck", "leaveTimeout"])
-              ),
-              configuration: session.configuration
-            }
+    socket.send(
+      stringify({
+        type: "create",
+        details: {
+          changedState: {
+            id: session.id,
+            status: session.status,
+            playerId: player.id,
+            players: session.players.map((player) =>
+              omit(["sender", "deck"], player)
+            ),
+            configuration: session.configuration
           }
-        })
-      )
-    } catch (error) {
-      handleSessionEnd()
-
-      logWithCtx(ctx, this.log).error({ err: error, sessionId: session.id })
-
-      throw new InternalError()
-    }
+        }
+      })
+    )
   }
 
   private joinSession({
@@ -227,7 +207,7 @@ class Controller {
       throw new VersionMismatchError()
     }
 
-    const player = session.join(socket, nickname, avatarId, false)
+    const player = session.join(socket, nickname, avatarId)
 
     socket.session = session
     socket.player = player
@@ -245,7 +225,7 @@ class Controller {
             status: session.status,
             playerId: player.id,
             players: session.players.map((player) =>
-              omit(player, ["sender", "deck", "leaveTimeout"])
+              omit(["sender", "deck"], player)
             ),
             deck: player.deck,
             redCard: session.redCard,
@@ -258,7 +238,7 @@ class Controller {
     )
   }
 
-  private disconnect(socket: WebSocket) {
+  private disconnect(socket: ControllerWebSocket) {
     const session = socket.session
 
     if (!session) {
@@ -376,10 +356,12 @@ class Controller {
     session.discardCards(player.id)
   }
 
-  private setupSessionListeners(session: ISession) {
+  private setupSessionListeners(ctx: ReqContext, session: ISession) {
     const handleStatusChange = (status: Status) => {
       switch (status) {
         case "starting": {
+          this.syncSessionCache(ctx, session)
+
           this.broadcast(session, () => ({
             type: "gamestart",
             details: {
@@ -455,6 +437,8 @@ class Controller {
         }
 
         case "end": {
+          this.syncSessionCache(ctx, session)
+
           this.broadcast(session, (players) => ({
             type: "gameend",
             details: {
@@ -506,6 +490,8 @@ class Controller {
     }
 
     const handleConfigurationChange = (configuration: Configuration) => {
+      this.syncSessionCache(ctx, session)
+
       this.broadcast(session, () => ({
         type: "configurationchange",
         details: {
@@ -517,6 +503,10 @@ class Controller {
     }
 
     const handleJoin = (joinedPlayer: Player) => {
+      if (session.isWaiting()) {
+        this.syncSessionCache(ctx, session)
+      }
+
       this.broadcast(session, (players, player) => {
         if (joinedPlayer.id == player.id) {
           return
@@ -534,6 +524,10 @@ class Controller {
     }
 
     const handleLeave = () => {
+      if (session.isWaiting()) {
+        this.syncSessionCache(ctx, session)
+      }
+
       this.broadcast(session, (players) => ({
         type: "playerleave",
         details: {
@@ -571,7 +565,7 @@ class Controller {
 
   private broadcast(session: ISession, callback: BroadcastCallback) {
     const sendPlayers = session.players.map((player) =>
-      omit(player, ["sender", "deck", "leaveTimeout"])
+      omit(["sender", "deck"], player)
     )
 
     session.players.forEach((player) => {
@@ -587,6 +581,67 @@ class Controller {
 
       player.sender.send(stringify(result))
     })
+  }
+
+  private async syncSessionCache(ctx: ReqContext, session: ISession) {
+    const host = session.players.find((player) => player.host)
+
+    let hostNickname = host?.nickname
+    let hostAvatarId = host?.avatarId
+
+    if (!hostNickname || !hostAvatarId) {
+      const prevCachedSession = await this._sessionCache.get(ctx, session.id)
+
+      if (prevCachedSession.none) {
+        return false
+      }
+
+      hostNickname = prevCachedSession.unwrap().hostNickname
+      hostAvatarId = prevCachedSession.unwrap().hostAvatarId
+    }
+
+    return this._sessionCache.set(ctx, {
+      id: session.id,
+      players: session.players.length,
+      playing: session.isPlaying(),
+      server: this.config.serverNumber,
+      adultOnly: session.configuration.version18Plus,
+      hostNickname,
+      hostAvatarId,
+      speed:
+        session.configuration.votingDurationSeconds == 30
+          ? "fast"
+          : session.configuration.votingDurationSeconds == 60
+          ? "normal"
+          : "slow"
+    })
+  }
+
+  public handleSessionEnd(session: ISession) {
+    const ctx = createInternalCtx()
+
+    this.log.info({ sessionId: session.id }, "handling session end")
+
+    session.events.clearListeners()
+
+    this._sessionCache.del(ctx, session.id)
+
+    this.versionMap.delete(session.id)
+    this.sessionManager.delete(session.id)
+  }
+
+  public async cleanSessionCache() {
+    this.log.info("cleaning session cache")
+
+    const ctx = createInternalCtx()
+
+    await Promise.all(
+      this.sessionManager
+        .getAll()
+        .map((session) => this._sessionCache.del(ctx, session.id))
+    )
+
+    this.log.info("successfully cleaned session cache")
   }
 }
 

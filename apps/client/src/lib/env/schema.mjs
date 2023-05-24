@@ -19,7 +19,7 @@ export const serverSchema = z.object({
  */
 export const clientSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
-  NEXT_PUBLIC_WS_HOST: z.string().optional(),
+  NEXT_PUBLIC_WS_HOST: z.string().url().optional(),
   NEXT_PUBLIC_SITE_HOST: z.string().url(),
   NEXT_PUBLIC_WITH_ANALYTICS: z.coerce.boolean(),
   NEXT_PUBLIC_WITH_SENTRY: z.coerce.boolean()

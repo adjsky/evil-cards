@@ -17,14 +17,14 @@ beforeEach(() => {
 
 const fakeGameStateUpdateHandler = jest.fn()
 const sendJsonMessageMock = jest.fn()
-const disconnectMock = jest.fn()
 
-jest.mock("@/lib/hooks/use-socket", () => ({
+jest.mock("@/lib/hooks/use-session-socket", () => ({
   __esModule: true,
   default: () => ({
     sendJsonMessage: sendJsonMessageMock,
-    connected: true,
-    disconnect: disconnectMock
+    updateUrl: () => {
+      //
+    }
   })
 }))
 jest.mock("@/lib/functions/copy-text", () => ({

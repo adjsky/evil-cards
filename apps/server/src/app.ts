@@ -1,14 +1,17 @@
 import Fastify from "fastify"
 import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
-
 import websocketPlugin from "@fastify/websocket"
-import memoryLogPlugin from "./plugins/log-memory"
-import { buildRedisClient } from "./build"
+import { getClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
-import websocketRoutes from "./routes/ws"
-import { env } from "./env"
-import { getRedisClientWithLogs } from "./redis-client-with-logs"
+import memoryLogPlugin from "./plugins/log-memory.ts"
+import gracefulShutdown from "./plugins/graceful-shutdown.ts"
+import { buildRedisClient } from "./build.ts"
+import Controller from "./game/controller.ts"
+import SessionManager from "./game/session-manager.ts"
+import { SessionFactory } from "./game/session.ts"
+import gameRoutes from "./routes/game.ts"
+import { env } from "./env.ts"
 
 const envLogger = {
   development: {
@@ -26,19 +29,51 @@ const envLogger = {
 
 const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
 
-const redisClient = buildRedisClient()
+// REDIS
+const redisClient = getClientWithLogs(buildRedisClient(), fastify.log)
 await redisClient.connect()
 
-const redisClientWithLogs = getRedisClientWithLogs(redisClient, fastify.log)
+// GAME
+const sessionFactory = new SessionFactory()
+const sessionManager = new SessionManager(sessionFactory)
+const controller = new Controller(
+  sessionManager,
+  redisClient,
+  {
+    serverNumber: env.SERVER_NUMBER
+  },
+  fastify.log
+)
 
+// REDIS SESSION SUBSCRIBER
+const subscriber = await controller.sessionCache.initializeSubscriber()
+if (subscriber.none) {
+  throw new Error("Could not initialize sessionCache subscriber")
+}
+const [subscribe, subscriberCleanup] = subscriber.unwrap()
+
+// FASTIFY PLUGINS
 await fastify.register(fastifyCompress)
 await fastify.register(fastifyCors, {
   origin: env.CORS_ORIGIN
 })
-
-await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })
 await fastify.register(websocketPlugin)
-await fastify.register(websocketRoutes, { redisClient: redisClientWithLogs })
+
+// INTERNAL PLUGINS
+await fastify.register(gracefulShutdown, {
+  async onSignal() {
+    await controller.cleanSessionCache()
+    await Promise.all([redisClient.disconnect(), subscriberCleanup()])
+  }
+})
+await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })
+
+// ROUTES
+await fastify.register(gameRoutes, {
+  controller,
+  subscribe,
+  prefix: "/ws"
+})
 
 await fastify.listen({
   port: env.PORT,

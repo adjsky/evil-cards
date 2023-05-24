@@ -6,7 +6,7 @@ import { useAtom, useSetAtom } from "jotai"
 import { useRouter } from "next/router"
 
 import {
-  useSocket,
+  useSessionSocket,
   useToggle,
   useCountdown,
   useScreenFactor,
@@ -16,6 +16,7 @@ import { getScoreLabel, copyText } from "@/lib/functions"
 import { reconnectingGameAtom, soundsAtom } from "@/lib/atoms"
 import { updateSnackbar } from "@/components/snackbar/use"
 
+import Button from "@/components/button"
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import BackButton from "@/components/back-button"
@@ -26,14 +27,10 @@ import Authors from "@/components/authors"
 import SoundOn from "@/assets/sound-on.svg"
 import SoundOff from "@/assets/sound-off.svg"
 import Gear from "@/assets/gear.svg"
-import Close from "@/assets/waiting-close.svg"
+import Close from "@/assets/close/line.svg"
 import Author from "@/assets/author.svg"
 
-import type {
-  Message as ReceiveMessage,
-  Player
-} from "@evil-cards/server/src/lib/ws/send"
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
+import type { Player } from "@evil-cards/server/src/lib/ws/send"
 import type { GameState } from "@/lib/atoms"
 
 const Waiting: React.FC<{
@@ -43,6 +40,8 @@ const Waiting: React.FC<{
   useLeavePreventer()
   const [sounds, setSounds] = useAtom(soundsAtom)
   const setReconnectingGame = useSetAtom(reconnectingGameAtom)
+
+  const [isStarting, setIsStarting] = useState(false)
 
   const [visibleMainScreen, setVisibleMainScreen] = useState<
     "configuration" | "rules" | "authors"
@@ -58,14 +57,13 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { lastJsonMessage, sendJsonMessage, disconnect } = useSocket<
-    SendMessage,
-    ReceiveMessage
-  >({
+  const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
       }
+
+      setIsStarting(data.type == "gamestart")
     }
   })
 
@@ -90,7 +88,7 @@ const Waiting: React.FC<{
       updateSnackbar({ open: false })
       setReconnectingGame(false)
 
-      disconnect()
+      updateUrl(null)
     }
 
     leaving.current = true
@@ -109,7 +107,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, disconnect, setReconnectingGame])
+  }, [onGameStateUpdate, updateUrl, setReconnectingGame])
 
   const router = useRouter()
   useEffect(() => {
@@ -199,16 +197,14 @@ const Waiting: React.FC<{
                   </button>
                 )}
               </div>
-              <div className="flex w-full justify-center gap-2 sm:gap-6">
+              <div className="flex w-full justify-center gap-2">
                 <InviteButton id={gameState.id} />
                 <StartButton
                   lowerOpacity={lowerButtonOpacity}
                   onClick={onStart}
-                  disabled={
-                    lastJsonMessage?.type == "gamestart" || !player?.host
-                  }
+                  disabled={isStarting || !player?.host}
                   secondsLeft={secondsLeft}
-                  withCountdown={lastJsonMessage?.type == "gamestart"}
+                  withCountdown={isStarting}
                 />
               </div>
             </div>
@@ -227,17 +223,15 @@ const StartButton: React.FC<{
   onClick?: () => void
 }> = ({ lowerOpacity, secondsLeft, withCountdown, disabled, onClick }) => {
   return (
-    <button
+    <Button
+      variant="filled"
       onClick={onClick}
-      className={clsx(
-        "w-28 rounded-lg bg-red-500 text-base leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 sm:w-32 sm:text-xl sm:leading-none",
-        lowerOpacity && "opacity-50"
-      )}
+      className={clsx("w-28 uppercase sm:w-32", lowerOpacity && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
-      {withCountdown ? secondsLeft : "НАЧАТЬ"}
-    </button>
+      {withCountdown ? secondsLeft : "Начать"}
+    </Button>
   )
 }
 
@@ -256,8 +250,9 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="relative">
-      <button
-        className="rounded-lg border border-gray-100 bg-gray-900 px-4 py-4 text-base leading-none text-gray-100 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:px-5 sm:text-xl sm:leading-none"
+      <Button
+        variant="outlined"
+        className="px-4 py-4 uppercase sm:px-5"
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 
@@ -274,15 +269,15 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         }}
         data-testid="invite-player"
       >
-        ПРИГЛАСИТЬ
-      </button>
+        Пригласить
+      </Button>
       <span
         className={clsx(
-          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold tracking-wider text-gold-500 transition-opacity",
+          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold uppercase tracking-wider text-gold-500 transition-opacity",
           copied ? "opacity-100" : "opacity-0"
         )}
       >
-        СКОПИРОВАНО
+        Скопировано
       </span>
     </div>
   )

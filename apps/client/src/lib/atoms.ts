@@ -1,5 +1,7 @@
 import { atom } from "jotai"
 import { atomWithSafeStorage } from "@/core/atom-with-safe-storage"
+import getRandomInt from "./functions/get-random-int"
+
 import type {
   Vote,
   Player,
@@ -22,7 +24,10 @@ export type GameState = {
 }
 
 export const gameStateAtom = atom<GameState | null>(null)
-export const nicknameAtom = atomWithSafeStorage("nickname", "Игрок")
+export const nicknameAtom = atomWithSafeStorage(
+  "nickname",
+  `Игрок${getRandomInt(1000, 9999)}`
+)
 export const avatarAtom = atomWithSafeStorage("avatar", 1)
 export const soundsAtom = atomWithSafeStorage("sounds", true)
 

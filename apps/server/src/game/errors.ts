@@ -100,12 +100,6 @@ export class DisconnectedError extends Error {
   }
 }
 
-export class MultipleLeaveError extends Error {
-  constructor() {
-    super("you can't leave more than once")
-  }
-}
-
 export class InternalError extends Error {
   constructor() {
     super("internal error")
@@ -127,5 +121,11 @@ export class DiscardCardsError extends Error {
 export class NotPlayingError extends Error {
   constructor() {
     super("you are not playing")
+  }
+}
+
+export class SessionCacheSynchronizeError extends Error {
+  constructor() {
+    super("failed to syncronize session cache")
   }
 }

@@ -1,3 +1,5 @@
+name: evil-cards-prod
+
 services:
   mail:
     image: bytemark/smtp

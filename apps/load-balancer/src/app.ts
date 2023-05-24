@@ -2,10 +2,14 @@ import Fastify from "fastify"
 import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
 import { createClient } from "redis"
-import { SequentialRoundRobin } from "round-robin-js"
-
-import { env } from "./env"
 import { z } from "zod"
+import { getClientWithLogs } from "@evil-cards/redis/client-with-logs"
+import { createCtxFromReq } from "@evil-cards/ctx-log"
+import { initializeSessionCache } from "@evil-cards/redis/session"
+
+import makeURLFromServer from "./make-url-from-server.ts"
+import setupRoundRobin from "./setup-round-robin.ts"
+import { env } from "./env.ts"
 
 const envLogger = {
   development: {
@@ -30,41 +34,17 @@ await fastify.register(fastifyCors, {
   origin: env.CORS_ORIGIN
 })
 
-const redis = createClient({ url: env.REDIS_URL })
+const redis = getClientWithLogs(
+  createClient({ url: env.REDIS_URL }),
+  fastify.log
+)
 const subscriber = redis.duplicate()
 
 await Promise.all([redis.connect(), subscriber.connect()])
 
-async function getServerNumbersFromRedis() {
-  const rawServers = await redis.get("servers")
+const sessionCache = initializeSessionCache(redis)
 
-  let parsedServerNumbers = Array.from({
-    length: env.INITIAL_AVAILABLE_SERVERS
-  }).map((_, index) => (index + 1).toString())
-
-  if (rawServers) {
-    parsedServerNumbers = rawServers.split(" ")
-  }
-
-  return parsedServerNumbers.map((parsedServerNumber) =>
-    makeURLFromServer(parsedServerNumber)
-  )
-}
-
-function makeURLFromServer(serverNumber: string) {
-  return `${env.WS_PROTOCOL}://sv-${serverNumber}.${env.SITE_DOMAIN}`
-}
-
-const serversRoundRobin = new SequentialRoundRobin(
-  await getServerNumbersFromRedis()
-)
-
-await subscriber.pSubscribe("__keyspace@*__:servers", async () => {
-  const servers = await getServerNumbersFromRedis()
-
-  serversRoundRobin.clear()
-  servers.forEach((server) => serversRoundRobin.add(server))
-})
+const roundRobin = await setupRoundRobin(redis, subscriber)
 
 const getQuerySchema = z.object({
   sessionId: z.string().optional()
@@ -78,18 +58,21 @@ fastify.get("/", async (req, res) => {
   }
 
   const sessionId = query.data.sessionId
+  const ctx = createCtxFromReq(req)
 
   if (sessionId) {
-    const sessionServer = await redis.get(`sessionserver:${sessionId}`)
+    const cachedSession = await sessionCache.get(ctx, sessionId)
 
-    if (!sessionServer) {
+    if (cachedSession.none) {
       return res.status(404).send({ message: "could not find session server" })
     }
 
-    return res.send({ host: makeURLFromServer(sessionServer), message: "ok" })
+    const server = cachedSession.unwrap().server
+
+    return res.send({ host: makeURLFromServer(server), message: "ok" })
   }
 
-  const server = serversRoundRobin.next()
+  const server = roundRobin.next()
 
   res.send({ host: server.value, message: "ok" })
 })

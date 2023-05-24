@@ -2,12 +2,11 @@ import dayjs from "dayjs"
 import { jest } from "@jest/globals"
 import waitForExpect from "wait-for-expect"
 
-import Session from "../../src/game/session"
+import Session from "../../src/game/session.ts"
 import {
   GAME_START_DELAY_MS,
-  BEST_CARD_VIEW_DURATION_MS,
-  LEAVE_TIMEOUT_MS
-} from "../../src/game/constants"
+  BEST_CARD_VIEW_DURATION_MS
+} from "../../src/game/constants.ts"
 
 let session: Session
 const sender = {
@@ -26,10 +25,10 @@ afterEach(() => {
 
 describe("regular gameplay", () => {
   it("processes gameplay as expected", () => {
-    session.join(sender, "user1", 0, true)
-    session.join(sender, "user2", 0, false)
-    session.join(sender, "user3", 0, false)
-    session.join(sender, "user4", 0, false)
+    session.join(sender, "user1", 0)
+    session.join(sender, "user2", 0)
+    session.join(sender, "user3", 0)
+    session.join(sender, "user4", 0)
 
     const firstPlayer = session.players[0]
 
@@ -144,10 +143,10 @@ describe("regular gameplay", () => {
     session.events.on("statuschange", statusChangeMock)
     session.events.on("vote", voteMock)
 
-    session.join(sender, "user1", 0, true)
-    session.join(sender, "user2", 0, false)
-    session.join(sender, "user3", 0, false)
-    session.join(sender, "user4", 0, false)
+    session.join(sender, "user1", 0)
+    session.join(sender, "user2", 0)
+    session.join(sender, "user3", 0)
+    session.join(sender, "user4", 0)
 
     const firstPlayer = session.players[0]
     const secondPlayer = session.players[1]
@@ -185,9 +184,9 @@ describe("regular gameplay", () => {
   })
 
   it("automatically starts choosing", () => {
-    session.join(sender, "1", 0, true)
-    session.join(sender, "2", 0, false)
-    session.join(sender, "3", 0, false)
+    session.join(sender, "1", 0)
+    session.join(sender, "2", 0)
+    session.join(sender, "3", 0)
 
     session.startGame(session.players[0].id)
 
@@ -201,9 +200,9 @@ describe("regular gameplay", () => {
   })
 
   it("votes with a random card if user didn't vote", () => {
-    session.join(sender, "1", 0, true)
-    session.join(sender, "2", 0, false)
-    session.join(sender, "3", 0, false)
+    session.join(sender, "1", 0)
+    session.join(sender, "2", 0)
+    session.join(sender, "3", 0)
 
     session.startGame(session.players[0].id)
 
@@ -218,19 +217,17 @@ describe("regular gameplay", () => {
   })
 
   it("doesn't master a disconnected user", () => {
-    session.join(sender, "1", 0, true)
-    session.join(sender, "2", 0, false)
-    session.join(sender, "3", 0, false)
-    session.join(sender, "4", 0, false)
-    session.join(sender, "5", 0, false)
+    session.join(sender, "1", 0)
+    session.join(sender, "2", 0)
+    session.join(sender, "3", 0)
+    session.join(sender, "4", 0)
+    session.join(sender, "5", 0)
 
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
     session.leave(session.players[1].id)
     session.leave(session.players[0].id)
-
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[1].master).toBeFalsy()
     expect(session.players[2].master).toBeTruthy()
@@ -239,9 +236,9 @@ describe("regular gameplay", () => {
   })
 
   it("uses configuration", () => {
-    session.join(sender, "1", 0, true)
-    session.join(sender, "2", 0, false)
-    session.join(sender, "3", 0, false)
+    session.join(sender, "1", 0)
+    session.join(sender, "2", 0)
+    session.join(sender, "3", 0)
 
     const firstPlayer = session.players[0]
     const secondPlayer = session.players[1]
@@ -280,9 +277,9 @@ describe("regular gameplay", () => {
 
 describe("cards discarding", () => {
   it("disallows discarding if player score = 0 and session has a waiting status", () => {
-    const player = session.join(sender, "user1", 0, true)
-    session.join(sender, "user2", 0, false)
-    session.join(sender, "user3", 0, false)
+    const player = session.join(sender, "user1", 0)
+    session.join(sender, "user2", 0)
+    session.join(sender, "user3", 0)
 
     expect(() => session.discardCards(player.id)).toThrow()
 
@@ -296,9 +293,9 @@ describe("cards discarding", () => {
   })
 
   it("discards as expected", () => {
-    const player = session.join(sender, "user1", 0, true)
-    const player2 = session.join(sender, "user2", 0, false)
-    session.join(sender, "user3", 0, false)
+    const player = session.join(sender, "user1", 0)
+    const player2 = session.join(sender, "user2", 0)
+    session.join(sender, "user3", 0)
 
     session.startGame(player.id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)

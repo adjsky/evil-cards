@@ -2,19 +2,19 @@ import { nanoid } from "nanoid"
 import Emittery from "emittery"
 import dayjs from "dayjs"
 
-import { whiteCards, redCards } from "./cards"
-import getRandomInt from "../functions/get-random-int"
-import shuffleArray from "../functions/shuffle-array"
-import { setDateTimeout } from "../lib/date-timeout"
+import { whiteCards, redCards } from "./cards.ts"
+import getRandomInt from "../functions/get-random-int.ts"
+import shuffleArray from "../functions/shuffle-array.ts"
+import { setDateTimeout } from "../lib/date-timeout.ts"
 import {
   BEST_CARD_VIEW_DURATION_MS,
   GAME_START_DELAY_MS,
-  LEAVE_TIMEOUT_MS,
+  SESSION_END_TIMEOUT_MS,
   MAX_PLAYERS_IN_SESSSION,
   MIN_PLAYERS_TO_START_GAME,
   SESSION_ID_SIZE,
   USER_ID_SIZE
-} from "./constants"
+} from "./constants.ts"
 import {
   ForbiddenNicknameError,
   ForbiddenToChooseError,
@@ -29,10 +29,9 @@ import {
   NotEnoughPlayersError,
   DisconnectedError,
   TooManyPlayersError,
-  MultipleLeaveError,
   DiscardCardsError,
   NotPlayingError
-} from "./errors"
+} from "./errors.ts"
 
 import type {
   Card,
@@ -43,9 +42,9 @@ import type {
   SessionEvents,
   PlayerSender,
   Timeouts
-} from "./types"
-import type { Card as StoredCard } from "./cards"
-import type { ISession, ISessionFactory } from "./interfaces"
+} from "./types.ts"
+import type { Card as StoredCard } from "./cards.ts"
+import type { ISession, ISessionFactory } from "./interfaces.ts"
 
 class Session implements ISession {
   private _id: string
@@ -98,7 +97,8 @@ class Session implements ISession {
     this._timeouts = {
       choosebest: null,
       starting: null,
-      voting: null
+      voting: null,
+      endsesion: null
     }
     this._votes = []
     this._players = []
@@ -107,28 +107,18 @@ class Session implements ISession {
     this._events = new Emittery()
   }
 
-  public join(
-    sender: PlayerSender,
-    nickname: string,
-    avatarId: number,
-    host: boolean
-  ) {
+  public join(sender: PlayerSender, nickname: string, avatarId: number) {
     const existingPlayer = this._players.find(
       (player) => player.nickname == nickname
     )
 
     if (existingPlayer) {
-      if (!existingPlayer.disconnected && existingPlayer.leaveTimeout == null) {
+      if (!existingPlayer.disconnected) {
         throw new ForbiddenNicknameError()
       }
 
       if (existingPlayer.disconnected) {
         existingPlayer.disconnected = false
-      }
-
-      if (existingPlayer.leaveTimeout) {
-        clearTimeout(existingPlayer.leaveTimeout)
-        existingPlayer.leaveTimeout = null
       }
 
       existingPlayer.avatarId = avatarId
@@ -149,18 +139,22 @@ class Session implements ISession {
       throw new GameStartedError()
     }
 
+    if (this._timeouts.endsesion != null) {
+      this._timeouts.endsesion.clear()
+      this._timeouts.endsesion = null
+    }
+
     const player: Player = {
       id: nanoid(USER_ID_SIZE),
       avatarId,
       nickname,
       score: 0,
-      host,
+      host: this._players.length == 0,
       master: false,
       voted: false,
       disconnected: false,
       deck: [],
-      sender,
-      leaveTimeout: null
+      sender
     }
 
     this._players.push(player)
@@ -179,50 +173,46 @@ class Session implements ISession {
       throw new DisconnectedError()
     }
 
-    if (!player.disconnected && player.leaveTimeout != null) {
-      throw new MultipleLeaveError()
+    const isPlaying = this.isPlaying()
+
+    if (isPlaying) {
+      player.disconnected = true
+    } else {
+      this._players = this._players.filter((p) => p.id != playerId)
     }
 
-    player.leaveTimeout = setTimeout(() => {
-      player.leaveTimeout = null
+    const remainingPlayers = this._players.filter((p) => !p.disconnected)
 
-      const isPlaying = this.isPlaying()
-
-      if (isPlaying) {
-        player.disconnected = true
-      } else {
-        this._players = this._players.filter((p) => p.id != playerId)
-      }
-
-      const remainingPlayers = this._players.filter((p) => !p.disconnected)
-
-      if (remainingPlayers.length == 0) {
-        this.clearTimeouts()
-
-        this._events.emit("leave", player)
-        this._events.emit("sessionend")
-
-        return
-      }
-
-      if (player.host) {
-        if (isPlaying) {
-          player.host = false
-        }
-
-        remainingPlayers[0].host = true
-      }
-
-      if (isPlaying && player.master) {
-        this.passMaster()
-      }
-
+    if (remainingPlayers.length == 0) {
       this._events.emit("leave", player)
 
-      if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
-        this.endGame()
+      this._timeouts.endsesion = setDateTimeout(() => {
+        this._timeouts.endsesion = null
+
+        this.clearTimeouts()
+        this._events.emit("sessionend")
+      }, dayjs().add(SESSION_END_TIMEOUT_MS, "ms").toDate())
+
+      return
+    }
+
+    if (player.host) {
+      if (isPlaying) {
+        player.host = false
       }
-    }, LEAVE_TIMEOUT_MS)
+
+      remainingPlayers[0].host = true
+    }
+
+    if (isPlaying && player.master) {
+      this.passMaster()
+    }
+
+    this._events.emit("leave", player)
+
+    if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
+      this.endGame()
+    }
   }
 
   public updateConfiguration(playerId: string, configuration: Configuration) {
@@ -423,6 +413,14 @@ class Session implements ISession {
     return this._timeouts[name]?.date
   }
 
+  public isWaiting() {
+    return this._status == "waiting" || this._status == "end"
+  }
+
+  public isPlaying() {
+    return !this.isWaiting()
+  }
+
   private startVoting() {
     if (!this._availableRedCards) {
       throw new Error("received null availableRedCards")
@@ -587,18 +585,6 @@ class Session implements ISession {
       value.clear()
       this._timeouts[key as keyof Timeouts] = null
     }
-  }
-
-  private isWaiting() {
-    return (
-      this._status == "waiting" ||
-      this._status == "end" ||
-      this._status == "starting"
-    )
-  }
-
-  private isPlaying() {
-    return !this.isWaiting()
   }
 }
 

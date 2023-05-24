@@ -1,4 +1,4 @@
-import CatEyes from "@/assets/cat-eyes.svg"
+import CatEyes from "@/assets/cats/eyes.svg"
 
 const Logo = () => (
   <div className="flex flex-col items-center justify-center">

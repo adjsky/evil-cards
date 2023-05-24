@@ -2,13 +2,13 @@ import "@/styles/globals.css"
 import React, { useEffect } from "react"
 import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
-import { useRouter } from "next/router"
+import SingletonRouter, { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
 import packageJson from "../../package.json"
 
 import getMetaTags from "@/lib/seo"
 import { gameStateAtom, soundsAtom, reconnectingGameAtom } from "@/lib/atoms"
-import { useSocket } from "@/lib/hooks"
+import { useSessionSocket } from "@/lib/hooks"
 import { PreviousPathnameProvider } from "@/lib/contexts/previous-pathname"
 import { useSnackbar, updateSnackbar } from "@/components/snackbar/use"
 import { mapErrorMessage } from "@/lib/functions"
@@ -20,8 +20,6 @@ import ExclamationTriangle from "../assets/exclamation-triangle.svg"
 import Modal from "@/components/modal"
 
 import type { AppProps } from "next/app"
-import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const { Snackbar, reconnecting } = useSocketEvents()
@@ -67,36 +65,25 @@ const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
   return (
     <Modal
       isOpen={visible}
-      className="mx-2 flex flex-col items-center text-center text-xl font-medium text-gray-100"
+      className="flex flex-col items-center text-xl font-medium text-gray-100"
     >
       <ExclamationTriangle className="h-24 w-24 animate-pulse fill-red-500" />
-      <Modal.Title>Упс, пропало соединение.</Modal.Title>
-      <Modal.Description>Пытаемся его восстановить.</Modal.Description>
+      <Modal.Title>Упс, пропало соединение</Modal.Title>
+      <Modal.Description>Пытаемся его восстановить</Modal.Description>
     </Modal>
   )
 }
 
 const useSocketEvents = () => {
   const Snackbar = useSnackbar()
-  const router = useRouter()
 
   const [gameState, setGameState] = useAtom(gameStateAtom)
   const sounds = useAtomValue(soundsAtom)
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage } = useSocket<SendMessage, ReceiveMessage>({
+  const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(message) {
-      if (reconnectingGame) {
-        setReconnectingGame(false)
-
-        if (message.type == "error") {
-          router.replace("/")
-
-          return
-        }
-      }
-
       if (message.type == "error" && message.details) {
         updateSnackbar({
           message: mapErrorMessage(message.details),
@@ -104,6 +91,17 @@ const useSocketEvents = () => {
           open: true,
           infinite: false
         })
+      }
+
+      if (reconnectingGame) {
+        setReconnectingGame(false)
+
+        if (message.type == "error") {
+          setGameState(null)
+          updateUrl(null)
+
+          return
+        }
       }
 
       if (sounds) {
@@ -165,19 +163,34 @@ const useSocketEvents = () => {
           }
       }
     },
-    onClose(_, manually, reconnectingSocket) {
-      if (manually || reconnectingSocket == undefined) {
+    onClose(_, { manually, reconnecting }) {
+      if (!manually && !reconnecting) {
+        updateUrl(null)
+
+        updateSnackbar({
+          message: "Не удалось подключиться к серверу",
+          open: true,
+          severity: "error",
+          infinite: false
+        })
+      }
+
+      if (!reconnecting) {
+        setGameState(null)
+      }
+
+      setReconnectingGame(reconnecting)
+    },
+    onOpen() {
+      if (gameState == null || !reconnectingGame) {
         return
       }
 
-      setReconnectingGame(reconnectingSocket)
-    },
-    onOpen() {
-      const player = gameState?.players.find(
+      const player = gameState.players.find(
         (player) => player.id == gameState.playerId
       )
 
-      if (player && gameState) {
+      if (player) {
         sendJsonMessage({
           type: "joinsession",
           details: {
@@ -188,6 +201,13 @@ const useSocketEvents = () => {
           }
         })
       }
+    },
+    shouldReconnect(nReconnects, disconnectedManually) {
+      if (nReconnects == 5 || disconnectedManually) {
+        return false
+      }
+
+      return SingletonRouter.pathname != "/"
     }
   })
 

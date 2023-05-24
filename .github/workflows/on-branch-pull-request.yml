@@ -21,12 +21,12 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version-file: ".nvmrc"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
+      - name: Enable corepack
+        run: |
+          corepack enable pnpm
+          pnpm --version
 
       - name: Install deps
         run: pnpm --frozen-lockfile install
@@ -45,12 +45,12 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version-file: ".nvmrc"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
+      - name: Enable corepack
+        run: |
+          corepack enable pnpm
+          pnpm --version
 
       - name: Install deps
         run: pnpm --frozen-lockfile install

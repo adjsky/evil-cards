@@ -1,20 +1,20 @@
 import { jest } from "@jest/globals"
-import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants"
+import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants.ts"
 import { mock } from "jest-mock-extended"
 import waitForExpect from "wait-for-expect"
-import SessionManager from "../../src/game/session-manager"
-import { SessionFactory } from "../../src/game/session"
+import SessionManager from "../../src/game/session-manager.ts"
+import { SessionFactory } from "../../src/game/session.ts"
 
-import type { RedisClientWithLogs } from "../../src/redis-client-with-logs"
+import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 import type { FastifyBaseLogger } from "fastify"
-import type { ReqContext } from "../../src/context"
+import type { ReqContext } from "@evil-cards/ctx-log"
 
 jest.unstable_mockModule(
   "ws",
-  async () => await import("../config/mocked-web-socket")
+  async () => await import("../config/mocked-web-socket.ts")
 )
 
-const Controller = (await import("../../src/game/controller")).default
+const Controller = (await import("../../src/game/controller.ts")).default
 const WebSocket = (await import("ws")).default
 
 function getMockLog() {
@@ -23,15 +23,20 @@ function getMockLog() {
   })
 }
 
+function getRedisClientWithLogs() {
+  return mock<RedisClientWithLogs>({
+    hDel() {
+      return Promise.resolve(1)
+    },
+    hSet() {
+      return Promise.resolve(1)
+    },
+    withContext: getRedisClientWithLogs
+  })
+}
+
 const sessionManager = new SessionManager(new SessionFactory())
-const redisClient = mock<RedisClientWithLogs>({
-  del() {
-    return Promise.resolve(0)
-  },
-  set() {
-    return Promise.resolve(null)
-  }
-})
+const redisClient = getRedisClientWithLogs()
 const log = getMockLog()
 const ctx = mock<ReqContext>()
 

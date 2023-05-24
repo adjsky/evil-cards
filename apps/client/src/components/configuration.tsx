@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import clsx from "clsx"
 import { Listbox, Transition, RadioGroup } from "@headlessui/react"
-import ArrowDown from "@/assets/arrow-down.svg"
+import ArrowDown from "@/assets/arrows/down.svg"
 import { useFloating, autoUpdate } from "@floating-ui/react-dom"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/send"

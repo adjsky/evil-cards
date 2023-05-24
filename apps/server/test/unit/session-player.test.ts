@@ -1,10 +1,13 @@
 import { jest } from "@jest/globals"
 import waitForExpect from "wait-for-expect"
 
-import Session from "../../src/game/session"
-import { GAME_START_DELAY_MS, LEAVE_TIMEOUT_MS } from "../../src/game/constants"
+import Session from "../../src/game/session.ts"
+import {
+  GAME_START_DELAY_MS,
+  SESSION_END_TIMEOUT_MS
+} from "../../src/game/constants.ts"
 
-import type { Player } from "../../src/game/types"
+import type { Player } from "../../src/game/types.ts"
 
 const sender = {
   send() {
@@ -21,17 +24,16 @@ describe("join", () => {
   it("joins", async () => {
     const username = "abobus"
     const avatarId = 1
-    const host = false
 
     const fnMock = jest.fn((player: Player) => {
       expect(session.players.length).toBe(1)
       expect(player.avatarId).toBe(avatarId)
       expect(player.nickname).toBe(username)
-      expect(player.host).toBe(host)
+      expect(player.host).toBe(true)
     })
 
     session.events.on("join", fnMock)
-    session.join(sender, username, avatarId, host)
+    session.join(sender, username, avatarId)
 
     await waitForExpect(() => {
       expect(fnMock).toBeCalled()
@@ -39,10 +41,10 @@ describe("join", () => {
   })
 
   it("reassigns avatar and sender if player reconnects", () => {
-    session.join(sender, "1", 0, true)
-    session.join(sender, "2", 0, false)
-    session.join(sender, "3", 0, false)
-    const player4 = session.join(sender, "4", 0, false)
+    session.join(sender, "1", 0)
+    session.join(sender, "2", 0)
+    session.join(sender, "3", 0)
+    const player4 = session.join(sender, "4", 0)
 
     expect(player4.sender).toBe(sender)
     expect(player4.avatarId).toBe(0)
@@ -54,17 +56,17 @@ describe("join", () => {
     }
 
     session.leave(player4.id)
-    const reconnectedPlayer4 = session.join(newFakeSender, "4", 4, false)
+    const reconnectedPlayer4 = session.join(newFakeSender, "4", 4)
 
     expect(reconnectedPlayer4.sender).toBe(newFakeSender)
     expect(reconnectedPlayer4.avatarId).toBe(4)
   })
 
   it("reconnects players while playing", () => {
-    session.join(sender, "1", 0, true)
-    session.join(sender, "2", 0, false)
-    session.join(sender, "3", 0, false)
-    session.join(sender, "4", 0, false)
+    session.join(sender, "1", 0)
+    session.join(sender, "2", 0)
+    session.join(sender, "3", 0)
+    session.join(sender, "4", 0)
 
     jest.useFakeTimers()
 
@@ -73,10 +75,8 @@ describe("join", () => {
 
     session.leave(session.players[0].id)
 
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
-
     expect(session.players[0].disconnected).toBeTruthy()
-    session.join(sender, "1", 1, false)
+    session.join(sender, "1", 1)
     expect(session.players[0].disconnected).toBeFalsy()
 
     jest.useRealTimers()
@@ -93,15 +93,10 @@ describe("leave", () => {
 
     session.events.on("leave", fnMock)
 
-    session.join(sender, "qweqwe", 1, false)
-    session.join(sender, "asdssd", 1, false)
-
-    jest.useFakeTimers()
+    session.join(sender, "qweqwe", 1)
+    session.join(sender, "asdssd", 1)
 
     session.leave(session.players[0].id)
-
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
-    jest.useRealTimers()
 
     await waitForExpect(() => {
       expect(fnMock).toBeCalled()
@@ -109,34 +104,28 @@ describe("leave", () => {
   })
 
   it("deletes player if session is in waiting state", () => {
-    session.join(sender, "asd", 1, false)
-    session.join(sender, "wqe", 1, false)
-
-    jest.useFakeTimers()
+    session.join(sender, "asd", 1)
+    session.join(sender, "wqe", 1)
 
     session.leave(session.players[0].id)
-
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
-    jest.useRealTimers()
 
     expect(session.players.length).toBe(1)
   })
 
   it("marks player as disconnected if session is in playing state", () => {
-    session.join(sender, "1", 1, true)
-    session.join(sender, "2", 1, false)
-    session.join(sender, "3", 1, false)
-    session.join(sender, "4", 1, false)
+    session.join(sender, "1", 1)
+    session.join(sender, "2", 1)
+    session.join(sender, "3", 1)
+    session.join(sender, "4", 1)
 
     jest.useFakeTimers()
 
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.leave(session.players[1].id)
-
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
     jest.useRealTimers()
+
+    session.leave(session.players[1].id)
 
     expect(session.players[1].disconnected).toBeTruthy()
 
@@ -144,15 +133,10 @@ describe("leave", () => {
   })
 
   it("makes the first connected player host", () => {
-    session.join(sender, "wqe", 1, true)
-    session.join(sender, "asd", 1, false)
-
-    jest.useFakeTimers()
+    session.join(sender, "wqe", 1)
+    session.join(sender, "asd", 1)
 
     session.leave(session.players[0].id)
-
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
-    jest.useRealTimers()
 
     expect(session.players[0].host).toBeTruthy()
   })
@@ -168,15 +152,16 @@ describe("leave", () => {
     session.events.on("leave", leaveMock)
     session.events.on("sessionend", sessionEndMock)
 
-    session.join(sender, "qweqwe", 1, false)
-    session.join(sender, "asdssd", 1, false)
-
     jest.useFakeTimers()
 
-    session.leave(session.players[0].id)
-    session.leave(session.players[1].id)
+    session.join(sender, "qweqwe", 1)
+    session.join(sender, "asdssd", 1)
 
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    session.leave(session.players[0].id)
+    session.leave(session.players[0].id)
+
+    jest.advanceTimersByTime(SESSION_END_TIMEOUT_MS)
+
     jest.useRealTimers()
 
     await waitForExpect(() => {
@@ -186,42 +171,36 @@ describe("leave", () => {
   })
 
   it("makes the next connected player master when master player disconnects in a playing session", () => {
-    session.join(sender, "1", 1, true)
-    session.join(sender, "2", 1, false)
-    session.join(sender, "3", 1, false)
-    session.join(sender, "4", 1, false)
-    session.join(sender, "5", 1, false)
-    session.join(sender, "6", 1, false)
+    session.join(sender, "1", 1)
+    session.join(sender, "2", 1)
+    session.join(sender, "3", 1)
+    session.join(sender, "4", 1)
+    session.join(sender, "5", 1)
+    session.join(sender, "6", 1)
 
     jest.useFakeTimers()
 
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.leave(session.players[0].id)
+    jest.useRealTimers()
 
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    session.leave(session.players[0].id)
 
     expect(session.players[1].master).toBeTruthy()
 
     session.leave(session.players[1].id)
     session.leave(session.players[2].id)
 
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
-
     expect(session.players[3].master).toBeTruthy()
 
-    session.join(sender, "1", 1, false)
-    session.join(sender, "2", 1, false)
-    session.join(sender, "3", 1, false)
+    session.join(sender, "1", 1)
+    session.join(sender, "2", 1)
+    session.join(sender, "3", 1)
 
     session.leave(session.players[3].id)
     session.leave(session.players[4].id)
     session.leave(session.players[5].id)
-
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
-
-    jest.useRealTimers()
 
     expect(session.players[0].master).toBeTruthy()
 
