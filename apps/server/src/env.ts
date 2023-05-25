@@ -14,7 +14,7 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(8000),
   LOG_MEMORY: z.coerce.boolean(),
   SERVER_NUMBER: z.coerce.number().default(1),
-  REDIS_URL: z.string().url(),
+  KEYDB_URL: z.string().url(),
   CORS_ORIGIN: z.string()
 })
 

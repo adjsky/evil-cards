@@ -3,7 +3,7 @@ import { createCtxFromReq } from "@evil-cards/ctx-log"
 import type { FastifyPluginCallback } from "fastify"
 import type { AvailableSession } from "../lib/ws/send.ts"
 import type Controller from "../game/controller.ts"
-import type { Subscribe } from "@evil-cards/redis/session"
+import type { Subscribe } from "@evil-cards/keydb"
 
 const gameRoutes: FastifyPluginCallback<{
   controller: Controller

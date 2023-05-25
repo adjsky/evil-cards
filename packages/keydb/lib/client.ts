@@ -1,13 +1,12 @@
 import { logWithCtx } from "@evil-cards/ctx-log"
+import redis from "redis"
 
 import type { RedisClientType } from "redis"
 import type { Logger, ReqContext } from "@evil-cards/ctx-log"
 
-export type RedisClientWithLogs = Omit<RedisClientType, "duplicate"> & {
+export type Client = Omit<RedisClientType, "duplicate"> & {
   withContext(ctx: ReqContext): RedisClientType
-  duplicate(
-    ...args: Parameters<RedisClientType["duplicate"]>
-  ): RedisClientWithLogs
+  duplicate(...args: Parameters<RedisClientType["duplicate"]>): Client
 }
 
 type CallableKeys<T> = keyof {
@@ -51,6 +50,56 @@ const syncCommands = arrayOfAllSyncCommands([
 
 const commandsToIgnore = ["withContext"]
 
+export function createClient(url: string, baseLog: Logger) {
+  const client: RedisClientType = redis.createClient({ url })
+
+  return getClientWithLogs(client, baseLog)
+}
+
+function getClientWithLogs(client: RedisClientType, baseLog: Logger): Client {
+  const log = baseLog.child({ component: "redis" })
+
+  const originalDuplicate = client.duplicate.bind(client)
+
+  const handleGet = (
+    target: RedisClientType,
+    command: string | symbol,
+    receiver: unknown,
+    ctx?: ReqContext
+  ) => {
+    if (isSyncCommand(command)) {
+      return getSyncCommand(target, command, ctx ? logWithCtx(ctx, log) : log)
+    }
+
+    if (isAsyncCommand(target, command)) {
+      return getAsyncCommand(target, command, ctx ? logWithCtx(ctx, log) : log)
+    }
+
+    return Reflect.get(target, command, receiver)
+  }
+
+  const proxy = new Proxy(client, {
+    get(target, command, receiver) {
+      return handleGet(target, command, receiver)
+    }
+  })
+
+  return Object.assign(proxy, {
+    withContext(ctx: ReqContext) {
+      return new Proxy(client, {
+        get(target, command, receiver) {
+          return handleGet(target, command, receiver, ctx)
+        }
+      })
+    },
+    duplicate(...args: Parameters<RedisClientType["duplicate"]>) {
+      const duplicatedClient = originalDuplicate(...args)
+
+      return getClientWithLogs(duplicatedClient, baseLog)
+    }
+  })
+}
+
 function isAsyncCommand(
   redisClient: RedisClientType,
   command: string | symbol
@@ -73,62 +122,7 @@ function isSyncCommand(command: string | symbol): command is SyncCommand {
   return syncCommands.findIndex((syncCommand) => syncCommand == command) != -1
 }
 
-export function getClientWithLogs(
-  redisClient: RedisClientType,
-  baseLog: Logger
-): RedisClientWithLogs {
-  const log = baseLog.child({ component: "redis" })
-
-  const originalDuplicate = redisClient.duplicate.bind(redisClient)
-
-  const handleGet = (
-    target: RedisClientType,
-    command: string | symbol,
-    receiver: unknown,
-    ctx?: ReqContext
-  ) => {
-    if (isSyncCommand(command)) {
-      return getSyncCommandWithLogs(
-        target,
-        command,
-        ctx ? logWithCtx(ctx, log) : log
-      )
-    }
-
-    if (isAsyncCommand(target, command)) {
-      return getAsyncCommandWithLogs(
-        target,
-        command,
-        ctx ? logWithCtx(ctx, log) : log
-      )
-    }
-
-    return Reflect.get(target, command, receiver)
-  }
-
-  const proxy = new Proxy(redisClient, {
-    get(target, command, receiver) {
-      return handleGet(target, command, receiver)
-    }
-  })
-
-  return Object.assign(proxy, {
-    withContext(ctx: ReqContext) {
-      return new Proxy(redisClient, {
-        get(target, command, receiver) {
-          return handleGet(target, command, receiver, ctx)
-        }
-      })
-    },
-    duplicate(...args: Parameters<RedisClientType["duplicate"]>) {
-      const duplicatedClient = originalDuplicate(...args)
-
-      return getClientWithLogs(duplicatedClient, baseLog)
-    }
-  })
-}
-
-function getAsyncCommandWithLogs(
+function getAsyncCommand(
   target: RedisClientType,
   command: AsyncCommand,
   log: Logger
@@ -148,7 +142,7 @@ function getAsyncCommandWithLogs(
   }
 }
 
-function getSyncCommandWithLogs(
+function getSyncCommand(
   target: RedisClientType,
   command: SyncCommand,
   log: Logger

@@ -14,7 +14,7 @@
   "dependencies": {
     "@evil-cards/ctx-log": "workspace:^",
     "@evil-cards/fp": "workspace:^",
-    "@evil-cards/redis": "workspace:^",
+    "@evil-cards/keydb": "workspace:^",
     "@fastify/compress": "^6.3.0",
     "@fastify/cors": "^8.2.1",
     "@fastify/websocket": "^8.1.0",
@@ -25,7 +25,6 @@
     "fastify": "^4.17.0",
     "nanoid": "^4.0.0",
     "ramda": "^0.29.0",
-    "redis": "^4.6.5",
     "semver": "^7.3.8",
     "serialize-error": "^11.0.0",
     "zod": "^3.21.4"
