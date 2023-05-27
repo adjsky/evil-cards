@@ -51,22 +51,34 @@ function err<O, E>(err: E): Result<O, E> {
   }
 }
 
+type OnError = (error: unknown) => void
+
 function tryCatch<O, E = Error>(
-  f: LazyArg<Exclude<O, Promise<unknown>>>
+  f: LazyArg<Exclude<O, Promise<unknown>>>,
+  onError?: OnError
 ): Result<O, E> {
   try {
     return ok(f())
   } catch (error) {
+    if (onError) {
+      onError(error)
+    }
+
     return err(error as E)
   }
 }
 
 async function asyncTryCatch<O, E = Error>(
-  f: AsyncLazyArg<O>
+  f: AsyncLazyArg<O>,
+  onError?: OnError
 ): Promise<Result<O, E>> {
   try {
     return ok(await f())
   } catch (error) {
+    if (onError) {
+      onError(error)
+    }
+
     return err(error as E)
   }
 }

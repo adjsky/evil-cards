@@ -61,18 +61,31 @@ function none<T>(): Option<T> {
   }
 }
 
-function tryCatch<T>(f: LazyArg<T>): Option<T> {
+type OnError = (error: unknown) => void
+
+function tryCatch<T>(f: LazyArg<T>, onError?: OnError): Option<T> {
   try {
     return some(f())
   } catch (error) {
+    if (onError) {
+      onError(error)
+    }
+
     return none()
   }
 }
 
-async function asyncTryCatch<T>(f: AsyncLazyArg<T>): Promise<Option<T>> {
+async function asyncTryCatch<T>(
+  f: AsyncLazyArg<T>,
+  onError?: OnError
+): Promise<Option<T>> {
   try {
     return some(await f())
   } catch (error) {
+    if (onError) {
+      onError(error)
+    }
+
     return none()
   }
 }

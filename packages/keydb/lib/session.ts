@@ -2,7 +2,7 @@ import { Option } from "@evil-cards/fp"
 import { z } from "zod"
 import { createInternalCtx } from "@evil-cards/ctx-log"
 
-import type { Client } from "./client"
+import type { Client } from "./client/base.ts"
 import type { ReqContext } from "@evil-cards/ctx-log"
 
 export type CachedSession = z.infer<typeof sessionSchema>
@@ -48,7 +48,7 @@ export class SessionCache {
         .exec()
     )
 
-    if (!result.some) {
+    if (result.none) {
       return false
     }
 
