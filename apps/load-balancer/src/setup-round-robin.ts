@@ -1,4 +1,4 @@
-import getServersFromCache from "./get-servers-from-cache"
+import getServersFromCache from "./get-servers-from-cache.ts"
 import { SequentialRoundRobin } from "round-robin-js"
 import type { Client } from "@evil-cards/keydb"
 

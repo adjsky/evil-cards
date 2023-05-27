@@ -48,7 +48,7 @@ const syncCommands = arrayOfAllSyncCommands([
   "unref"
 ])
 
-const commandsToIgnore = ["withContext"]
+const commandsToIgnore = ["withContext", "multi"]
 
 export function createClient(url: string, baseLog: Logger) {
   const client: RedisClientType = redis.createClient({ url })

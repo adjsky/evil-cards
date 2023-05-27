@@ -292,6 +292,9 @@ importers:
       '@jest/globals':
         specifier: ^29.3.1
         version: 29.3.1
+      '@total-typescript/shoehorn':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@types/jest':
         specifier: ^29.2.3
         version: 29.2.3
@@ -3059,6 +3062,10 @@ packages:
   /@tootallnate/once@2.0.0:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
+    dev: true
+
+  /@total-typescript/shoehorn@0.1.0:
+    resolution: {integrity: sha512-XKig6hXxWnUh0fsW3LR2vxpxwLlPFokfOSR0riHKA9uXvdHDfwOOPdAOi4U/YNKLmgYUu/plUfnF3yiAAz1+Zg==}
     dev: true
 
   /@trysound/sax@0.2.0:

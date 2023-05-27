@@ -48,7 +48,13 @@ export class SessionCache {
         .exec()
     )
 
-    return result.some
+    if (!result.some) {
+      return false
+    }
+
+    const [set, expire] = result.unwrap()
+
+    return set == "1" && expire == "1"
   }
 
   public async get(
