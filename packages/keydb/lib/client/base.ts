@@ -14,15 +14,30 @@ export type Client = Omit<RedisClientType, "duplicate"> & {
 export function createClient(url: string, baseLog: Logger) {
   const client: RedisClientType = redis.createClient({ url })
 
-  return getClientWithLogs(client, baseLog)
+  return getClientWithLogs(client, baseLog, true)
 }
 
-function getClientWithLogs(client: RedisClientType, baseLog: Logger): Client {
+type RedisClientWithOriginals = RedisClientType & {
+  originalDuplicate: RedisClientType["duplicate"]
+  originalMulti: RedisClientType["multi"]
+}
+
+function getClientWithLogs(
+  client: RedisClientType,
+  baseLog: Logger,
+  keepOriginals?: boolean
+): Client {
   const log = baseLog.child({ component: "redis" })
   const handler = getHandler(log)
 
   const originalDuplicate = client.duplicate.bind(client)
   const originalMulti = client.multi.bind(client)
+
+  const clientWithOriginals = client as RedisClientWithOriginals
+  if (keepOriginals) {
+    clientWithOriginals.originalDuplicate = originalDuplicate
+    clientWithOriginals.originalMulti = originalMulti
+  }
 
   const multiProxyFactory = getMultiProxyFactory(baseLog)
 
@@ -34,21 +49,15 @@ function getClientWithLogs(client: RedisClientType, baseLog: Logger): Client {
 
   return Object.assign(proxy, {
     withContext(ctx: ReqContext) {
-      return getClientWithLogs(
-        Object.assign(client, {
-          duplicate: originalDuplicate,
-          multi: originalMulti
-        }),
-        logWithCtx(ctx, log)
-      )
+      return getClientWithLogs(client, logWithCtx(ctx, log))
     },
     duplicate(...args: Parameters<RedisClientType["duplicate"]>) {
-      const duplicatedClient = originalDuplicate(...args)
+      const duplicatedClient = clientWithOriginals.originalDuplicate(...args)
 
       return getClientWithLogs(duplicatedClient, baseLog)
     },
     multi() {
-      const multiClient = originalMulti()
+      const multiClient = clientWithOriginals.originalMulti()
 
       return multiProxyFactory(multiClient)
     }
