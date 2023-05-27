@@ -1,15 +1,16 @@
 {
-  "name": "@evil-cards/keydb",
+  "name": "@evil-cards/redis",
   "private": true,
+  "exports": {
+    "./*": "./lib/*.ts"
+  },
   "main": "./lib/index.ts",
-  "types": "./lib/index.ts",
   "type": "module",
   "license": "MIT",
   "dependencies": {
     "@evil-cards/ctx-log": "workspace:^",
     "@evil-cards/fp": "workspace:^",
-    "zod": "^3.20.6",
-    "redis": "^4.6.5"
+    "zod": "^3.20.6"
   },
   "devDependencies": {
     "@evil-cards/eslint-config": "workspace:^",
@@ -17,6 +18,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
+    "redis": "^4.6.5",
     "typescript": "^5.0.4"
   }
 }

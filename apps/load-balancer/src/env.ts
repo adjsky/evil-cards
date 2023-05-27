@@ -12,7 +12,7 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   PORT: z.coerce.number().default(1337),
-  KEYDB_URL: z.string().url(),
+  REDIS_URL: z.string().url(),
   SITE_DOMAIN: z.string(),
   WS_PROTOCOL: z.string(),
   INITIAL_AVAILABLE_SERVERS: z.coerce.number(),

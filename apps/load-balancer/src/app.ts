@@ -1,9 +1,11 @@
 import Fastify from "fastify"
 import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
+import { createClient } from "redis"
 import { z } from "zod"
+import { getClientWithLogs } from "@evil-cards/redis/client-with-logs"
 import { createCtxFromReq } from "@evil-cards/ctx-log"
-import { SessionCache, createClient } from "@evil-cards/keydb"
+import { initializeSessionCache } from "@evil-cards/redis/session"
 
 import makeURLFromServer from "./make-url-from-server.ts"
 import setupRoundRobin from "./setup-round-robin.ts"
@@ -32,11 +34,15 @@ await fastify.register(fastifyCors, {
   origin: env.CORS_ORIGIN
 })
 
-const redis = createClient(env.KEYDB_URL, fastify.log)
+const redis = getClientWithLogs(
+  createClient({ url: env.REDIS_URL }),
+  fastify.log
+)
 const subscriber = redis.duplicate()
+
 await Promise.all([redis.connect(), subscriber.connect()])
 
-const sessionCache = new SessionCache(redis)
+const sessionCache = initializeSessionCache(redis)
 
 const roundRobin = await setupRoundRobin(redis, subscriber)
 

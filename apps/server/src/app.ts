@@ -2,10 +2,11 @@ import Fastify from "fastify"
 import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
 import websocketPlugin from "@fastify/websocket"
-import { createClient } from "@evil-cards/keydb"
+import { getClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 import memoryLogPlugin from "./plugins/log-memory.ts"
 import gracefulShutdown from "./plugins/graceful-shutdown.ts"
+import { buildRedisClient } from "./build.ts"
 import Controller from "./game/controller.ts"
 import SessionManager from "./game/session-manager.ts"
 import { SessionFactory } from "./game/session.ts"
@@ -29,7 +30,7 @@ const envLogger = {
 const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
 
 // REDIS
-const redisClient = createClient(env.KEYDB_URL, fastify.log)
+const redisClient = getClientWithLogs(buildRedisClient(), fastify.log)
 await redisClient.connect()
 
 // GAME

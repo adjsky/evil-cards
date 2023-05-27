@@ -1,9 +1,9 @@
 name: evil-cards-dev
 
 services:
-  keydb:
+  redis:
     extends:
       file: common.yml
-      service: keydb
+      service: redis
     ports:
       - 6379:6379

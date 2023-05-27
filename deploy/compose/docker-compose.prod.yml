@@ -36,10 +36,10 @@ services:
     env_file:
       - ../envs/plausible.env
 
-  keydb:
+  redis:
     extends:
       file: common.yml
-      service: keydb
+      service: redis
 
   server:
     extends:
@@ -49,7 +49,7 @@ services:
     deploy:
       replicas: 2
     depends_on:
-      - keydb
+      - redis
 
   load-balancer:
     extends:
@@ -57,7 +57,7 @@ services:
       service: load-balancer
     image: ghcr.io/adjsky/evil-cards/load-balancer-prod:${GITHUB_BRANCH:-master}
     depends_on:
-      - keydb
+      - redis
       - server
 
   client:

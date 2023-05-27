@@ -1,9 +1,9 @@
 services:
-  keydb:
-    image: eqalpha/keydb:x86_64_v6.3.3
+  redis:
+    image: redis:7.0.9
     volumes:
-      - ../keydb/keydb.conf:/usr/local/etc/keydb/keydb.conf
-    command: keydb-server /usr/local/etc/keydb/keydb.conf
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
     restart: always
 
   server:

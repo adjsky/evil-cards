@@ -1,10 +1,10 @@
 name: evil-cards-stage
 
 services:
-  keydb:
+  redis:
     extends:
       file: common.yml
-      service: keydb
+      service: redis
 
   server:
     extends:
@@ -12,7 +12,7 @@ services:
       service: server
     image: ghcr.io/adjsky/evil-cards/server-stage:${GITHUB_BRANCH:-master}
     depends_on:
-      - keydb
+      - redis
 
   client:
     extends:

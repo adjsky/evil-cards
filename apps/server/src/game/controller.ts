@@ -4,7 +4,7 @@ import semverSatisfies from "semver/functions/satisfies.js"
 import { omit } from "ramda"
 import { logWithCtx } from "@evil-cards/ctx-log"
 import { createInternalCtx } from "@evil-cards/ctx-log"
-import { SessionCache } from "@evil-cards/keydb"
+import { SessionCache } from "@evil-cards/redis/session"
 
 import { messageSchema } from "../lib/ws/receive.ts"
 import stringify from "../lib/ws/stringify.ts"
@@ -31,7 +31,7 @@ import type {
 } from "./types.ts"
 import type { FastifyBaseLogger } from "fastify"
 import type { ReqContext } from "@evil-cards/ctx-log"
-import type { Client } from "@evil-cards/keydb"
+import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
 
 export type ControllerConfig = {
   serverNumber: number
@@ -52,13 +52,13 @@ class Controller {
 
   public constructor(
     sessionManager: ISessionManager,
-    cacheClient: Client,
+    redisClient: RedisClientWithLogs,
     config: ControllerConfig,
     log: FastifyBaseLogger
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
-    this._sessionCache = new SessionCache(cacheClient)
+    this._sessionCache = new SessionCache(redisClient)
     this.config = config
     this.log = log.child({ component: "game controller" })
 
