@@ -182,9 +182,9 @@ importers:
       '@evil-cards/ctx-log':
         specifier: workspace:^
         version: link:../../packages/ctx-log
-      '@evil-cards/redis':
+      '@evil-cards/keydb':
         specifier: workspace:^
-        version: link:../../packages/redis
+        version: link:../../packages/keydb
       '@fastify/compress':
         specifier: ^6.3.0
         version: 6.3.0
@@ -200,9 +200,6 @@ importers:
       fastify:
         specifier: ^4.17.0
         version: 4.17.0
-      redis:
-        specifier: ^4.6.5
-        version: 4.6.5
       round-robin-js:
         specifier: ^3.0.5
         version: 3.0.5
@@ -246,9 +243,9 @@ importers:
       '@evil-cards/fp':
         specifier: workspace:^
         version: link:../../packages/fp
-      '@evil-cards/redis':
+      '@evil-cards/keydb':
         specifier: workspace:^
-        version: link:../../packages/redis
+        version: link:../../packages/keydb
       '@fastify/compress':
         specifier: ^6.3.0
         version: 6.3.0
@@ -279,9 +276,6 @@ importers:
       ramda:
         specifier: ^0.29.0
         version: 0.29.0
-      redis:
-        specifier: ^4.6.5
-        version: 4.6.5
       semver:
         specifier: ^7.3.8
         version: 7.3.8
@@ -298,6 +292,9 @@ importers:
       '@jest/globals':
         specifier: ^29.3.1
         version: 29.3.1
+      '@total-typescript/shoehorn':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@types/jest':
         specifier: ^29.2.3
         version: 29.2.3
@@ -402,7 +399,7 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4
 
-  packages/redis:
+  packages/keydb:
     dependencies:
       '@evil-cards/ctx-log':
         specifier: workspace:^
@@ -410,16 +407,16 @@ importers:
       '@evil-cards/fp':
         specifier: workspace:^
         version: link:../fp
+      redis:
+        specifier: ^4.6.5
+        version: 4.6.5
       zod:
         specifier: ^3.20.6
-        version: 3.20.6
+        version: 3.21.4
     devDependencies:
       '@evil-cards/eslint-config':
         specifier: workspace:^
         version: link:../eslint-config
-      redis:
-        specifier: ^4.6.5
-        version: 4.6.5
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -2554,6 +2551,7 @@ packages:
       '@redis/client': ^1.0.0
     dependencies:
       '@redis/client': 1.5.6
+    dev: false
 
   /@redis/client@1.5.6:
     resolution: {integrity: sha512-dFD1S6je+A47Lj22jN/upVU2fj4huR7S9APd7/ziUXsIXDL+11GPYti4Suv5y8FuXaN+0ZG4JF+y1houEJ7ToA==}
@@ -2562,6 +2560,7 @@ packages:
       cluster-key-slot: 1.1.2
       generic-pool: 3.9.0
       yallist: 4.0.0
+    dev: false
 
   /@redis/graph@1.1.0(@redis/client@1.5.6):
     resolution: {integrity: sha512-16yZWngxyXPd+MJxeSr0dqh2AIOi8j9yXKcKCwVaKDbH3HTuETpDVPcLujhFYVPtYrngSco31BUcSa9TH31Gqg==}
@@ -2569,6 +2568,7 @@ packages:
       '@redis/client': ^1.0.0
     dependencies:
       '@redis/client': 1.5.6
+    dev: false
 
   /@redis/json@1.0.4(@redis/client@1.5.6):
     resolution: {integrity: sha512-LUZE2Gdrhg0Rx7AN+cZkb1e6HjoSKaeeW8rYnt89Tly13GBI5eP4CwDVr+MY8BAYfCg4/N15OUrtLoona9uSgw==}
@@ -2576,6 +2576,7 @@ packages:
       '@redis/client': ^1.0.0
     dependencies:
       '@redis/client': 1.5.6
+    dev: false
 
   /@redis/search@1.1.2(@redis/client@1.5.6):
     resolution: {integrity: sha512-/cMfstG/fOh/SsE+4/BQGeuH/JJloeWuH+qJzM8dbxuWvdWibWAOAHHCZTMPhV3xIlH4/cUEIA8OV5QnYpaVoA==}
@@ -2583,6 +2584,7 @@ packages:
       '@redis/client': ^1.0.0
     dependencies:
       '@redis/client': 1.5.6
+    dev: false
 
   /@redis/time-series@1.0.4(@redis/client@1.5.6):
     resolution: {integrity: sha512-ThUIgo2U/g7cCuZavucQTQzA9g9JbDDY2f64u3AbAoz/8vE2lt2U37LamDUVChhaDA3IRT9R6VvJwqnUfTJzng==}
@@ -2590,6 +2592,7 @@ packages:
       '@redis/client': ^1.0.0
     dependencies:
       '@redis/client': 1.5.6
+    dev: false
 
   /@rollup/plugin-babel@5.3.1(@babel/core@7.20.12)(rollup@2.78.0):
     resolution: {integrity: sha512-WFfdLWU/xVWKeRQnKmIAQULUI7Il0gZnBIH/ZFO069wYIfPu+8zrfp/KMW0atmELoRDq8FbiP3VCss9MhCut7Q==}
@@ -3059,6 +3062,10 @@ packages:
   /@tootallnate/once@2.0.0:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
+    dev: true
+
+  /@total-typescript/shoehorn@0.1.0:
+    resolution: {integrity: sha512-XKig6hXxWnUh0fsW3LR2vxpxwLlPFokfOSR0riHKA9uXvdHDfwOOPdAOi4U/YNKLmgYUu/plUfnF3yiAAz1+Zg==}
     dev: true
 
   /@trysound/sax@0.2.0:
@@ -4185,6 +4192,7 @@ packages:
   /cluster-key-slot@1.1.2:
     resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
     engines: {node: '>=0.10.0'}
+    dev: false
 
   /co@4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
@@ -5386,6 +5394,7 @@ packages:
   /generic-pool@3.9.0:
     resolution: {integrity: sha512-hymDOu5B53XvN4QT9dBmZxPX4CWhBPPLguTZ9MMFeFa/Kg0xWVfylOVNlJji/E7yTZWFd/q9GO5TxDLq156D7g==}
     engines: {node: '>= 4'}
+    dev: false
 
   /gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -7763,6 +7772,7 @@ packages:
       '@redis/json': 1.0.4(@redis/client@1.5.6)
       '@redis/search': 1.1.2(@redis/client@1.5.6)
       '@redis/time-series': 1.0.4(@redis/client@1.5.6)
+    dev: false
 
   /regenerate-unicode-properties@10.1.0:
     resolution: {integrity: sha512-d1VudCLoIGitcU/hEg2QqvyGZQmdC0Lf8BqdOMXGFSvJP4bNV1+XqbPQeHHLD51Jh4QJJ225dlIFvY4Ly6MXmQ==}

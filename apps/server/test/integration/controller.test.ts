@@ -1,11 +1,12 @@
 import { jest } from "@jest/globals"
 import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants.ts"
 import { mock } from "jest-mock-extended"
+import { fromPartial } from "@total-typescript/shoehorn"
 import waitForExpect from "wait-for-expect"
 import SessionManager from "../../src/game/session-manager.ts"
 import { SessionFactory } from "../../src/game/session.ts"
 
-import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
+import type { Client } from "@evil-cards/keydb"
 import type { FastifyBaseLogger } from "fastify"
 import type { ReqContext } from "@evil-cards/ctx-log"
 
@@ -23,20 +24,38 @@ function getMockLog() {
   })
 }
 
-function getRedisClientWithLogs() {
-  return mock<RedisClientWithLogs>({
+function getMulti() {
+  return fromPartial<ReturnType<Client["multi"]>>({
+    exec() {
+      return Promise.resolve(["1", "1"])
+    },
+    hSet() {
+      return fromPartial(this)
+    },
+    addCommand() {
+      return fromPartial(this)
+    }
+  })
+}
+
+function getCacheClient() {
+  return mock<Client>({
     hDel() {
       return Promise.resolve(1)
     },
     hSet() {
       return Promise.resolve(1)
     },
-    withContext: getRedisClientWithLogs
+    hGetAll() {
+      return Promise.resolve({})
+    },
+    multi: getMulti,
+    withContext: getCacheClient
   })
 }
 
 const sessionManager = new SessionManager(new SessionFactory())
-const redisClient = getRedisClientWithLogs()
+const cacheClient = getCacheClient()
 const log = getMockLog()
 const ctx = mock<ReqContext>()
 
@@ -47,7 +66,7 @@ afterEach(() => {
 it("terminates connection after two failed pings", async () => {
   const controller = new Controller(
     sessionManager,
-    redisClient,
+    cacheClient,
     {
       serverNumber: 1
     },
@@ -74,7 +93,7 @@ it("terminates connection after two failed pings", async () => {
 it("checks app and session versions", async () => {
   const controller = new Controller(
     sessionManager,
-    redisClient,
+    cacheClient,
     {
       serverNumber: 1
     },

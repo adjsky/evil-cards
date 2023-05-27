@@ -2,17 +2,18 @@ import { Option } from "@evil-cards/fp"
 import { z } from "zod"
 import { createInternalCtx } from "@evil-cards/ctx-log"
 
-import type { RedisClientWithLogs } from "./client-with-logs"
+import type { Client } from "./client/base.ts"
 import type { ReqContext } from "@evil-cards/ctx-log"
 
 export type CachedSession = z.infer<typeof sessionSchema>
-export type Listener = (sessions: CachedSession[]) => void
+type Listener = (sessions: CachedSession[]) => void
 export type Subscribe = (listener: Listener) => Cleanup
 
-export type Cleanup = () => void
-export type AsyncCleanup = () => Promise<void>
+type Cleanup = () => void
+type AsyncCleanup = () => Promise<void>
 
 const hashKey = "session"
+const subkeyExpireSeconds = 60 * 60 // 2h
 
 const sessionSchema = z.object({
   id: z.string(),
@@ -26,20 +27,34 @@ const sessionSchema = z.object({
 })
 
 export class SessionCache {
-  private redis: RedisClientWithLogs
+  private client: Client
 
-  constructor(redis: RedisClientWithLogs) {
-    this.redis = redis
+  constructor(client: Client) {
+    this.client = client
   }
 
   public async set(ctx: ReqContext, session: CachedSession) {
     const result = await Option.asyncTryCatch(() =>
-      this.redis
+      this.client
         .withContext(ctx)
+        .multi()
         .hSet(hashKey, session.id, JSON.stringify(session))
+        .addCommand([
+          "EXPIREMEMBER",
+          hashKey,
+          session.id,
+          subkeyExpireSeconds.toString()
+        ])
+        .exec()
     )
 
-    return result.some
+    if (result.none) {
+      return false
+    }
+
+    const [set, expire] = result.unwrap()
+
+    return set == "1" && expire == "1"
   }
 
   public async get(
@@ -47,7 +62,7 @@ export class SessionCache {
     id: string
   ): Promise<Option<CachedSession>> {
     const rawSessionOption = await Option.asyncTryCatch(() =>
-      this.redis.withContext(ctx).hGet(hashKey, id)
+      this.client.withContext(ctx).hGet(hashKey, id)
     )
     if (rawSessionOption.none) {
       return Option.none()
@@ -63,7 +78,7 @@ export class SessionCache {
 
   public async getAll(ctx: ReqContext): Promise<Option<CachedSession[]>> {
     const rawSessions = await Option.asyncTryCatch(() =>
-      this.redis.withContext(ctx).hGetAll(hashKey)
+      this.client.withContext(ctx).hGetAll(hashKey)
     )
     if (rawSessions.none) {
       return Option.none()
@@ -92,7 +107,7 @@ export class SessionCache {
 
   public async del(ctx: ReqContext, id: string) {
     return Option.asyncTryCatch(() =>
-      this.redis.withContext(ctx).hDel(hashKey, id)
+      this.client.withContext(ctx).hDel(hashKey, id)
     )
   }
 
@@ -100,7 +115,7 @@ export class SessionCache {
     Option<[Subscribe, AsyncCleanup]>
   > {
     const subscriber = await Option.asyncTryCatch(async () => {
-      const subscriber = this.redis.duplicate()
+      const subscriber = this.client.duplicate()
       await subscriber.connect()
 
       return subscriber

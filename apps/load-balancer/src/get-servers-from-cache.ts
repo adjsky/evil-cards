@@ -1,10 +1,10 @@
 import makeURLFromServer from "./make-url-from-server.ts"
 import { env } from "./env.ts"
 
-import type { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
+import type { Client } from "@evil-cards/keydb"
 
-async function getServersFromRedis(redis: RedisClientWithLogs) {
-  const rawServers = await redis.get("servers")
+async function getServersFromCache(client: Client) {
+  const rawServers = await client.get("servers")
 
   let parsedServers: number[] = []
 
@@ -27,4 +27,4 @@ async function getServersFromRedis(redis: RedisClientWithLogs) {
   return parsedServers.map((parsedServer) => makeURLFromServer(parsedServer))
 }
 
-export default getServersFromRedis
+export default getServersFromCache

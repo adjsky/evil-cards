@@ -1,17 +1,14 @@
+import getServersFromCache from "./get-servers-from-cache.ts"
 import { SequentialRoundRobin } from "round-robin-js"
-import { RedisClientWithLogs } from "@evil-cards/redis/client-with-logs"
-import getServersFromRedis from "./get-servers-from-redis.ts"
+import type { Client } from "@evil-cards/keydb"
 
-async function setupRoundRobin(
-  redis: RedisClientWithLogs,
-  subscriber: RedisClientWithLogs
-) {
+async function setupRoundRobin(redis: Client, subscriber: Client) {
   const serversRoundRobin = new SequentialRoundRobin(
-    await getServersFromRedis(redis)
+    await getServersFromCache(redis)
   )
 
   await subscriber.pSubscribe("__keyspace@*__:servers", async () => {
-    const servers = await getServersFromRedis(redis)
+    const servers = await getServersFromCache(redis)
 
     serversRoundRobin.clear()
     servers.forEach((server) => serversRoundRobin.add(server))
