@@ -3,11 +3,11 @@ import type { FastifyPluginCallback } from "fastify"
 const signals = ["SIGTERM", "SIGINT"] as const
 type Signal = typeof signals[number]
 
+let shuttingDown = false
+
 const gracefulShutdown: FastifyPluginCallback<{
   onSignal(signal: Signal): Promise<void>
 }> = (fastify, { onSignal }, done) => {
-  let shuttingDown = false
-
   const handler = async (signal: Signal) => {
     if (shuttingDown) {
       return
@@ -23,7 +23,7 @@ const gracefulShutdown: FastifyPluginCallback<{
 
       process.exit(0)
     } catch (error) {
-      fastify.log.error("faild to gracefully shutdown", error)
+      fastify.log.error("failed graceful shutdown", error)
       process.exit(1)
     }
   }
@@ -33,6 +33,10 @@ const gracefulShutdown: FastifyPluginCallback<{
   })
 
   done()
+}
+
+export function isShuttingDown() {
+  return shuttingDown
 }
 
 export default gracefulShutdown

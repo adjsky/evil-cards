@@ -61,8 +61,9 @@ await fastify.register(websocketPlugin)
 // INTERNAL PLUGINS
 await fastify.register(gracefulShutdown, {
   async onSignal() {
+    await subscriberCleanup()
     await controller.cleanSessionCache()
-    await Promise.all([redisClient.disconnect(), subscriberCleanup()])
+    await redisClient.disconnect()
   }
 })
 await fastify.register(memoryLogPlugin, { enabled: env.LOG_MEMORY })

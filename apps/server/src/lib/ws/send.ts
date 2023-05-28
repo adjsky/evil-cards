@@ -153,6 +153,10 @@ export type ConfigurationChanged = {
   details: { changedState: { configuration: Configuration } }
 }
 
+export type Kicked = {
+  type: "kicked"
+}
+
 export type Message =
   | Created
   | Joined
@@ -171,6 +175,7 @@ export type Message =
   | ConfigurationChanged
   | WinnerCardView
   | DiscardCards
+  | Kicked
 
 export type { Status, Configuration, Vote, Card } from "../../game/types"
 export type Player = SendPlayer

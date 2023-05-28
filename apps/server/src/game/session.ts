@@ -40,7 +40,6 @@ import type {
   Vote,
   Configuration,
   SessionEvents,
-  PlayerSender,
   Timeouts
 } from "./types.ts"
 import type { Card as StoredCard } from "./cards.ts"
@@ -108,7 +107,7 @@ class Session implements ISession {
     this._events = new Emittery()
   }
 
-  public join(sender: PlayerSender, nickname: string, avatarId: number) {
+  public join(nickname: string, avatarId: number) {
     const existingPlayer = this._players.find(
       (player) => player.nickname == nickname
     )
@@ -123,7 +122,6 @@ class Session implements ISession {
       }
 
       existingPlayer.avatarId = avatarId
-      existingPlayer.sender = sender
 
       this._events.emit("join", existingPlayer)
 
@@ -154,8 +152,7 @@ class Session implements ISession {
       master: false,
       voted: false,
       disconnected: false,
-      deck: [],
-      sender
+      deck: []
     }
 
     this._players.push(player)

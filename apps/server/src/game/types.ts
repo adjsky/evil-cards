@@ -31,10 +31,6 @@ export type ControllerEvents = Emittery<
   ServerEvent & WithHelperData<{ close: undefined }>
 >
 
-export type PlayerSender = {
-  send: (data: string) => void
-}
-
 export type SessionEvents = Emittery<{
   statuschange: Status
   join: Player
@@ -57,7 +53,6 @@ export type Player = {
   voted: boolean
   disconnected: boolean
   deck: Card[]
-  sender: PlayerSender
 }
 
 export type Card = {

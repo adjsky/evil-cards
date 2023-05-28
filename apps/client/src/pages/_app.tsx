@@ -84,6 +84,20 @@ const useSocketEvents = () => {
 
   const { sendJsonMessage, updateUrl } = useSessionSocket({
     onJsonMessage(message) {
+      if (message.type == "kicked") {
+        setGameState(null)
+        updateUrl(null)
+
+        updateSnackbar({
+          message: "Вас выгнали из комнаты",
+          severity: "information",
+          open: true,
+          infinite: false
+        })
+
+        return
+      }
+
       if (message.type == "error" && message.details) {
         updateSnackbar({
           message: mapErrorMessage(message.details),

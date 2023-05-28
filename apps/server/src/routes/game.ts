@@ -21,7 +21,11 @@ const gameRoutes: FastifyPluginCallback<{
     async ({ socket }, req) => {
       const sendSessions = (sessions: AvailableSession[]) => {
         socket.send(
-          JSON.stringify(sessions.filter((session) => session.public))
+          JSON.stringify(
+            sessions
+              .filter((session) => session.public)
+              .sort((a, b) => b.players - a.players)
+          )
         )
       }
 
