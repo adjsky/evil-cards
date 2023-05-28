@@ -57,20 +57,20 @@ const Player: React.FC<{
           width={48}
           height={48}
           alt="Avatar"
-          className="overflow-hidden rounded-full bg-gray-200"
+          className="flex-shrink-0 overflow-hidden rounded-full bg-gray-200"
         />
       ) : (
         <Question />
       )}
       <div
         className={clsx(
-          "flex flex-col gap-1",
+          "flex min-w-0 flex-grow flex-col gap-1",
           player ? "text-gray-100" : "text-gray-600"
         )}
       >
-        <span className="text-xs leading-none">
+        <div className="flex-grow overflow-hidden overflow-ellipsis text-xs leading-none">
           {player?.nickname ?? "Пусто"}
-        </span>
+        </div>
         {player && variant == "game" && (
           <span className="text-base font-medium leading-none">
             {player.score} {getScoreLabel(player.score)}

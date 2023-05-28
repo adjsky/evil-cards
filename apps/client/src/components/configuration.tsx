@@ -7,6 +7,10 @@ import { useFloating, autoUpdate } from "@floating-ui/react-dom"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/send"
 
+const visibilityOptions = [
+  { value: false, name: "НЕТ" },
+  { value: true, name: "ДА" }
+] as const
 const votingPeriodOptions = [
   { value: 60, name: "НОРМАЛЬНАЯ" },
   { value: 30, name: "БЫСТРАЯ" },
@@ -57,7 +61,16 @@ const Configuration: React.FC<{
         НАСТРОЙКИ
       </h2>
       <div className="scrollable flex min-h-0 w-full flex-auto flex-col gap-4">
-        <Row label="СКОРОСТЬ ИГРЫ">
+        <Row label="Комната публична">
+          <Radio
+            label="Комната публична"
+            options={visibilityOptions}
+            value={configurationCopy["public"]}
+            disabled={!host}
+            onChange={(_public) => handleChange({ public: _public })}
+          />
+        </Row>
+        <Row label="Скорость игры">
           <Select
             options={votingPeriodOptions}
             value={configurationCopy["votingDurationSeconds"]}
@@ -67,7 +80,7 @@ const Configuration: React.FC<{
             }
           />
         </Row>
-        <Row label="КОЛИЧЕСТВО ОЧКОВ ДЛЯ ПОБЕДЫ">
+        <Row label="Количество очков для победы">
           <Select
             options={maxScoreOptions}
             value={configurationCopy["maxScore"]}
@@ -75,7 +88,7 @@ const Configuration: React.FC<{
             onChange={(maxScore) => handleChange({ maxScore })}
           />
         </Row>
-        <Row label="ОЗВУЧКА">
+        <Row label="Озвучка">
           <Radio
             label="Озвучка"
             options={readerOptions}
@@ -84,7 +97,7 @@ const Configuration: React.FC<{
             onChange={(reader) => handleChange({ reader })}
           />
         </Row>
-        <Row label="ВЕРСИЯ 18+">
+        <Row label="Версия 18+">
           <Radio
             label="Версия 18+"
             options={version18PlusOptions}
@@ -107,7 +120,7 @@ function Row({
 }) {
   return (
     <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-      <span className="text-center text-base font-bold text-gray-100">
+      <span className="text-center text-base font-bold uppercase text-gray-100">
         {label}
       </span>
       {children}

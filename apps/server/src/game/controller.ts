@@ -612,7 +612,8 @@ class Controller {
           ? "fast"
           : session.configuration.votingDurationSeconds == 60
           ? "normal"
-          : "slow"
+          : "slow",
+      public: session.configuration.public
     })
   }
 

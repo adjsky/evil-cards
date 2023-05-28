@@ -86,6 +86,7 @@ export type Configuration = {
   reader: boolean
   maxScore: 10 | 15 | 20
   version18Plus: boolean
+  public: boolean
 }
 
 export type Timeouts = Record<

@@ -248,7 +248,8 @@ describe("regular gameplay", () => {
       votingDurationSeconds: 30,
       maxScore: 10,
       reader: false,
-      version18Plus: true
+      version18Plus: true,
+      public: true
     } as const
     session.updateConfiguration(firstPlayer.id, configuration)
     expect(session.configuration).toEqual(configuration)

@@ -90,7 +90,8 @@ class Session implements ISession {
       maxScore: 10,
       reader: true,
       votingDurationSeconds: 60,
-      version18Plus: true
+      version18Plus: true,
+      public: true
     }
     this._availableRedCards = null
     this._availableWhiteCards = null

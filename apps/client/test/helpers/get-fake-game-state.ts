@@ -51,7 +51,8 @@ const base: GameState = {
     maxScore: 10,
     reader: false,
     version18Plus: true,
-    votingDurationSeconds: 30
+    votingDurationSeconds: 30,
+    public: true
   },
   id: "fakeid",
   redCard: null,
