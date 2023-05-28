@@ -77,16 +77,19 @@ it("renders connected players and displays extra empty spots", () => {
     />
   )
 
-  const playerList = screen.getAllByTestId("player-list")[0]
+  const mobilePlayerList = screen.getAllByTestId("player-mobile")
+  const desktopPlayerList = screen.getAllByTestId("player-desktop")
 
   for (let i = 0; i < gameState.players.length; i++) {
-    expect(playerList.children[i]).toHaveTextContent(
+    expect(mobilePlayerList[i]).toHaveTextContent(gameState.players[i].nickname)
+    expect(desktopPlayerList[i]).toHaveTextContent(
       gameState.players[i].nickname
     )
   }
 
   for (let i = gameState.players.length; i < 10; i++) {
-    expect(playerList.children[i]).toHaveTextContent("Пусто")
+    expect(mobilePlayerList[i]).toHaveTextContent("Пусто")
+    expect(desktopPlayerList[i]).toHaveTextContent("Пусто")
   }
 })
 

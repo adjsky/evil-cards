@@ -8,7 +8,7 @@ import Button from "./button"
 import Modal from "./modal"
 import Loader from "./loader"
 
-import Close from "@/assets/close/line.svg"
+import Close from "@/assets/close/rounded.svg"
 import ClockCold from "@/assets/clocks/cold.svg"
 import ClockNormal from "@/assets/clocks/normal.svg"
 import ClockHot from "@/assets/clocks/hot.svg"

@@ -27,7 +27,7 @@ import Authors from "@/components/authors"
 import SoundOn from "@/assets/sound-on.svg"
 import SoundOff from "@/assets/sound-off.svg"
 import Gear from "@/assets/gear.svg"
-import Close from "@/assets/close/line.svg"
+import Close from "@/assets/close/rounded.svg"
 import Author from "@/assets/author.svg"
 
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
@@ -152,7 +152,19 @@ const Waiting: React.FC<{
           </div>
           <div className="flex h-full w-full flex-col sm:h-full sm:flex-row sm:gap-4">
             <div className="sm:h-[500px]">
-              <PlayerList players={gameState.players} variant="waiting" />
+              <PlayerList
+                players={gameState.players}
+                variant="waiting"
+                withKick={player?.host}
+                onKick={(player) => {
+                  sendJsonMessage({
+                    type: "kickplayer",
+                    details: {
+                      playerId: player.id
+                    }
+                  })
+                }}
+              />
             </div>
             <div className="flex min-h-0 w-full flex-1 flex-col gap-3 p-2 pb-12 sm:h-[500px] sm:gap-6 sm:p-0">
               <div className="relative flex min-h-0 w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">

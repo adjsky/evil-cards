@@ -23,7 +23,8 @@ const sessionSchema = z.object({
   hostNickname: z.string(),
   hostAvatarId: z.number(),
   adultOnly: z.boolean(),
-  speed: z.enum(["fast", "normal", "slow"])
+  speed: z.enum(["fast", "normal", "slow"]),
+  public: z.boolean()
 })
 
 export class SessionCache {

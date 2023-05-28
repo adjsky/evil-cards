@@ -17,6 +17,7 @@ import styles from "./game.module.css"
 import DiscardIcon from "../../assets/discard.svg"
 import ExclamationTriangleIcon from "../../assets/exclamation-triangle.svg"
 import Modal from "@/components/modal"
+import Button from "@/components/button"
 
 import type { GameState } from "@/lib/atoms"
 
@@ -272,33 +273,38 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
         onClose={() => setOpen(false)}
         className="w-full max-w-sm rounded-xl bg-gray-100 p-6 text-gray-900 shadow-lg"
       >
-        <Modal.Title as="h3" className="text-center text-xl font-bold">
-          ЖЕЛАЕТЕ СБРОСИТЬ КАРТЫ?
+        <Modal.Title
+          as="h3"
+          className="text-center text-xl font-bold uppercase"
+        >
+          Желаете сбросить карты?
         </Modal.Title>
 
-        <ExclamationTriangleIcon className="mx-auto my-3 h-24 w-24 fill-red-500/50" />
+        <ExclamationTriangleIcon className="mx-auto my-3 h-24 w-24 fill-red-500" />
 
         <Modal.Description className="text-center font-medium">
           Взамен на одно очко вы получите десять новых карт.
         </Modal.Description>
 
         <div className="mt-4 flex w-full gap-2">
-          <button
-            className="flex-1 rounded-lg border border-gray-900 py-3 leading-none transition-colors hover:bg-gray-900 hover:text-gray-100"
+          <Button
+            variant="outlinedReverse"
+            className="flex-1 py-3 uppercase"
             onClick={() => setOpen(false)}
           >
-            НЕТ
-          </button>
-          <button
-            className="flex-1 rounded-lg border border-red-500 bg-red-500 leading-none text-gray-100 transition-colors enabled:hover:bg-gray-100 enabled:hover:text-red-500 disabled:opacity-50"
+            Нет
+          </Button>
+          <Button
+            variant="filledBorder"
+            className="flex-1 uppercase"
             onClick={() => {
               setOpen(false)
               onDiscard && onDiscard()
             }}
             disabled={score == 0}
           >
-            ДА
-          </button>
+            Да
+          </Button>
         </div>
       </Modal>
     </>

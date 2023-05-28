@@ -17,6 +17,7 @@ import {
   SessionNotFoundError,
   VersionMismatchError
 } from "./errors.ts"
+import { isShuttingDown } from "../plugins/graceful-shutdown.ts"
 
 import type { ISessionManager, ISession } from "./interfaces.ts"
 import type {
@@ -45,6 +46,7 @@ class Controller {
   private log: FastifyBaseLogger
 
   private versionMap: Map<string, string>
+  private socketMap: Map<string, ControllerWebSocket>
 
   public get sessionCache() {
     return this._sessionCache
@@ -63,6 +65,7 @@ class Controller {
     this.log = log.child({ component: "game controller" })
 
     this.versionMap = new Map()
+    this.socketMap = new Map()
 
     this.events.on("createsession", this.createSession.bind(this))
     this.events.on("joinsession", this.joinSession.bind(this))
@@ -73,6 +76,7 @@ class Controller {
     this.events.on("startgame", this.startGame.bind(this))
     this.events.on("vote", this.vote.bind(this))
     this.events.on("discardcards", this.discardCards.bind(this))
+    this.events.on("kickplayer", this.kick.bind(this))
     this.events.on("close", ({ ctx, socket }) => {
       try {
         this.disconnect(socket)
@@ -145,7 +149,7 @@ class Controller {
     const session = this.sessionManager.create()
     socket.session = session
 
-    const player = session.join(socket, nickname, avatarId)
+    const player = session.join(nickname, avatarId)
     socket.player = player
 
     const isSynchronized = await this.syncSessionCache(ctx, session)
@@ -156,6 +160,7 @@ class Controller {
     }
 
     this.versionMap.set(session.id, appVersion)
+    this.socketMap.set(player.id, socket)
 
     this.setupSessionListeners(ctx, session)
     session.events.on("sessionend", () => this.handleSessionEnd(session))
@@ -206,10 +211,12 @@ class Controller {
       throw new VersionMismatchError()
     }
 
-    const player = session.join(socket, nickname, avatarId)
+    const player = session.join(nickname, avatarId)
 
     socket.session = session
     socket.player = player
+
+    this.socketMap.set(player.id, socket)
 
     socket.on("close", () => {
       this.events.emit("close", { socket, ctx })
@@ -237,15 +244,41 @@ class Controller {
     )
   }
 
+  private kick({ playerId, socket }: ServerEvent["kickplayer"]) {
+    const session = socket.session
+    if (!session) {
+      throw new NoSessionError()
+    }
+
+    const player = session.players.find((player) => player.id == playerId)
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    session.leave(player.id)
+
+    const kickedPlayerSocket = this.socketMap.get(player.id)
+    if (kickedPlayerSocket) {
+      kickedPlayerSocket.send(
+        stringify({
+          type: "kicked"
+        })
+      )
+
+      kickedPlayerSocket.session = null
+      kickedPlayerSocket.player = null
+
+      this.socketMap.delete(player.id)
+    }
+  }
+
   private disconnect(socket: ControllerWebSocket) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -254,6 +287,8 @@ class Controller {
 
     socket.session = null
     socket.player = null
+
+    this.socketMap.delete(player.id)
   }
 
   private updateConfiguration({
@@ -578,11 +613,15 @@ class Controller {
         return
       }
 
-      player.sender.send(stringify(result))
+      this.socketMap.get(player.id)?.send(stringify(result))
     })
   }
 
   private async syncSessionCache(ctx: ReqContext, session: ISession) {
+    if (isShuttingDown()) {
+      return false
+    }
+
     const host = session.players.find((player) => player.host)
 
     let hostNickname = host?.nickname
@@ -612,7 +651,8 @@ class Controller {
           ? "fast"
           : session.configuration.votingDurationSeconds == 60
           ? "normal"
-          : "slow"
+          : "slow",
+      public: session.configuration.public
     })
   }
 

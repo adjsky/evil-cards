@@ -9,11 +9,6 @@ import {
 
 import type { Player } from "../../src/game/types.ts"
 
-const sender = {
-  send() {
-    //
-  }
-}
 let session: Session
 
 beforeEach(() => {
@@ -33,40 +28,32 @@ describe("join", () => {
     })
 
     session.events.on("join", fnMock)
-    session.join(sender, username, avatarId)
+    session.join(username, avatarId)
 
     await waitForExpect(() => {
       expect(fnMock).toBeCalled()
     })
   })
 
-  it("reassigns avatar and sender if player reconnects", () => {
-    session.join(sender, "1", 0)
-    session.join(sender, "2", 0)
-    session.join(sender, "3", 0)
-    const player4 = session.join(sender, "4", 0)
+  it("reassigns avatar if player reconnects", () => {
+    session.join("1", 0)
+    session.join("2", 0)
+    session.join("3", 0)
+    const player4 = session.join("4", 0)
 
-    expect(player4.sender).toBe(sender)
     expect(player4.avatarId).toBe(0)
 
-    const newFakeSender = {
-      send() {
-        //
-      }
-    }
-
     session.leave(player4.id)
-    const reconnectedPlayer4 = session.join(newFakeSender, "4", 4)
+    const reconnectedPlayer4 = session.join("4", 4)
 
-    expect(reconnectedPlayer4.sender).toBe(newFakeSender)
     expect(reconnectedPlayer4.avatarId).toBe(4)
   })
 
   it("reconnects players while playing", () => {
-    session.join(sender, "1", 0)
-    session.join(sender, "2", 0)
-    session.join(sender, "3", 0)
-    session.join(sender, "4", 0)
+    session.join("1", 0)
+    session.join("2", 0)
+    session.join("3", 0)
+    session.join("4", 0)
 
     jest.useFakeTimers()
 
@@ -76,7 +63,7 @@ describe("join", () => {
     session.leave(session.players[0].id)
 
     expect(session.players[0].disconnected).toBeTruthy()
-    session.join(sender, "1", 1)
+    session.join("1", 1)
     expect(session.players[0].disconnected).toBeFalsy()
 
     jest.useRealTimers()
@@ -93,8 +80,8 @@ describe("leave", () => {
 
     session.events.on("leave", fnMock)
 
-    session.join(sender, "qweqwe", 1)
-    session.join(sender, "asdssd", 1)
+    session.join("qweqwe", 1)
+    session.join("asdssd", 1)
 
     session.leave(session.players[0].id)
 
@@ -104,8 +91,8 @@ describe("leave", () => {
   })
 
   it("deletes player if session is in waiting state", () => {
-    session.join(sender, "asd", 1)
-    session.join(sender, "wqe", 1)
+    session.join("asd", 1)
+    session.join("wqe", 1)
 
     session.leave(session.players[0].id)
 
@@ -113,10 +100,10 @@ describe("leave", () => {
   })
 
   it("marks player as disconnected if session is in playing state", () => {
-    session.join(sender, "1", 1)
-    session.join(sender, "2", 1)
-    session.join(sender, "3", 1)
-    session.join(sender, "4", 1)
+    session.join("1", 1)
+    session.join("2", 1)
+    session.join("3", 1)
+    session.join("4", 1)
 
     jest.useFakeTimers()
 
@@ -133,8 +120,8 @@ describe("leave", () => {
   })
 
   it("makes the first connected player host", () => {
-    session.join(sender, "wqe", 1)
-    session.join(sender, "asd", 1)
+    session.join("wqe", 1)
+    session.join("asd", 1)
 
     session.leave(session.players[0].id)
 
@@ -154,8 +141,8 @@ describe("leave", () => {
 
     jest.useFakeTimers()
 
-    session.join(sender, "qweqwe", 1)
-    session.join(sender, "asdssd", 1)
+    session.join("qweqwe", 1)
+    session.join("asdssd", 1)
 
     session.leave(session.players[0].id)
     session.leave(session.players[0].id)
@@ -171,12 +158,12 @@ describe("leave", () => {
   })
 
   it("makes the next connected player master when master player disconnects in a playing session", () => {
-    session.join(sender, "1", 1)
-    session.join(sender, "2", 1)
-    session.join(sender, "3", 1)
-    session.join(sender, "4", 1)
-    session.join(sender, "5", 1)
-    session.join(sender, "6", 1)
+    session.join("1", 1)
+    session.join("2", 1)
+    session.join("3", 1)
+    session.join("4", 1)
+    session.join("5", 1)
+    session.join("6", 1)
 
     jest.useFakeTimers()
 
@@ -194,9 +181,9 @@ describe("leave", () => {
 
     expect(session.players[3].master).toBeTruthy()
 
-    session.join(sender, "1", 1)
-    session.join(sender, "2", 1)
-    session.join(sender, "3", 1)
+    session.join("1", 1)
+    session.join("2", 1)
+    session.join("3", 1)
 
     session.leave(session.players[3].id)
     session.leave(session.players[4].id)

@@ -19,15 +19,25 @@ const gameRoutes: FastifyPluginCallback<{
     "/available-sessions",
     { websocket: true },
     async ({ socket }, req) => {
+      const sendSessions = (sessions: AvailableSession[]) => {
+        socket.send(
+          JSON.stringify(
+            sessions
+              .filter((session) => session.public)
+              .sort((a, b) => b.players - a.players)
+          )
+        )
+      }
+
       const ctx = createCtxFromReq(req)
 
       const sessions = await controller.sessionCache.getAll(ctx)
       if (sessions.some) {
-        socket.send(JSON.stringify(sessions.unwrap()))
+        sendSessions(sessions.unwrap())
       }
 
       const listener = (sessions: AvailableSession[]) => {
-        socket.send(JSON.stringify(sessions))
+        sendSessions(sessions)
       }
 
       const cleanup = subscribe(listener)
