@@ -1,50 +1,16 @@
 import { useEffect, useCallback, useRef, useId } from "react"
 import attachListeners from "./attach-listeners"
+import * as connections from "./connections"
 
-import type { MutableRefObject } from "react"
+import type { Connection, JsonLike, SocketOptions } from "./types"
 
-export type JsonLike = Record<string, unknown>
-
-export type OnCloseDetails = {
-  gracefully: boolean
-  reconnecting: boolean
-}
-
-export type ShouldReconnectDetails = {
-  closedGracefully: boolean
-  nReconnects: number
-}
-
-export type SocketOptions<T = unknown> = {
-  url?: string | null
-  onJsonMessage?: (data: T) => void
-  onOpen?: (event: WebSocketEventMap["open"]) => void
-  onError?: (event: WebSocketEventMap["error"]) => void
-  onClose?: (event: WebSocketEventMap["close"], details: OnCloseDetails) => void
-  shouldReconnect?: (details: ShouldReconnectDetails) => boolean
-}
-
-export type Listener<T = unknown> = {
-  id: string
-  options: MutableRefObject<SocketOptions<T> | undefined>
-}
-
-export type Connection<T = unknown> = {
-  instance: WebSocket | null
-  heartbeatTimeout: NodeJS.Timeout | null
-  reconnectTimeout: NodeJS.Timeout | null
-  listeners: Listener<T>[]
-  closedGracefully: boolean
-  nReconnects: number
-}
-
-const connections = new Map<string, Connection>()
+const disconnectTimeoutMs = 2 * 1000 // 2s
 
 const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   const id = useId()
 
   const connectionRef = useRef<Connection<R> | null>(
-    options?.url ? connections.get(options.url) ?? null : null
+    options?.url ? connections.get(options.url) : null
   )
 
   const optionsRef = useRef(options)
@@ -93,21 +59,14 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
       return
     }
 
-    const connection: Connection<R> = connections.get(options.url) ?? {
-      closedGracefully: false,
-      heartbeatTimeout: null,
-      instance: null,
-      listeners: [],
-      nReconnects: 0,
-      reconnectTimeout: null
-    }
-
-    if (!connections.has(options.url)) {
-      connections.set(options.url, connection as Connection<unknown>)
-    }
-
+    const connection: Connection<R> = connections.getOrDefault(options.url)
     if (!connectionRef.current) {
       connectionRef.current = connection
+    }
+
+    if (connection.disconnectTimeout) {
+      clearTimeout(connection.disconnectTimeout)
+      connection.disconnectTimeout = null
     }
 
     connection.listeners.push({
@@ -125,7 +84,10 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     return () => {
       const nListeners = connection.listeners.length
       if (nListeners == 1) {
-        disconnect(connection)
+        connection.disconnectTimeout = setTimeout(() => {
+          connection.disconnectTimeout = null
+          disconnect(connection)
+        }, disconnectTimeoutMs)
       }
 
       connection.listeners = connection.listeners.filter(

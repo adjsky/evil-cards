@@ -3,7 +3,7 @@ import { useAtom } from "jotai"
 
 import type { Message as SendMessage } from "@evil-cards/server/src/lib/ws/receive"
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
-import type { SocketOptions } from "./hook"
+import type { SocketOptions } from "./types"
 import type { PrimitiveAtom } from "jotai"
 
 export type Options<R = ReceiveMessage> = Omit<SocketOptions<R>, "url">

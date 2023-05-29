@@ -1,4 +1,4 @@
-import type { Connection } from "./hook"
+import type { Connection } from "./types"
 
 type Options<T> = {
   connection: Connection<T>
