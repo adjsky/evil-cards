@@ -1,13 +1,10 @@
-import useSocketWithUrlAtom, {
-  getBrandNewJotaiAtom
-} from "./use-socket/hook-jotai"
+import useSocketWithUrlAtom from "./use-socket/hook-jotai"
+import { sessionSocketURLAtom } from "../atoms"
 
 import type { Options } from "./use-socket/hook-jotai"
 
-export const socketAtom = getBrandNewJotaiAtom()
-
 const useSessionSocket = (options?: Options) => {
-  return useSocketWithUrlAtom(socketAtom, options)
+  return useSocketWithUrlAtom(sessionSocketURLAtom, options)
 }
 
 export default useSessionSocket
