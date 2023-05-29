@@ -1,7 +1,10 @@
 import makeURLFromServer from "./make-url-from-server.ts"
 import { env } from "./env.ts"
+import { z } from "zod"
 
 import type { Client } from "@evil-cards/keydb"
+
+const serversSchema = z.array(z.coerce.number())
 
 async function getServersFromCache(client: Client) {
   const rawServers = await client.get("servers")
@@ -9,15 +12,11 @@ async function getServersFromCache(client: Client) {
   let parsedServers: number[] = []
 
   if (rawServers) {
-    rawServers.split(" ").forEach((server) => {
-      const parsedServer = Number(server)
+    const result = serversSchema.safeParse(rawServers.split(" "))
 
-      if (isNaN(parsedServer)) {
-        return
-      }
-
-      parsedServers.push(parsedServer)
-    })
+    if (result.success) {
+      parsedServers = result.data
+    }
   } else {
     parsedServers = Array.from({
       length: env.INITIAL_AVAILABLE_SERVERS

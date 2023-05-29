@@ -66,6 +66,12 @@ fastify.get("/", async (req, res) => {
     return res.send({ host: makeURLFromServer(server), message: "ok" })
   }
 
+  if (roundRobin.count() == 0) {
+    return res
+      .status(500)
+      .send({ message: "could not find any available server" })
+  }
+
   const server = roundRobin.next()
 
   res.send({ host: server.value, message: "ok" })

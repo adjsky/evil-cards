@@ -40,6 +40,9 @@ importers:
       jotai:
         specifier: ^1.9.1
         version: 1.9.1(@babel/core@7.20.12)(react@18.2.0)
+      ky:
+        specifier: ^0.33.3
+        version: 0.33.3
       next:
         specifier: ^13.2.4
         version: 13.2.4(@babel/core@7.20.12)(react-dom@18.2.0)(react@18.2.0)
@@ -6646,6 +6649,11 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
     dev: true
+
+  /ky@0.33.3:
+    resolution: {integrity: sha512-CasD9OCEQSFIam2U8efFK81Yeg8vNMTBUqtMOHlrcWQHqUX3HeCl9Dr31u4toV7emlH8Mymk5+9p0lL6mKb/Xw==}
+    engines: {node: '>=14.16'}
+    dev: false
 
   /language-subtag-registry@0.3.22:
     resolution: {integrity: sha512-tN0MCzyWnoz/4nHS6uxdlFWoUZT7ABptwKPQ52Ea7URk6vll88bWBVhodtnlfEuCcKWNGoc+uGbw1cwa9IKh/w==}

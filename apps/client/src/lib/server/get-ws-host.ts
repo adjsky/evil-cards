@@ -1,5 +1,6 @@
 import { env } from "../env/client.mjs"
 import { Result } from "@evil-cards/fp"
+import ky, { HTTPError } from "ky"
 
 type Error = "nosession" | "fetcherror"
 
@@ -13,23 +14,24 @@ async function getWsHost(sessionId?: string): Promise<Result<string, Error>> {
     return Result.ok(env.NEXT_PUBLIC_WS_HOST)
   }
 
-  let loadBalancerPath = "/api/server"
-  if (sessionId) {
-    loadBalancerPath += `?sessionId=${sessionId}`
-  }
-
   try {
-    const response = await fetch(loadBalancerPath)
+    const response = await ky
+      .get("/api/server", {
+        searchParams: sessionId
+          ? {
+              sessionId
+            }
+          : {}
+      })
+      .json<SuccessLoadBalancerResponse>()
 
-    if (response.status == 404) {
-      return Result.err("nosession")
-    }
-
-    const parsedResponse: SuccessLoadBalancerResponse = await response.json()
-
-    return Result.ok(parsedResponse.host)
+    return Result.ok(response.host)
   } catch (error) {
     console.error(error)
+
+    if (error instanceof HTTPError && error.response.status == 404) {
+      return Result.err("nosession")
+    }
 
     return Result.err("fetcherror")
   }
