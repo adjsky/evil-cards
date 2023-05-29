@@ -4,7 +4,8 @@ import waitForExpect from "wait-for-expect"
 import Session from "../../src/game/session.ts"
 import {
   GAME_START_DELAY_MS,
-  SESSION_END_TIMEOUT_MS
+  SESSION_END_TIMEOUT_MS,
+  LEAVE_TIMEOUT_MS
 } from "../../src/game/constants.ts"
 
 import type { Player } from "../../src/game/types.ts"
@@ -61,6 +62,7 @@ describe("join", () => {
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
     session.leave(session.players[0].id)
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[0].disconnected).toBeTruthy()
     session.join("1", 1)
@@ -110,9 +112,10 @@ describe("leave", () => {
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    jest.useRealTimers()
-
     session.leave(session.players[1].id)
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+
+    jest.useRealTimers()
 
     expect(session.players[1].disconnected).toBeTruthy()
 
@@ -170,14 +173,14 @@ describe("leave", () => {
     session.startGame(session.players[0].id)
     jest.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    jest.useRealTimers()
-
     session.leave(session.players[0].id)
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[1].master).toBeTruthy()
 
     session.leave(session.players[1].id)
     session.leave(session.players[2].id)
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[3].master).toBeTruthy()
 
@@ -188,6 +191,9 @@ describe("leave", () => {
     session.leave(session.players[3].id)
     session.leave(session.players[4].id)
     session.leave(session.players[5].id)
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+
+    jest.useRealTimers()
 
     expect(session.players[0].master).toBeTruthy()
 

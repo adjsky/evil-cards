@@ -13,7 +13,8 @@ import {
   MAX_PLAYERS_IN_SESSSION,
   MIN_PLAYERS_TO_START_GAME,
   SESSION_ID_SIZE,
-  USER_ID_SIZE
+  USER_ID_SIZE,
+  LEAVE_TIMEOUT_MS
 } from "./constants.ts"
 import {
   ForbiddenNicknameError,
@@ -113,14 +114,16 @@ class Session implements ISession {
     )
 
     if (existingPlayer) {
-      if (!existingPlayer.disconnected) {
+      if (!existingPlayer.disconnected && !existingPlayer.leaveTimeout) {
         throw new ForbiddenNicknameError()
       }
 
-      if (existingPlayer.disconnected) {
-        existingPlayer.disconnected = false
+      if (existingPlayer.leaveTimeout) {
+        clearTimeout(existingPlayer.leaveTimeout)
+        existingPlayer.leaveTimeout = null
       }
 
+      existingPlayer.disconnected = false
       existingPlayer.avatarId = avatarId
 
       this._events.emit("join", existingPlayer)
@@ -133,7 +136,6 @@ class Session implements ISession {
     }
 
     const isWaiting = this.isWaiting()
-
     if (!isWaiting) {
       throw new GameStartedError()
     }
@@ -152,7 +154,8 @@ class Session implements ISession {
       master: false,
       voted: false,
       disconnected: false,
-      deck: []
+      deck: [],
+      leaveTimeout: null
     }
 
     this._players.push(player)
@@ -171,45 +174,55 @@ class Session implements ISession {
       throw new DisconnectedError()
     }
 
-    const isPlaying = this.isPlaying()
+    const makeWork = () => {
+      const isPlaying = this.isPlaying()
 
-    if (isPlaying) {
-      player.disconnected = true
-    } else {
-      this._players = this._players.filter((p) => p.id != playerId)
-    }
-
-    const remainingPlayers = this._players.filter((p) => !p.disconnected)
-
-    if (remainingPlayers.length == 0) {
-      this._events.emit("leave", player)
-
-      this._timeouts.endsesion = setDateTimeout(() => {
-        this._timeouts.endsesion = null
-
-        this.clearTimeouts()
-        this._events.emit("sessionend")
-      }, dayjs().add(SESSION_END_TIMEOUT_MS, "ms").toDate())
-
-      return
-    }
-
-    if (player.host) {
       if (isPlaying) {
-        player.host = false
+        player.disconnected = true
+      } else {
+        this._players = this._players.filter((p) => p.id != playerId)
       }
 
-      remainingPlayers[0].host = true
+      const remainingPlayers = this._players.filter((p) => !p.disconnected)
+      if (remainingPlayers.length == 0) {
+        this._events.emit("leave", player)
+
+        this._timeouts.endsesion = setDateTimeout(() => {
+          this._timeouts.endsesion = null
+
+          this.clearTimeouts()
+          this._events.emit("sessionend")
+        }, dayjs().add(SESSION_END_TIMEOUT_MS, "ms").toDate())
+
+        return
+      }
+
+      if (player.host) {
+        if (isPlaying) {
+          player.host = false
+        }
+
+        remainingPlayers[0].host = true
+      }
+
+      if (isPlaying && player.master) {
+        this.passMaster()
+      }
+
+      this._events.emit("leave", player)
+
+      if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
+        this.endGame()
+      }
     }
 
-    if (isPlaying && player.master) {
-      this.passMaster()
-    }
-
-    this._events.emit("leave", player)
-
-    if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
-      this.endGame()
+    if (this.isPlaying()) {
+      player.leaveTimeout = setTimeout(() => {
+        player.leaveTimeout = null
+        makeWork()
+      }, LEAVE_TIMEOUT_MS)
+    } else {
+      makeWork()
     }
   }
 

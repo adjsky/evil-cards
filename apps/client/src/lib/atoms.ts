@@ -9,6 +9,7 @@ import type {
   Configuration,
   Card
 } from "@evil-cards/server/src/lib/ws/send"
+import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
 
 export type GameState = {
   players: Player[]
@@ -23,6 +24,16 @@ export type GameState = {
   winners: Player[] | null
 }
 
+type AvailableSessionsState =
+  | {
+      sessions: AvailableSession[]
+      loading: false
+    }
+  | {
+      sessions: undefined
+      loading: true
+    }
+
 export const gameStateAtom = atom<GameState | null>(null)
 export const nicknameAtom = atomWithSafeStorage(
   "nickname",
@@ -34,3 +45,9 @@ export const soundsAtom = atomWithSafeStorage("sounds", true)
 export const reconnectingGameAtom = atom(false)
 
 export const sessionSocketURLAtom = atom<string | null>(null)
+
+export const availableSessionsSocketURLAtom = atom<string | null>(null)
+export const availableSessionsStateAtom = atom<AvailableSessionsState>({
+  loading: true,
+  sessions: undefined
+})

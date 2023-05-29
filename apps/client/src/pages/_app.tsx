@@ -82,11 +82,11 @@ const useSocketEvents = () => {
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage, updateUrl } = useSessionSocket({
+  const { sendJsonMessage, close } = useSessionSocket({
     onJsonMessage(message) {
       if (message.type == "kicked") {
         setGameState(null)
-        updateUrl(null)
+        close()
 
         updateSnackbar({
           message: "Вас выгнали из комнаты",
@@ -112,7 +112,7 @@ const useSocketEvents = () => {
 
         if (message.type == "error") {
           setGameState(null)
-          updateUrl(null)
+          close()
 
           return
         }
@@ -179,7 +179,7 @@ const useSocketEvents = () => {
     },
     onClose(_, { gracefully, reconnecting }) {
       if (!gracefully && !reconnecting) {
-        updateUrl(null)
+        close()
 
         updateSnackbar({
           message: "Не удалось подключиться к серверу",

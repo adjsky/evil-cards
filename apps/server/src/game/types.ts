@@ -53,6 +53,7 @@ export type Player = {
   voted: boolean
   disconnected: boolean
   deck: Card[]
+  leaveTimeout: NodeJS.Timeout | null
 }
 
 export type Card = {
