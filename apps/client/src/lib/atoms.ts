@@ -32,3 +32,5 @@ export const avatarAtom = atomWithSafeStorage("avatar", 1)
 export const soundsAtom = atomWithSafeStorage("sounds", true)
 
 export const reconnectingGameAtom = atom(false)
+
+export const sessionSocketURLAtom = atom<string | null>(null)

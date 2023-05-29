@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { mockAnimationsApi } from "jsdom-testing-mocks"
 import WS from "jest-websocket-mock"
 import { Provider } from "jotai"
-import { socketAtom } from "@/lib/hooks/use-session-socket"
+import { sessionSocketURLAtom } from "@/lib/atoms"
 
 import { Result } from "@evil-cards/fp"
 import Entry from "@/screens/entry"
@@ -74,7 +74,7 @@ it("sends a join request if 's' query param is provided", async () => {
 
   const user = userEvent.setup()
   render(
-    <Provider initialValues={[[socketAtom, null]]}>
+    <Provider initialValues={[[sessionSocketURLAtom, null]]}>
       <Entry />
     </Provider>
   )
@@ -92,7 +92,7 @@ it("sends a join request if 's' query param is provided", async () => {
 it("sends a create request if 's' query param is not provided", async () => {
   const user = userEvent.setup()
   render(
-    <Provider initialValues={[[socketAtom, null]]}>
+    <Provider initialValues={[[sessionSocketURLAtom, null]]}>
       <Entry />
     </Provider>
   )
