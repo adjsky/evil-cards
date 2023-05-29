@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import Image from "next/image"
-import getWsHost from "@/lib/server/get-ws-host"
-import { useSocket } from "@/lib/hooks"
+
+import useAvailableSessions from "@/lib/hooks/use-available-sessions-socket"
 import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
 import Button from "./button"
@@ -15,10 +15,8 @@ import ClockHot from "@/assets/clocks/hot.svg"
 import CatBaby from "@/assets/cats/baby.svg"
 import CatAdult from "@/assets/cats/adult.svg"
 
-import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
-
 const AvailableSessions: React.FC = () => {
-  const { connect, disconnect, state } = useAvailableSessions()
+  const { connect, close } = useAvailableSessions()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleOpen = () => {
@@ -28,7 +26,7 @@ const AvailableSessions: React.FC = () => {
 
   const handleClose = () => {
     setIsOpen(false)
-    disconnect()
+    close()
   }
 
   return (
@@ -40,24 +38,30 @@ const AvailableSessions: React.FC = () => {
       >
         Комнаты
       </Button>
-      <SessionsModal isOpen={isOpen} state={state} onClose={handleClose} />
+      <SessionsModal isOpen={isOpen} onClose={handleClose} />
     </>
   )
 }
 
 type SessionModalProps = {
   isOpen?: boolean
-  state: AvailableSessionsState
   onClose?: () => void
 }
 
-const SessionsModal: React.FC<SessionModalProps> = ({
-  isOpen,
-  state,
-  onClose
-}) => {
-  const { createOrJoinSession, connecting, sessionId } =
-    useCreateOrJoinSession()
+const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
+  const { state, connect, close } = useAvailableSessions()
+  const { createOrJoinSession, connecting, sessionId } = useCreateOrJoinSession(
+    {
+      onFail() {
+        connect()
+      }
+    }
+  )
+
+  const handleJoin = (id: string) => {
+    createOrJoinSession(id)
+    close()
+  }
 
   return (
     <Modal
@@ -93,7 +97,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({
             <button
               key={session.id}
               className="flex items-center justify-between rounded-lg bg-gray-200 p-2 sm:p-3"
-              onClick={() => createOrJoinSession(session.id)}
+              onClick={() => handleJoin(session.id)}
               disabled={connecting}
             >
               <div className="flex items-center gap-1 sm:gap-2">
@@ -136,65 +140,6 @@ const SessionsModal: React.FC<SessionModalProps> = ({
       )}
     </Modal>
   )
-}
-
-type AvailableSessionsState =
-  | {
-      sessions: AvailableSession[]
-      loading: false
-    }
-  | {
-      sessions: undefined
-      loading: true
-    }
-
-const useAvailableSessions = () => {
-  const [state, setState] = useState<AvailableSessionsState>({
-    loading: true,
-    sessions: undefined
-  })
-  const [url, setUrl] = useState<string | null>(null)
-
-  useSocket<unknown, AvailableSession[]>({
-    url,
-    onJsonMessage(sessions) {
-      setState({
-        loading: false,
-        sessions
-      })
-    },
-    onClose() {
-      setState({
-        loading: false,
-        sessions: state.sessions ?? []
-      })
-    },
-    shouldReconnect({ closedGracefully, nReconnects }) {
-      return nReconnects < 5 && !closedGracefully
-    }
-  })
-
-  const connect = async () => {
-    const result = await getWsHost()
-
-    result.match({
-      err() {
-        setState({
-          loading: false,
-          sessions: state.sessions ?? []
-        })
-      },
-      ok(wsHost) {
-        setUrl(`${wsHost}/ws/available-sessions`)
-      }
-    })
-  }
-
-  const disconnect = () => {
-    setUrl(null)
-  }
-
-  return { connect, disconnect, state }
 }
 
 export default AvailableSessions

@@ -12,17 +12,28 @@ const useSocketJotai = <S = SendMessage, R = ReceiveMessage>(
   urlAtom: PrimitiveAtom<string | null>,
   options?: Options<R>
 ) => {
-  const [url, setUrl] = useAtom(urlAtom)
+  const [url, setAtomUrl] = useAtom(urlAtom)
 
-  const hookResult = useSocket<S, R>({
+  const {
+    close: closeSocket,
+    getInstance,
+    sendJsonMessage
+  } = useSocket<S, R>({
     url,
     ...options
   })
 
   return {
-    ...hookResult,
-    updateUrl: setUrl,
-    url
+    url,
+    getInstance,
+    sendJsonMessage,
+    setUrl(url: string) {
+      setAtomUrl(url)
+    },
+    close() {
+      setAtomUrl(null)
+      closeSocket()
+    }
   }
 }
 

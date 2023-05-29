@@ -57,7 +57,7 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { sendJsonMessage, updateUrl } = useSessionSocket({
+  const { sendJsonMessage, close } = useSessionSocket({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
@@ -88,7 +88,7 @@ const Waiting: React.FC<{
       updateSnackbar({ open: false })
       setReconnectingGame(false)
 
-      updateUrl(null)
+      close()
     }
 
     leaving.current = true
@@ -107,7 +107,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, updateUrl, setReconnectingGame])
+  }, [onGameStateUpdate, close, setReconnectingGame])
 
   const router = useRouter()
   useEffect(() => {
@@ -155,7 +155,7 @@ const Waiting: React.FC<{
               <PlayerList
                 players={gameState.players}
                 variant="waiting"
-                withKick={player?.host}
+                withKick={player?.host && gameState.status != "starting"}
                 onKick={(player) => {
                   sendJsonMessage({
                     type: "kickplayer",

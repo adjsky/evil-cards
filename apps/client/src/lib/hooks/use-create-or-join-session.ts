@@ -19,7 +19,11 @@ const startErrors = {
   fetcherror: "Не удалось получить доступные сервера"
 }
 
-const useCreateOrJoinSession = () => {
+type Options = {
+  onFail?: () => void
+}
+
+const useCreateOrJoinSession = (options?: Options) => {
   const [connecting, setConnecting] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
 
@@ -28,7 +32,7 @@ const useCreateOrJoinSession = () => {
   const nickname = useAtomValue(nicknameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
-  const { sendJsonMessage, updateUrl } = useSessionSocket({
+  const { sendJsonMessage, setUrl, close } = useSessionSocket({
     onJsonMessage(message) {
       if (!connecting) {
         return
@@ -37,7 +41,8 @@ const useCreateOrJoinSession = () => {
       if (message.type == "error" && connecting) {
         setConnecting(false)
         setSessionId(null)
-        updateUrl(null)
+        close()
+        options?.onFail?.()
 
         let ignore = false
 
@@ -111,7 +116,7 @@ const useCreateOrJoinSession = () => {
         }
       },
       ok(wsHost) {
-        updateUrl(`${wsHost}/ws/session`)
+        setUrl(`${wsHost}/ws/session`)
       }
     })
   }

@@ -177,9 +177,7 @@ class Controller {
             id: session.id,
             status: session.status,
             playerId: player.id,
-            players: session.players.map((player) =>
-              omit(["sender", "deck"], player)
-            ),
+            players: this.getNormalizedPlayers(session.players),
             configuration: session.configuration
           }
         }
@@ -230,9 +228,7 @@ class Controller {
             id: session.id,
             status: session.status,
             playerId: player.id,
-            players: session.players.map((player) =>
-              omit(["sender", "deck"], player)
-            ),
+            players: this.getNormalizedPlayers(session.players),
             deck: player.deck,
             redCard: session.redCard,
             votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null,
@@ -598,16 +594,14 @@ class Controller {
   }
 
   private broadcast(session: ISession, callback: BroadcastCallback) {
-    const sendPlayers = session.players.map((player) =>
-      omit(["sender", "deck"], player)
-    )
+    const players = this.getNormalizedPlayers(session.players)
 
     session.players.forEach((player) => {
       if (player.disconnected) {
         return
       }
 
-      const result = callback(sendPlayers, player)
+      const result = callback(players, player)
 
       if (!result) {
         return
@@ -615,6 +609,10 @@ class Controller {
 
       this.socketMap.get(player.id)?.send(stringify(result))
     })
+  }
+
+  private getNormalizedPlayers(players: Player[]) {
+    return players.map((player) => omit(["leaveTimeout", "deck"], player))
   }
 
   private async syncSessionCache(ctx: ReqContext, session: ISession) {

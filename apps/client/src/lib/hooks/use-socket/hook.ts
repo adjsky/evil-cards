@@ -29,6 +29,11 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   }, [])
 
   const disconnect = useCallback((connection: Connection<R>) => {
+    if (connection.disconnectTimeout) {
+      clearTimeout(connection.disconnectTimeout)
+      connection.disconnectTimeout = null
+    }
+
     connection.closedGracefully = true
 
     if (connection.instance) {
@@ -98,7 +103,14 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
   return {
     getInstance,
-    sendJsonMessage
+    sendJsonMessage,
+    close() {
+      if (!connectionRef.current) {
+        throw new Error("No connection found to close")
+      }
+
+      disconnect(connectionRef.current)
+    }
   }
 }
 

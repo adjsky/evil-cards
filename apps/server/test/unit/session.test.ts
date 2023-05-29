@@ -5,7 +5,8 @@ import waitForExpect from "wait-for-expect"
 import Session from "../../src/game/session.ts"
 import {
   GAME_START_DELAY_MS,
-  BEST_CARD_VIEW_DURATION_MS
+  BEST_CARD_VIEW_DURATION_MS,
+  LEAVE_TIMEOUT_MS
 } from "../../src/game/constants.ts"
 
 let session: Session
@@ -223,6 +224,7 @@ describe("regular gameplay", () => {
 
     session.leave(session.players[1].id)
     session.leave(session.players[0].id)
+    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[1].master).toBeFalsy()
     expect(session.players[2].master).toBeTruthy()
