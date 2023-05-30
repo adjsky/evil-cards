@@ -39,8 +39,7 @@ function attachListeners<T>({ connection, onReconnect }: Options<T>) {
     try {
       const parsedData = JSON.parse(data)
 
-      // ignore ping messages
-      if (parsedData?.type == "ping") {
+      if ("type" in parsedData && parsedData.type == "ping") {
         connection.instance?.send(JSON.stringify({ type: "pong" }))
         heartbeat()
         return

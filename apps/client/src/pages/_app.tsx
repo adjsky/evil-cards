@@ -84,6 +84,8 @@ const useSocketEvents = () => {
 
   const { sendJsonMessage, close } = useSessionSocket({
     onJsonMessage(message) {
+      // HANDLE KICK FROM SESSION //
+
       if (message.type == "kicked") {
         setGameState(null)
         close()
@@ -98,6 +100,8 @@ const useSocketEvents = () => {
         return
       }
 
+      // HANDLE ERRORS //
+
       if (message.type == "error" && message.details) {
         updateSnackbar({
           message: mapErrorMessage(message.details),
@@ -106,6 +110,8 @@ const useSocketEvents = () => {
           infinite: false
         })
       }
+
+      // HANDLE RECONNECTION //
 
       if (reconnectingGame) {
         setReconnectingGame(false)
@@ -118,6 +124,8 @@ const useSocketEvents = () => {
         }
       }
 
+      // HANDLE AUDIO //
+
       if (sounds) {
         if (gameState?.configuration.reader) {
           processMessageAndSpeak(message)
@@ -126,12 +134,15 @@ const useSocketEvents = () => {
         processMessageAndPlaySound(message)
       }
 
+      // SYNC GAME STATE //
+
       switch (message.type) {
         case "join":
           setGameState({
             ...message.details.changedState,
             winners: null
           })
+
           break
         case "create":
           setGameState({
@@ -142,39 +153,42 @@ const useSocketEvents = () => {
             votingEndsAt: null,
             winners: null
           })
+
           break
-        default:
-          if (message.type != "ping" && message.type != "error") {
-            setGameState((prev) => {
-              if (!prev) {
-                return null
-              }
-
-              let winners = prev.winners
-              if (
-                message.type == "gameend" &&
-                message.details.changedState.players.length >= 3
-              ) {
-                winners = [...message.details.changedState.players]
-                  .sort((a, b) => b.score - a.score)
-                  .slice(0, 3)
-              }
-
-              const votingEndsAt =
-                message.type == "choosingstart"
-                  ? null
-                  : "votingEndsAt" in message.details.changedState
-                  ? message.details.changedState.votingEndsAt
-                  : prev.votingEndsAt
-
-              return {
-                ...prev,
-                ...message.details.changedState,
-                votingEndsAt,
-                winners
-              }
-            })
+        default: {
+          if (message.type == "error") {
+            break
           }
+
+          if (!gameState) {
+            console.error("Trying to sync a non-initialized game state")
+            break
+          }
+
+          let winners = gameState.winners
+          if (
+            message.type == "gameend" &&
+            message.details.changedState.players.length >= 3
+          ) {
+            winners = [...message.details.changedState.players]
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 3)
+          }
+
+          const votingEndsAt =
+            message.type == "choosingstart"
+              ? null
+              : "votingEndsAt" in message.details.changedState
+              ? message.details.changedState.votingEndsAt
+              : gameState.votingEndsAt
+
+          setGameState({
+            ...gameState,
+            ...message.details.changedState,
+            votingEndsAt,
+            winners
+          })
+        }
       }
     },
     onClose(_, { gracefully, reconnecting }) {
