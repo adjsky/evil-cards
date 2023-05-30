@@ -319,6 +319,7 @@ const Winners: React.FC<{ winners: Player[] }> = ({ winners }) => {
         height={120}
         src={`/avatars/${player.avatarId}.svg`}
         alt=""
+        className="overflow-hidden rounded-full bg-gray-200"
       />
       <div
         style={{ minHeight: 100, height: player.score * HEIGHT_PER_SCORE }}

@@ -192,7 +192,7 @@ const DesktopPlayer: React.FC<{
         </div>
         {displayKick && (
           <button className="p-0.5" onClick={() => setKickModalOpen(true)}>
-            <Close className="h-3 w-3 fill-red-500" />
+            <Close className="h-3 w-3 fill-gray-100" />
           </button>
         )}
       </div>

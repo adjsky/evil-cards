@@ -80,14 +80,6 @@ const Configuration: React.FC<{
             }
           />
         </Row>
-        <Row label="Количество очков для победы">
-          <Select
-            options={maxScoreOptions}
-            value={configurationCopy["maxScore"]}
-            disabled={!host}
-            onChange={(maxScore) => handleChange({ maxScore })}
-          />
-        </Row>
         <Row label="Озвучка">
           <Radio
             label="Озвучка"
@@ -95,6 +87,14 @@ const Configuration: React.FC<{
             value={configurationCopy["reader"]}
             disabled={!host}
             onChange={(reader) => handleChange({ reader })}
+          />
+        </Row>
+        <Row label="Количество очков для победы">
+          <Select
+            options={maxScoreOptions}
+            value={configurationCopy["maxScore"]}
+            disabled={!host}
+            onChange={(maxScore) => handleChange({ maxScore })}
           />
         </Row>
         <Row label="Версия 18+">
