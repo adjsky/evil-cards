@@ -3,7 +3,7 @@
 # Stage 1: Prune monorepo                                         #
 ###################################################################
 
-FROM node:20-alpine AS prune
+FROM node:18.16.0-alpine AS prune
 
 RUN apk add --no-cache libc6-compat
 RUN yarn global add turbo@^1.8.8
@@ -17,7 +17,7 @@ RUN turbo prune --scope=@evil-cards/load-balancer --docker
 # Stage 2: Install load-balancer dependencies                     #
 ###################################################################
 
-FROM node:20-alpine AS deps
+FROM node:18.16.0-alpine AS deps
 
 RUN apk add --no-cache libc6-compat
 RUN corepack enable
@@ -34,7 +34,7 @@ RUN pnpm --frozen-lockfile install
 # Stage 3: Run load balancer (prod)                               #
 ###################################################################
 
-FROM node:20-alpine AS runner-prod
+FROM node:18.16.0-alpine AS runner-prod
 
 WORKDIR /evil-cards
 COPY tsconfig.json .
@@ -52,7 +52,7 @@ CMD ["npm", "start"]
 # Stage 3: Run load balancer (stage)                              #
 ###################################################################
 
-FROM node:20-alpine AS runner-stage
+FROM node:18.16.0-alpine AS runner-stage
 
 WORKDIR /evil-cards
 COPY tsconfig.json .

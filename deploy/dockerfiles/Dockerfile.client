@@ -3,7 +3,7 @@
 # Stage 1: Prune monorepo                                         #
 ###################################################################
 
-FROM node:20-alpine AS prune
+FROM node:18.16.0-alpine AS prune
 
 RUN apk add --no-cache libc6-compat
 RUN yarn global add turbo@^1.8.8
@@ -17,7 +17,7 @@ RUN turbo prune --scope=@evil-cards/client --docker
 # Stage 2: Install all necessary dependencies                     #
 ###################################################################
 
-FROM node:20-alpine AS deps
+FROM node:18.16.0-alpine AS deps
 
 RUN apk add --no-cache libc6-compat
 RUN corepack enable
@@ -34,7 +34,7 @@ RUN pnpm --frozen-lockfile install
 # Stage 3: Build client (production)                              #
 ###################################################################
 
-FROM node:20-alpine AS builder-production
+FROM node:18.16.0-alpine AS builder-production
 
 WORKDIR /evil-cards
 
@@ -55,7 +55,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
 # Stage 3: Build client (stage)                                   #
 ###################################################################
 
-FROM node:20-alpine AS builder-stage
+FROM node:18.16.0-alpine AS builder-stage
 
 WORKDIR /evil-cards
 
@@ -74,7 +74,7 @@ RUN npm run build:stage
 # Stage 4: Run client (prod)                                      #
 ###################################################################
 
-FROM node:20-alpine AS runner-prod
+FROM node:18.16.0-alpine AS runner-prod
 
 WORKDIR /evil-cards
 
@@ -98,7 +98,7 @@ CMD ["node", "apps/client/server.js"]
 # Stage 4: Run client (stage)                                     #
 ###################################################################
 
-FROM node:20-alpine AS runner-stage
+FROM node:18.16.0-alpine AS runner-stage
 
 WORKDIR /evil-cards
 

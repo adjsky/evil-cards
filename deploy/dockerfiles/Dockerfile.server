@@ -3,7 +3,7 @@
 # Stage 1: Prune monorepo                                         #
 ###################################################################
 
-FROM node:20-alpine AS prune
+FROM node:18.16.0-alpine AS prune
 
 RUN apk add --no-cache libc6-compat
 RUN yarn global add turbo@^1.8.8
@@ -17,7 +17,7 @@ RUN turbo prune --scope=@evil-cards/server --docker
 # Stage 2: Install server dependencies                            #
 ###################################################################
 
-FROM node:20-alpine AS deps
+FROM node:18.16.0-alpine AS deps
 
 RUN apk add --no-cache libc6-compat
 RUN corepack enable
@@ -34,7 +34,7 @@ RUN pnpm --frozen-lockfile install
 # Stage 3: Run server (prod)                                      #
 ###################################################################
 
-FROM node:20-alpine AS runner-prod
+FROM node:18.16.0-alpine AS runner-prod
 
 RUN apk --no-cache add bind-tools
 
@@ -54,7 +54,7 @@ CMD ["sh", "./scripts/start-with-server-number.sh"]
 # Stage 3: Run server (stage)                                     #
 ###################################################################
 
-FROM node:20-alpine AS runner-stage
+FROM node:18.16.0-alpine AS runner-stage
 
 WORKDIR /evil-cards
 COPY tsconfig.json .
