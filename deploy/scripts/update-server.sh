@@ -31,9 +31,9 @@ if [[ $DEPLOY_ENV = "prod" ]]; then
     fi
   done
 
-  docker compose -f $COMPOSE_PATH exec -T redis redis-cli -n 0 SET servers "${AVAILABLE_SERVERS[*]}"
+  docker compose -f $COMPOSE_PATH exec -T keydb keydb-cli -n 0 SET servers "${AVAILABLE_SERVERS[*]}"
 
-  echo "Updated servers in redis, ids: ${AVAILABLE_SERVERS[@]}"
+  echo "Updated servers in keydb, ids: ${AVAILABLE_SERVERS[@]}"
 else
   docker compose -f $COMPOSE_PATH pull server
   docker compose -f $COMPOSE_PATH up -d --no-deps server
