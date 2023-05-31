@@ -82,24 +82,8 @@ const useSocketEvents = () => {
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage, close } = useSessionSocket({
+  const { sendJsonMessage, close, resetUrl } = useSessionSocket({
     onJsonMessage(message) {
-      // HANDLE KICK FROM SESSION //
-
-      if (message.type == "kicked") {
-        setGameState(null)
-        close()
-
-        updateSnackbar({
-          message: "Вас выгнали из комнаты",
-          severity: "information",
-          open: true,
-          infinite: false
-        })
-
-        return
-      }
-
       // HANDLE ERRORS //
 
       if (message.type == "error" && message.details) {
@@ -191,20 +175,29 @@ const useSocketEvents = () => {
         }
       }
     },
-    onClose(_, { gracefully, reconnecting }) {
-      if (!gracefully && !reconnecting) {
-        close()
-
-        updateSnackbar({
-          message: "Не удалось подключиться к серверу",
-          open: true,
-          severity: "error",
-          infinite: false
-        })
-      }
-
+    onClose(event, { gracefully, reconnecting }) {
       if (!reconnecting) {
         setGameState(null)
+      }
+
+      if (!gracefully && !reconnecting) {
+        resetUrl()
+
+        if (isKickEvent(event)) {
+          updateSnackbar({
+            message: "Вас выгнали из комнаты",
+            severity: "information",
+            open: true,
+            infinite: false
+          })
+        } else {
+          updateSnackbar({
+            message: "Не удалось подключиться к серверу",
+            open: true,
+            severity: "error",
+            infinite: false
+          })
+        }
       }
 
       setReconnectingGame(reconnecting)
@@ -230,7 +223,11 @@ const useSocketEvents = () => {
         })
       }
     },
-    shouldReconnect({ nReconnects, closedGracefully }) {
+    shouldReconnect(event, { nReconnects, closedGracefully }) {
+      if (isKickEvent(event)) {
+        return false
+      }
+
       if (nReconnects == 5 || closedGracefully) {
         return false
       }
@@ -240,6 +237,10 @@ const useSocketEvents = () => {
   })
 
   return { Snackbar, reconnecting: reconnectingGame }
+}
+
+function isKickEvent(event: WebSocketEventMap["close"]) {
+  return event.code == 4321 && event.reason == "kick"
 }
 
 export default MyApp

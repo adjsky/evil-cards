@@ -251,21 +251,8 @@ class Controller {
       throw new NoPlayerError()
     }
 
-    session.leave(player.id)
-
-    const kickedPlayerSocket = this.socketMap.get(player.id)
-    if (kickedPlayerSocket) {
-      kickedPlayerSocket.send(
-        stringify({
-          type: "kicked"
-        })
-      )
-
-      kickedPlayerSocket.session = null
-      kickedPlayerSocket.player = null
-
-      this.socketMap.delete(player.id)
-    }
+    const kickSocket = this.socketMap.get(player.id)
+    kickSocket?.close(4321, "kick")
   }
 
   private disconnect(socket: ControllerWebSocket) {

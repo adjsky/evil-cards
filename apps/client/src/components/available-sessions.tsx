@@ -16,7 +16,7 @@ import CatBaby from "@/assets/cats/baby.svg"
 import CatAdult from "@/assets/cats/adult.svg"
 
 const AvailableSessions: React.FC = () => {
-  const { connect, close } = useAvailableSessions()
+  const { connect, close, resetUrl } = useAvailableSessions()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleOpen = () => {
@@ -26,6 +26,7 @@ const AvailableSessions: React.FC = () => {
 
   const handleClose = () => {
     setIsOpen(false)
+    resetUrl()
     close()
   }
 
@@ -49,7 +50,7 @@ type SessionModalProps = {
 }
 
 const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
-  const { state, connect, close } = useAvailableSessions()
+  const { state, connect, close, resetUrl } = useAvailableSessions()
   const { createOrJoinSession, connecting, sessionId } = useCreateOrJoinSession(
     {
       onFail() {
@@ -60,6 +61,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
 
   const handleJoin = (id: string) => {
     createOrJoinSession(id)
+    resetUrl()
     close()
   }
 

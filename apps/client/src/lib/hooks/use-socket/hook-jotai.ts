@@ -13,11 +13,7 @@ const useSocketJotai = <S = JsonLike, R = JsonLike>(
 ) => {
   const [url, setAtomUrl] = useAtom(urlAtom)
 
-  const {
-    close: closeSocket,
-    getInstance,
-    sendJsonMessage
-  } = useSocket<S, R>({
+  const { close, getInstance, sendJsonMessage } = useSocket<S, R>({
     url,
     ...options
   })
@@ -29,10 +25,10 @@ const useSocketJotai = <S = JsonLike, R = JsonLike>(
     setUrl(url: string) {
       setAtomUrl(url)
     },
-    close() {
+    resetUrl() {
       setAtomUrl(null)
-      closeSocket()
-    }
+    },
+    close
   }
 }
 

@@ -22,10 +22,10 @@ jest.mock("@/lib/hooks/use-session-socket", () => ({
   __esModule: true,
   default: () => ({
     sendJsonMessage: sendJsonMessageMock,
-    set() {
+    close() {
       //
     },
-    close() {
+    resetUrl() {
       //
     }
   })

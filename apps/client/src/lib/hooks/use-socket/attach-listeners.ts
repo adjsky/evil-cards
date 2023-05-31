@@ -70,7 +70,7 @@ function attachListeners<T>({ connection, onReconnect }: Options<T>) {
     connection.instance?.removeEventListener("close", handleClose)
 
     const shouldReconnect = connection.listeners.some((listener) =>
-      listener.options.current?.shouldReconnect?.({
+      listener.options.current?.shouldReconnect?.(event, {
         closedGracefully: connection.closedGracefully,
         nReconnects: connection.nReconnects
       })
