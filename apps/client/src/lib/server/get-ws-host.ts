@@ -21,7 +21,7 @@ async function getWsHost(sessionId?: string): Promise<Result<string, Error>> {
           ? {
               sessionId
             }
-          : {}
+          : undefined
       })
       .json<SuccessLoadBalancerResponse>()
 
