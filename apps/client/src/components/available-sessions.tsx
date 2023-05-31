@@ -71,15 +71,15 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
       onClose={onClose}
       className="flex h-full max-h-[560px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-3 pt-4 pb-6 text-gray-900 shadow-lg sm:px-6 sm:pb-8 sm:pt-5"
     >
-      <div className="relative flex justify-center">
+      <div className="relative flex items-center justify-center">
         <Modal.Title
           as="h3"
-          className="text-2xl font-bold uppercase sm:text-3xl"
+          className="text-xl font-bold uppercase !leading-none sm:text-3xl"
         >
           Комнаты
         </Modal.Title>
         <button onClick={onClose} className="absolute -right-1 -top-1 p-1">
-          <Close className="fill-gray-900" />
+          <Close className="h-5 w-5 fill-gray-900 sm:h-7 sm:w-7" />
         </button>
       </div>
       <hr className="border-none py-1.5 sm:py-2.5" />
@@ -89,7 +89,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
         </div>
       )}
       {!state.loading && state.sessions.length == 0 && (
-        <div className="flex flex-grow items-center justify-center text-xl font-medium">
+        <div className="flex flex-grow items-center justify-center text-base font-medium sm:text-xl">
           Ой, сейчас нет доступных комнат
         </div>
       )}
