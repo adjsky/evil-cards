@@ -1,12 +1,11 @@
 {
   "name": "@evil-cards/server",
   "private": true,
-  "main": "src/app.ts",
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "cross-env NODE_ENV=production ts-node --transpileOnly .",
-    "dev": "cross-env NODE_ENV=development ts-node .",
+    "start": "cross-env NODE_ENV=production ts-node --transpileOnly ./src/app.ts",
+    "dev": "cross-env NODE_ENV=development ts-node ./src/app.ts",
     "dev:memory": "cross-env LOG_MEMORY=true pnpm dev",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:ci": "cross-env NODE_OPTIONS=--experimental-vm-modules c8 jest --ci"
