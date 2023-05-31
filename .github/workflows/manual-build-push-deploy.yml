@@ -37,7 +37,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version-file: ".nvmrc"
+          node-version: 18.16.0
 
       - name: Generate service matrix
         id: generate-service-matrix
