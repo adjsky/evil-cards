@@ -69,7 +69,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="flex h-full max-h-[560px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-3 pt-4 pb-6 text-gray-900 shadow-lg sm:px-6 sm:pb-8 sm:pt-5"
+      className="flex h-full max-h-[390px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-3 pt-4 pb-6 text-gray-900 shadow-lg sm:max-h-[560px] sm:px-6 sm:pb-8 sm:pt-5"
     >
       <div className="relative flex items-center justify-center">
         <Modal.Title
