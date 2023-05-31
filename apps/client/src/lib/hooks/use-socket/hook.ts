@@ -61,6 +61,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
 
   useEffect(() => {
     if (!options?.url) {
+      connectionRef.current = null
       return
     }
 
