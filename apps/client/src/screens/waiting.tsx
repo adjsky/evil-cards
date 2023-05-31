@@ -57,7 +57,7 @@ const Waiting: React.FC<{
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { sendJsonMessage, close } = useSessionSocket({
+  const { sendJsonMessage, close, resetUrl } = useSessionSocket({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
@@ -89,6 +89,7 @@ const Waiting: React.FC<{
       setReconnectingGame(false)
 
       close()
+      resetUrl()
     }
 
     leaving.current = true
@@ -107,7 +108,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, close, setReconnectingGame])
+  }, [onGameStateUpdate, close, resetUrl, setReconnectingGame])
 
   const router = useRouter()
   useEffect(() => {

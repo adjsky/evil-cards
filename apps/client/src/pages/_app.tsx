@@ -82,21 +82,9 @@ const useSocketEvents = () => {
 
   const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
 
-  const { sendJsonMessage, close } = useSessionSocket({
+  const { sendJsonMessage, close, resetUrl } = useSessionSocket({
     onJsonMessage(message) {
-      if (message.type == "kicked") {
-        setGameState(null)
-        close()
-
-        updateSnackbar({
-          message: "Вас выгнали из комнаты",
-          severity: "information",
-          open: true,
-          infinite: false
-        })
-
-        return
-      }
+      // HANDLE ERRORS //
 
       if (message.type == "error" && message.details) {
         updateSnackbar({
@@ -106,6 +94,8 @@ const useSocketEvents = () => {
           infinite: false
         })
       }
+
+      // HANDLE RECONNECTION //
 
       if (reconnectingGame) {
         setReconnectingGame(false)
@@ -118,6 +108,8 @@ const useSocketEvents = () => {
         }
       }
 
+      // HANDLE AUDIO //
+
       if (sounds) {
         if (gameState?.configuration.reader) {
           processMessageAndSpeak(message)
@@ -126,12 +118,15 @@ const useSocketEvents = () => {
         processMessageAndPlaySound(message)
       }
 
+      // SYNC GAME STATE //
+
       switch (message.type) {
         case "join":
           setGameState({
             ...message.details.changedState,
             winners: null
           })
+
           break
         case "create":
           setGameState({
@@ -142,55 +137,74 @@ const useSocketEvents = () => {
             votingEndsAt: null,
             winners: null
           })
+
           break
-        default:
-          if (message.type != "ping" && message.type != "error") {
-            setGameState((prev) => {
-              if (!prev) {
-                return null
-              }
-
-              let winners = prev.winners
-              if (
-                message.type == "gameend" &&
-                message.details.changedState.players.length >= 3
-              ) {
-                winners = [...message.details.changedState.players]
-                  .sort((a, b) => b.score - a.score)
-                  .slice(0, 3)
-              }
-
-              const votingEndsAt =
-                message.type == "choosingstart"
-                  ? null
-                  : "votingEndsAt" in message.details.changedState
-                  ? message.details.changedState.votingEndsAt
-                  : prev.votingEndsAt
-
-              return {
-                ...prev,
-                ...message.details.changedState,
-                votingEndsAt,
-                winners
-              }
-            })
+        default: {
+          if (message.type == "error") {
+            break
           }
+
+          if (!gameState) {
+            console.error("Trying to sync a non-initialized game state")
+            break
+          }
+
+          let winners = gameState.winners
+          if (
+            message.type == "gameend" &&
+            message.details.changedState.players.length >= 3
+          ) {
+            winners = [...message.details.changedState.players]
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 3)
+          }
+
+          const votingEndsAt =
+            message.type == "choosingstart"
+              ? null
+              : "votingEndsAt" in message.details.changedState
+              ? message.details.changedState.votingEndsAt
+              : gameState.votingEndsAt
+
+          setGameState({
+            ...gameState,
+            ...message.details.changedState,
+            votingEndsAt,
+            winners
+          })
+        }
       }
     },
-    onClose(_, { gracefully, reconnecting }) {
-      if (!gracefully && !reconnecting) {
-        close()
-
-        updateSnackbar({
-          message: "Не удалось подключиться к серверу",
-          open: true,
-          severity: "error",
-          infinite: false
-        })
-      }
-
+    onClose(event, { gracefully, reconnecting }) {
       if (!reconnecting) {
         setGameState(null)
+      }
+
+      if (!gracefully && !reconnecting) {
+        resetUrl()
+
+        if (isKickCloseEvent(event)) {
+          updateSnackbar({
+            message: "Вас выгнали из комнаты",
+            severity: "information",
+            open: true,
+            infinite: false
+          })
+        } else if (isInactiveCloseEvent(event)) {
+          updateSnackbar({
+            message: "Вы были отключены, так как долго не проявляли активность",
+            severity: "information",
+            open: true,
+            infinite: false
+          })
+        } else {
+          updateSnackbar({
+            message: "Не удалось подключиться к серверу",
+            open: true,
+            severity: "error",
+            infinite: false
+          })
+        }
       }
 
       setReconnectingGame(reconnecting)
@@ -216,7 +230,15 @@ const useSocketEvents = () => {
         })
       }
     },
-    shouldReconnect({ nReconnects, closedGracefully }) {
+    shouldReconnect(event, { nReconnects, closedGracefully }) {
+      if (isKickCloseEvent(event)) {
+        return false
+      }
+
+      if (isInactiveCloseEvent(event)) {
+        return false
+      }
+
       if (nReconnects == 5 || closedGracefully) {
         return false
       }
@@ -226,6 +248,14 @@ const useSocketEvents = () => {
   })
 
   return { Snackbar, reconnecting: reconnectingGame }
+}
+
+function isKickCloseEvent(event: WebSocketEventMap["close"]) {
+  return event.code == 4321 && event.reason == "kick"
+}
+
+function isInactiveCloseEvent(event: WebSocketEventMap["close"]) {
+  return event.code == 4321 && event.reason == "inactive"
 }
 
 export default MyApp

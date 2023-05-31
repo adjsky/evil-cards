@@ -11,26 +11,26 @@ import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
 const useAvailableSessions = () => {
   const [state, setState] = useAtom(availableSessionsStateAtom)
 
-  const { close, setUrl } = useSocketWithUrlAtom<unknown, AvailableSession[]>(
-    availableSessionsSocketURLAtom,
-    {
-      onJsonMessage(sessions) {
-        setState({
-          loading: false,
-          sessions
-        })
-      },
-      onClose() {
-        setState({
-          loading: false,
-          sessions: state.sessions ?? []
-        })
-      },
-      shouldReconnect({ closedGracefully, nReconnects }) {
-        return nReconnects < 5 && !closedGracefully
-      }
+  const { close, setUrl, resetUrl } = useSocketWithUrlAtom<
+    unknown,
+    AvailableSession[]
+  >(availableSessionsSocketURLAtom, {
+    onJsonMessage(sessions) {
+      setState({
+        loading: false,
+        sessions
+      })
+    },
+    onClose() {
+      setState({
+        loading: false,
+        sessions: state.sessions ?? []
+      })
+    },
+    shouldReconnect(_, { closedGracefully, nReconnects }) {
+      return nReconnects < 5 && !closedGracefully
     }
-  )
+  })
 
   const connect = async () => {
     const result = await getWsHost()
@@ -48,7 +48,7 @@ const useAvailableSessions = () => {
     })
   }
 
-  return { connect, close, state }
+  return { connect, close, state, resetUrl }
 }
 
 export default useAvailableSessions

@@ -18,7 +18,10 @@ export type SocketOptions<T = unknown> = {
   onOpen?: (event: WebSocketEventMap["open"]) => void
   onError?: (event: WebSocketEventMap["error"]) => void
   onClose?: (event: WebSocketEventMap["close"], details: OnCloseDetails) => void
-  shouldReconnect?: (details: ShouldReconnectDetails) => boolean
+  shouldReconnect?: (
+    error: WebSocketEventMap["close"],
+    details: ShouldReconnectDetails
+  ) => boolean
 }
 
 export type Listener<T = unknown> = {

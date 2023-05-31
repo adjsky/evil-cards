@@ -32,7 +32,7 @@ const useCreateOrJoinSession = (options?: Options) => {
   const nickname = useAtomValue(nicknameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
-  const { sendJsonMessage, setUrl, close } = useSessionSocket({
+  const { sendJsonMessage, setUrl, close, resetUrl } = useSessionSocket({
     onJsonMessage(message) {
       if (!connecting) {
         return
@@ -41,6 +41,7 @@ const useCreateOrJoinSession = (options?: Options) => {
       if (message.type == "error" && connecting) {
         setConnecting(false)
         setSessionId(null)
+        resetUrl()
         close()
         options?.onFail?.()
 
