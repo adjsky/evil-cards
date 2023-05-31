@@ -183,9 +183,16 @@ const useSocketEvents = () => {
       if (!gracefully && !reconnecting) {
         resetUrl()
 
-        if (isKickEvent(event)) {
+        if (isKickCloseEvent(event)) {
           updateSnackbar({
             message: "Вас выгнали из комнаты",
+            severity: "information",
+            open: true,
+            infinite: false
+          })
+        } else if (isInactiveCloseEvent(event)) {
+          updateSnackbar({
+            message: "Вы были отключены, так как долго не проявляли активность",
             severity: "information",
             open: true,
             infinite: false
@@ -224,7 +231,11 @@ const useSocketEvents = () => {
       }
     },
     shouldReconnect(event, { nReconnects, closedGracefully }) {
-      if (isKickEvent(event)) {
+      if (isKickCloseEvent(event)) {
+        return false
+      }
+
+      if (isInactiveCloseEvent(event)) {
         return false
       }
 
@@ -239,8 +250,12 @@ const useSocketEvents = () => {
   return { Snackbar, reconnecting: reconnectingGame }
 }
 
-function isKickEvent(event: WebSocketEventMap["close"]) {
+function isKickCloseEvent(event: WebSocketEventMap["close"]) {
   return event.code == 4321 && event.reason == "kick"
+}
+
+function isInactiveCloseEvent(event: WebSocketEventMap["close"]) {
+  return event.code == 4321 && event.reason == "inactive"
 }
 
 export default MyApp

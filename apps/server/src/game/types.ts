@@ -16,6 +16,7 @@ export type ControllerWebSocket = WebSocket & {
   session?: ISession | null
   player?: Player | null
   alive?: boolean
+  active?: boolean
 }
 
 type WithHelperData<T> = With<

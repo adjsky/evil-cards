@@ -8,7 +8,12 @@ import { SessionCache } from "@evil-cards/keydb"
 
 import { messageSchema } from "../lib/ws/receive.ts"
 import stringify from "../lib/ws/stringify.ts"
-import { ALIVE_CHECK_INTERVAL_MS } from "./constants.ts"
+import {
+  ACTIVITY_CHECK_INTERVAL_MS,
+  ALIVE_CHECK_INTERVAL_MS,
+  CUSTOM_WS_CLOSE_CODE,
+  CUSTOM_WS_CLOSE_REASON
+} from "./constants.ts"
 import {
   InSessionError,
   NoPlayerError,
@@ -88,10 +93,11 @@ class Controller {
 
   public handleConnection(ctx: ReqContext, socket: ControllerWebSocket) {
     socket.alive = true
-    const interval = setInterval(() => {
+
+    const aliveInterval = setInterval(() => {
       if (!socket.alive) {
         socket.terminate()
-        clearInterval(interval)
+        clearInterval(aliveInterval)
 
         return
       }
@@ -100,6 +106,17 @@ class Controller {
       socket.send(stringify({ type: "ping" }))
     }, ALIVE_CHECK_INTERVAL_MS)
 
+    const activityInterval = setInterval(() => {
+      if (!socket.active) {
+        socket.close(CUSTOM_WS_CLOSE_CODE, CUSTOM_WS_CLOSE_REASON.INACTIVE)
+        clearInterval(activityInterval)
+
+        return
+      }
+
+      socket.active = false
+    }, ACTIVITY_CHECK_INTERVAL_MS)
+
     socket.on("message", async (rawData) => {
       try {
         const message = messageSchema.parse(JSON.parse(rawData.toString()))
@@ -107,6 +124,7 @@ class Controller {
         if (message.type == "pong") {
           socket.alive = true
         } else {
+          socket.active = true
           await this.events.emit(
             message.type,
             "details" in message
@@ -127,7 +145,8 @@ class Controller {
     })
 
     socket.on("close", () => {
-      clearInterval(interval)
+      clearInterval(aliveInterval)
+      clearInterval(activityInterval)
     })
 
     socket.on("error", (error) =>
@@ -252,7 +271,7 @@ class Controller {
     }
 
     const kickSocket = this.socketMap.get(player.id)
-    kickSocket?.close(4321, "kick")
+    kickSocket?.close(CUSTOM_WS_CLOSE_CODE, CUSTOM_WS_CLOSE_REASON.KICK)
   }
 
   private disconnect(socket: ControllerWebSocket) {
