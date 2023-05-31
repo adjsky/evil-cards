@@ -23,8 +23,18 @@ const gameRoutes: FastifyPluginCallback<{
         socket.send(
           JSON.stringify(
             sessions
-              .filter((session) => session.public && !session.playing)
-              .sort((a, b) => b.players - a.players)
+              .filter(
+                (session) =>
+                  session.public && !session.playing && session.players != 0
+              )
+              .sort((a, b) => {
+                const playersCriteria = b.players - a.players
+                const nicknameCriteria = a.hostNickname.localeCompare(
+                  b.hostNickname
+                )
+
+                return playersCriteria || nicknameCriteria
+              })
           )
         )
       }
