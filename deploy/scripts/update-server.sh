@@ -8,7 +8,7 @@ if [[ $DEPLOY_ENV = "prod" ]]; then
   SECONDS_TO_REMOVE_CONTAINER=3600
   CURRENT_RUNNING_SERVERS=()
 
-  for CONTAINER in $(docker compose -f $COMPOSE_PATH ps server | tail -n +3 | awk '{ print $1 }'); do
+  for CONTAINER in $(docker compose -f $COMPOSE_PATH ps server | tail -n +2 | awk '{ print $1 }'); do
     CURRENT_RUNNING_SERVERS+=($CONTAINER)
 
     (
@@ -25,7 +25,7 @@ if [[ $DEPLOY_ENV = "prod" ]]; then
 
   AVAILABLE_SERVERS=()
 
-  for CONTAINER in $(docker compose -f $COMPOSE_PATH ps server | tail -n +3 | awk '{ print $1 }'); do
+  for CONTAINER in $(docker compose -f $COMPOSE_PATH ps server | tail -n +2 | awk '{ print $1 }'); do
     if [[ ! " ${CURRENT_RUNNING_SERVERS[@]} " =~ " $CONTAINER " ]]; then
       AVAILABLE_SERVERS+=($(echo $CONTAINER | grep -o -E '[0-9]+'))
     fi
