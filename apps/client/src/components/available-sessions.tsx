@@ -74,15 +74,15 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
       <div className="relative flex items-center justify-center">
         <Modal.Title
           as="h3"
-          className="text-xl font-bold uppercase !leading-none sm:text-3xl"
+          className="text-2xl font-bold uppercase !leading-none sm:text-3xl"
         >
           Комнаты
         </Modal.Title>
         <button onClick={onClose} className="absolute -right-1 -top-1 p-1">
-          <Close className="h-5 w-5 fill-gray-900 sm:h-7 sm:w-7" />
+          <Close className="h-6 w-6 fill-gray-900 sm:h-7 sm:w-7" />
         </button>
       </div>
-      <hr className="border-none py-1.5 sm:py-2.5" />
+      <hr className="border-none py-2 sm:py-2.5" />
       {state.loading && (
         <div className="flex flex-grow items-center justify-center">
           <Loader className="fill-gray-900" width={30} height={30} />
