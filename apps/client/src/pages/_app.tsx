@@ -145,33 +145,36 @@ const useSocketEvents = () => {
             break
           }
 
-          if (!gameState) {
-            console.error("Trying to sync a non-initialized game state")
-            break
-          }
+          setGameState((prev) => {
+            if (!prev) {
+              console.error("Trying to sync a non-initialized game state")
 
-          let winners = gameState.winners
-          if (
-            message.type == "gameend" &&
-            message.details.changedState.players.length >= 3
-          ) {
-            winners = [...message.details.changedState.players]
-              .sort((a, b) => b.score - a.score)
-              .slice(0, 3)
-          }
+              return prev
+            }
 
-          const votingEndsAt =
-            message.type == "choosingstart"
-              ? null
-              : "votingEndsAt" in message.details.changedState
-              ? message.details.changedState.votingEndsAt
-              : gameState.votingEndsAt
+            let winners = prev.winners
+            if (
+              message.type == "gameend" &&
+              message.details.changedState.players.length >= 3
+            ) {
+              winners = [...message.details.changedState.players]
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3)
+            }
 
-          setGameState({
-            ...gameState,
-            ...message.details.changedState,
-            votingEndsAt,
-            winners
+            const votingEndsAt =
+              message.type == "choosingstart"
+                ? null
+                : "votingEndsAt" in message.details.changedState
+                ? message.details.changedState.votingEndsAt
+                : prev.votingEndsAt
+
+            return {
+              ...prev,
+              ...message.details.changedState,
+              votingEndsAt,
+              winners
+            }
           })
         }
       }

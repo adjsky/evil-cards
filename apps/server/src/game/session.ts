@@ -206,7 +206,17 @@ class Session implements ISession {
       }
 
       if (isPlaying && player.master) {
-        this.passMaster()
+        if (this._timeouts.choosebest) {
+          this._timeouts.choosebest.clear()
+          this._timeouts.choosebest = null
+        }
+
+        if (this._timeouts.voting) {
+          this._timeouts.voting.clear()
+          this._timeouts.voting = null
+        }
+
+        this.startVoting()
       }
 
       this._events.emit("leave", player)
