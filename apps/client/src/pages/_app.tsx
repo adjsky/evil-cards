@@ -102,6 +102,7 @@ const useSocketEvents = () => {
 
         if (message.type == "error") {
           setGameState(null)
+          resetUrl()
           close()
 
           return
