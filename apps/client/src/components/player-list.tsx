@@ -181,7 +181,7 @@ const DesktopPlayer: React.FC<{
             player ? "text-gray-100" : "text-gray-600"
           )}
         >
-          <div className="flex-grow overflow-hidden overflow-ellipsis text-xs leading-none">
+          <div className="flex-grow overflow-hidden overflow-ellipsis text-xs">
             {player?.nickname ?? "Пусто"}
           </div>
           {player && variant == "game" && (
