@@ -26,7 +26,7 @@ const PlayerList: React.FC<{
 
   return (
     <div
-      className="sm:scrollable flex w-full overflow-x-auto sm:h-full sm:flex-col sm:gap-2"
+      className="sm:scrollable flex w-full touch-pan-x overflow-x-auto sm:h-full sm:flex-col sm:gap-2"
       data-testid="player-list"
     >
       {filteredPlayers.map((player) => (

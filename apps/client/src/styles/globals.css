@@ -6,6 +6,7 @@
   .scrollable {
     overflow-y: auto;
     overflow-x: hidden;
+    touch-action: pan-y;
   }
 
   .scrollable::-webkit-scrollbar {

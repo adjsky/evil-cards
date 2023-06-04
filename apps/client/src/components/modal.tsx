@@ -29,7 +29,7 @@ const RootModal: React.FC<
           <div className="fixed inset-0 bg-black/75" />
         </Transition.Child>
 
-        <div className="fixed inset-0 h-full overflow-y-auto">
+        <div className="fixed inset-0 h-full touch-pan-y overflow-y-auto">
           <div className="flex h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={React.Fragment}

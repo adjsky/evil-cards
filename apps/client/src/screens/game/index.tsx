@@ -236,7 +236,7 @@ const Deck: React.FC<{
   return (
     <div
       className={clsx(
-        "grid grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
+        "grid touch-pan-x grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
         "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
       )}
       data-testid="deck"
