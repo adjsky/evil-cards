@@ -53,10 +53,12 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
       !connection?.instance ||
       connection.instance.readyState != WebSocket.OPEN
     ) {
-      throw new Error("WebSocket connection is not ready to send messages")
-    } else {
-      connection.instance?.send(JSON.stringify(data))
+      console.error("WebSocket connection is not ready to send messages")
+
+      return
     }
+
+    connection.instance.send(JSON.stringify(data))
   }, [])
 
   useEffect(() => {
@@ -107,7 +109,9 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
     sendJsonMessage,
     close() {
       if (!connectionRef.current) {
-        throw new Error("No connection found to close")
+        console.error("No connection found to close")
+
+        return
       }
 
       disconnect(connectionRef.current)
