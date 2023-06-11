@@ -7,7 +7,8 @@
   "license": "MIT",
   "dependencies": {
     "@fastify/compress": "^6.3.0",
-    "@fastify/cors": "^8.2.1"
+    "@fastify/cors": "^8.2.1",
+    "fastify-metrics": "^10.3.0"
   },
   "devDependencies": {
     "@evil-cards/eslint-config": "workspace:^",

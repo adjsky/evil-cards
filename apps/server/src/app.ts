@@ -15,13 +15,14 @@ const fastify = await getFastifyServer({
     enabled: env.NODE_ENV != "test",
     pretty: env.NODE_ENV == "development",
     loki:
-      env.NODE_ENV == "production"
+      env.LOKI_HOST && env.LOKI_PASSWORD && env.LOKI_USERNAME
         ? {
             basicAuth: {
               password: env.LOKI_PASSWORD,
               username: env.LOKI_USERNAME
             },
-            host: env.LOKI_HOST
+            host: env.LOKI_HOST,
+            name: `server-${env.SERVER_NUMBER}`
           }
         : undefined
   },
