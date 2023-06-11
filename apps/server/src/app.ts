@@ -8,9 +8,9 @@ import SessionManager from "./game/session-manager.ts"
 import { SessionFactory } from "./game/session.ts"
 import gameRoutes from "./routes/game.ts"
 import { env } from "./env.ts"
-import { getFastifyServer } from "@evil-cards/fastify-server"
+import { getServer } from "@evil-cards/fastify"
 
-const fastify = await getFastifyServer({
+const fastify = await getServer({
   logger: {
     enabled: env.NODE_ENV != "test",
     pretty: env.NODE_ENV == "development",

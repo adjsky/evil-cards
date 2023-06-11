@@ -1,4 +1,7 @@
-import { FastifyPluginCallback, FastifyBaseLogger } from "fastify"
+import type {
+  FastifyPluginCallback,
+  FastifyBaseLogger
+} from "@evil-cards/fastify"
 
 function getMemoryLogger(logger: FastifyBaseLogger) {
   return () => {

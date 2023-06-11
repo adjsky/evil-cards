@@ -1,13 +1,13 @@
 import { z } from "zod"
 import { createCtxFromReq } from "@evil-cards/ctx-log"
 import { SessionCache, createClient } from "@evil-cards/keydb"
-import { getFastifyServer } from "@evil-cards/fastify-server"
+import { getServer } from "@evil-cards/fastify"
 
 import makeURLFromServer from "./make-url-from-server.ts"
 import setupRoundRobin from "./setup-round-robin.ts"
 import { env } from "./env.ts"
 
-const fastify = await getFastifyServer({
+const fastify = await getServer({
   logger: {
     enabled: env.NODE_ENV != "test",
     pretty: env.NODE_ENV == "development",

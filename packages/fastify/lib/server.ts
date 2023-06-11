@@ -13,7 +13,7 @@ type Options = {
   }
 }
 
-export async function getFastifyServer(options: Options) {
+export async function getServer(options: Options) {
   const fastify = Fastify({
     logger: options.logger ? getLogger(options.logger) : false
   })

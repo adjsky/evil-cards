@@ -1,4 +1,4 @@
-import type { FastifyPluginCallback } from "fastify"
+import type { FastifyPluginCallback } from "@evil-cards/fastify"
 
 const signals = ["SIGTERM", "SIGINT"] as const
 type Signal = typeof signals[number]
