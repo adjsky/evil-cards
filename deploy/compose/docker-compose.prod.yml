@@ -77,7 +77,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.44.0
     restart: always
-    command: -config.file=/etc/prometheus/prometheus.yml
+    command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - prometheus-data:/prometheus
       - ../prometheus/config.yml:/etc/prometheus/prometheus.yml
