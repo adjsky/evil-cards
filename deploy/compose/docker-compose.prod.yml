@@ -67,11 +67,21 @@ services:
   prometheus:
     image: prom/prometheus:v2.44.0
     restart: always
+    command: -config.file=/etc/prometheus/prometheus.yml
     volumes:
+      - prometheus-data:/prometheus
       - ../prometheus/config.yml:/etc/prometheus/prometheus.yml
     depends_on:
       - server
       - load-balancer
+
+  loki:
+    image: grafana/loki:2.8.0
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - loki-data:/loki
+      - ../loki/config.yaml:/etc/loki/config.yaml
+    restart: always
 
   grafana:
     image: grafana/grafana-enterprise:9.5.3
@@ -80,6 +90,7 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+      - loki
 
   client:
     extends:
@@ -107,4 +118,8 @@ volumes:
   event-data:
     driver: local
   grafana-data:
+    driver: local
+  loki-data:
+    driver: local
+  prometheus-data:
     driver: local

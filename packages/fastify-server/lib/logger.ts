@@ -2,7 +2,7 @@ export type Options = {
   loki?: {
     name: string
     host: string
-    basicAuth: {
+    basicAuth?: {
       username: string
       password: string
     }
