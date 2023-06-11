@@ -18,5 +18,3 @@ scrape_configs:
       - regex: __meta_docker_container_label_prometheus_(.+)
         action: labelmap
         replacement: $1
-
-remote_write:

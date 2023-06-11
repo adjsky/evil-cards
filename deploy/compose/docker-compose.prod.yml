@@ -64,21 +64,22 @@ services:
     labels:
       - prometheus-job=load-balancer
 
-  grafana:
-    image: grafana/grafana-enterprise:9.5.3
-    restart: always
-    volumes:
-      - grafana-data:/var/lib/grafana
-
   prometheus:
     image: prom/prometheus:v2.44.0
     restart: always
     volumes:
       - ../prometheus/config.yml:/etc/prometheus/prometheus.yml
     depends_on:
-      - grafana
       - server
       - load-balancer
+
+  grafana:
+    image: grafana/grafana-enterprise:9.5.3
+    restart: always
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
 
   client:
     extends:
