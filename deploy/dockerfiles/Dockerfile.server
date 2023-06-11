@@ -28,7 +28,7 @@ COPY --from=prune /evil-cards/out/json/ .
 COPY --from=prune /evil-cards/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
-RUN pnpm --frozen-lockfile install
+RUN pnpm --frozen-lockfile -P install
 
 ###################################################################
 # Stage 3: Run server (prod)                                      #

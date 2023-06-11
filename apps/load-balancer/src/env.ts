@@ -5,12 +5,7 @@ import type { ZodFormattedError } from "zod"
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 
-/**
- * Specify your environment variables schema here.
- * This way you can ensure the app isn't built with invalid env vars.
- */
-export const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]),
+const commonEnvSchema = z.object({
   PORT: z.coerce.number().default(1337),
   KEYDB_URL: z.string().url(),
   SITE_DOMAIN: z.string(),
@@ -18,6 +13,24 @@ export const envSchema = z.object({
   INITIAL_AVAILABLE_SERVERS: z.coerce.number(),
   CORS_ORIGIN: z.string()
 })
+
+/**
+ * Specify your environment variables schema here.
+ * This way you can ensure the app isn't built with invalid env vars.
+ */
+export const envSchema = z
+  .discriminatedUnion("NODE_ENV", [
+    z.object({
+      NODE_ENV: z.enum(["development", "test"])
+    }),
+    z.object({
+      NODE_ENV: z.literal("production"),
+      LOKI_HOST: z.string(),
+      LOKI_USERNAME: z.string(),
+      LOKI_PASSWORD: z.string()
+    })
+  ])
+  .and(commonEnvSchema)
 
 const formatErrors = (errors: ZodFormattedError<Map<string, string>, string>) =>
   Object.entries(errors)
