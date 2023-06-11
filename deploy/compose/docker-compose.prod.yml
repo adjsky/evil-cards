@@ -41,6 +41,14 @@ services:
       file: common.yml
       service: keydb
 
+  loki:
+    image: grafana/loki:2.8.0
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - loki-data:/loki
+      - ../loki/config.yaml:/etc/loki/config.yaml
+    restart: always
+
   server:
     extends:
       file: common.yml
@@ -50,6 +58,7 @@ services:
       replicas: 2
     depends_on:
       - keydb
+      - loki
     labels:
       - prometheus-job=server
 
@@ -61,6 +70,7 @@ services:
     depends_on:
       - keydb
       - server
+      - loki
     labels:
       - prometheus-job=load-balancer
 
@@ -74,14 +84,6 @@ services:
     depends_on:
       - server
       - load-balancer
-
-  loki:
-    image: grafana/loki:2.8.0
-    command: -config.file=/etc/loki/config.yaml
-    volumes:
-      - loki-data:/loki
-      - ../loki/config.yaml:/etc/loki/config.yaml
-    restart: always
 
   grafana:
     image: grafana/grafana-enterprise:9.5.3
