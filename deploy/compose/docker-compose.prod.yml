@@ -50,6 +50,8 @@ services:
       replicas: 2
     depends_on:
       - keydb
+    labels:
+      - prometheus-job=server
 
   load-balancer:
     extends:
@@ -59,6 +61,24 @@ services:
     depends_on:
       - keydb
       - server
+    labels:
+      - prometheus-job=load-balancer
+
+  grafana:
+    image: grafana/grafana-enterprise
+    restart: always
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    restart: always
+    volumes:
+      - ../prometheus/config.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - grafana
+      - server
+      - load-balancer
 
   client:
     extends:
@@ -84,4 +104,6 @@ volumes:
   db-data:
     driver: local
   event-data:
+    driver: local
+  grafana-data:
     driver: local

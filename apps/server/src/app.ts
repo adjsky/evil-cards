@@ -21,7 +21,8 @@ const fastify = await getFastifyServer({
               password: env.LOKI_PASSWORD,
               username: env.LOKI_USERNAME
             },
-            host: env.LOKI_HOST
+            host: env.LOKI_HOST,
+            name: `server-${env.SERVER_NUMBER}`
           }
         : undefined
   },

@@ -1,5 +1,6 @@
 export type Options = {
   loki?: {
+    name: string
     host: string
     basicAuth: {
       username: string
@@ -34,6 +35,8 @@ function getLogger(options: Options) {
         options: {
           batching: true,
           interval: 5,
+
+          labels: { app: options.loki.name },
 
           host: options.loki.host,
           basicAuth: options.loki.basicAuth

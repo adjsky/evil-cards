@@ -1,6 +1,7 @@
 import Fastify from "fastify"
 import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
+import fastifyMetrics from "fastify-metrics"
 import getLogger from "./logger.ts"
 
 import type { Options as LoggerOptions } from "./logger.ts"
@@ -24,6 +25,8 @@ export async function getFastifyServer(options: Options) {
       origin: options.cors.origin
     })
   }
+
+  await fastify.register(fastifyMetrics)
 
   return fastify
 }
