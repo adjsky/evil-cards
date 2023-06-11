@@ -18,3 +18,6 @@ scrape_configs:
       - regex: __meta_docker_container_label_prometheus_(.+)
         action: labelmap
         replacement: $1
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: "container"
