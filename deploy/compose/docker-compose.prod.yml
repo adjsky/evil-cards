@@ -65,7 +65,7 @@ services:
       - prometheus-job=load-balancer
 
   grafana:
-    image: grafana/grafana-enterprise
+    image: grafana/grafana-enterprise:9.5.3
     restart: always
     volumes:
       - grafana-data:/var/lib/grafana
