@@ -1,6 +1,3 @@
-import Fastify from "fastify"
-import fastifyCompress from "@fastify/compress"
-import fastifyCors from "@fastify/cors"
 import websocketPlugin from "@fastify/websocket"
 import { createClient } from "@evil-cards/keydb"
 
@@ -11,22 +8,27 @@ import SessionManager from "./game/session-manager.ts"
 import { SessionFactory } from "./game/session.ts"
 import gameRoutes from "./routes/game.ts"
 import { env } from "./env.ts"
+import { getFastifyServer } from "@evil-cards/fastify-server"
 
-const envLogger = {
-  development: {
-    transport: {
-      target: "pino-pretty",
-      options: {
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname"
-      }
-    }
+const fastify = await getFastifyServer({
+  logger: {
+    enabled: env.NODE_ENV != "test",
+    pretty: env.NODE_ENV == "development",
+    loki:
+      env.NODE_ENV == "production"
+        ? {
+            basicAuth: {
+              password: env.LOKI_PASSWORD,
+              username: env.LOKI_USERNAME
+            },
+            host: env.LOKI_HOST
+          }
+        : undefined
   },
-  production: true,
-  test: false
-}
-
-const fastify = Fastify({ logger: envLogger[env.NODE_ENV] })
+  cors: {
+    origin: env.CORS_ORIGIN
+  }
+})
 
 // REDIS
 const redisClient = createClient(env.KEYDB_URL, fastify.log)
@@ -52,10 +54,6 @@ if (subscriber.none) {
 const [subscribe, subscriberCleanup] = subscriber.unwrap()
 
 // FASTIFY PLUGINS
-await fastify.register(fastifyCompress)
-await fastify.register(fastifyCors, {
-  origin: env.CORS_ORIGIN
-})
 await fastify.register(websocketPlugin)
 
 // INTERNAL PLUGINS

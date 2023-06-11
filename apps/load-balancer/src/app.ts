@@ -1,35 +1,30 @@
-import Fastify from "fastify"
-import fastifyCompress from "@fastify/compress"
-import fastifyCors from "@fastify/cors"
 import { z } from "zod"
 import { createCtxFromReq } from "@evil-cards/ctx-log"
 import { SessionCache, createClient } from "@evil-cards/keydb"
+import { getFastifyServer } from "@evil-cards/fastify-server"
 
 import makeURLFromServer from "./make-url-from-server.ts"
 import setupRoundRobin from "./setup-round-robin.ts"
 import { env } from "./env.ts"
 
-const envLogger = {
-  development: {
-    transport: {
-      target: "pino-pretty",
-      options: {
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname"
-      }
-    }
+const fastify = await getFastifyServer({
+  logger: {
+    enabled: env.NODE_ENV != "test",
+    pretty: env.NODE_ENV == "development",
+    loki:
+      env.NODE_ENV == "production"
+        ? {
+            basicAuth: {
+              password: env.LOKI_PASSWORD,
+              username: env.LOKI_USERNAME
+            },
+            host: env.LOKI_HOST
+          }
+        : undefined
   },
-  production: true,
-  test: false
-}
-
-const fastify = Fastify({
-  logger: envLogger[env.NODE_ENV]
-})
-
-await fastify.register(fastifyCompress)
-await fastify.register(fastifyCors, {
-  origin: env.CORS_ORIGIN
+  cors: {
+    origin: env.CORS_ORIGIN
+  }
 })
 
 const redis = createClient(env.KEYDB_URL, fastify.log)
