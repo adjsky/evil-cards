@@ -1,4 +1,5 @@
 import { z } from "zod"
+import Docker from "dockerode"
 import { createCtxFromReq } from "@evil-cards/ctx-log"
 import { SessionCache, createClient } from "@evil-cards/keydb"
 import { getServer } from "@evil-cards/fastify"
@@ -6,6 +7,11 @@ import { getServer } from "@evil-cards/fastify"
 import makeURLFromServer from "./make-url-from-server.ts"
 import setupRoundRobin from "./setup-round-robin.ts"
 import { env } from "./env.ts"
+
+const docker = new Docker({ socketPath: "/var/run/docker.sock" })
+
+const containers = await docker.listContainers()
+console.log(containers)
 
 const fastify = await getServer({
   logger: {

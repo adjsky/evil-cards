@@ -8,6 +8,10 @@ services:
 
   server:
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 5s
     env_file:
       - ../envs/server.env
 

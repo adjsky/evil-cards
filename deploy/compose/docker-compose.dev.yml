@@ -3,14 +3,19 @@ name: evil-cards-dev
 services:
   keydb:
     extends:
-      file: common.yml
+      file: docker-compose.common.yml
       service: keydb
     restart: "no"
 
   server:
+    extends:
+      file: docker-compose.common.yml
+      service: server
+    restart: "no"
     image: tilt/server
     depends_on:
-      - keydb
+      keydb:
+        condition: service_healthy
     ports:
       - 8000:8000
     environment:
@@ -18,10 +23,16 @@ services:
       - CORS_ORIGIN=*
 
   load-balancer:
+    extends:
+      file: docker-compose.common.yml
+      service: load-balancer
+    restart: "no"
     image: tilt/load-balancer
     depends_on:
-      - keydb
-      - server
+      keydb:
+        condition: service_healthy
+      server:
+        condition: service_healthy
     ports:
       - 1337:1337
     environment:
