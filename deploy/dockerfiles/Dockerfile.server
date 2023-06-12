@@ -14,7 +14,7 @@ COPY . .
 RUN turbo prune --scope=@evil-cards/server --docker
 
 ###################################################################
-# Stage 2: Install server production dependencies                 #
+# Stage 2: Install production server dependencies                 #
 ###################################################################
 
 FROM node:18.16.0-alpine AS deps-prod
@@ -31,7 +31,7 @@ COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm --frozen-lockfile -P install
 
 ###################################################################
-# Stage 2: Install server all dependencies                        #
+# Stage 2: Install all server dependencies                        #
 ###################################################################
 
 FROM node:18.16.0-alpine AS deps-all

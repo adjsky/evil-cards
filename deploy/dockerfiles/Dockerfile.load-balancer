@@ -14,10 +14,27 @@ COPY . .
 RUN turbo prune --scope=@evil-cards/load-balancer --docker
 
 ###################################################################
-# Stage 2: Install load-balancer dependencies                     #
+# Stage 2: Install all load-balancer dependencies                 #
 ###################################################################
 
-FROM node:18.16.0-alpine AS deps
+FROM node:18.16.0-alpine AS deps-all
+
+RUN apk add --no-cache libc6-compat
+RUN corepack enable
+
+WORKDIR /evil-cards
+
+COPY --from=prune /evil-cards/out/json/ .
+COPY --from=prune /evil-cards/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+
+RUN pnpm --frozen-lockfile install 
+
+###################################################################
+# Stage 2: Install production load-balancer dependencies          #
+###################################################################
+
+FROM node:18.16.0-alpine AS deps-prod
 
 RUN apk add --no-cache libc6-compat
 RUN corepack enable
@@ -36,9 +53,11 @@ RUN pnpm --frozen-lockfile -P install
 
 FROM node:18.16.0-alpine AS runner-prod
 
+RUN corepack enable
+
 WORKDIR /evil-cards
 COPY tsconfig.json .
-COPY --from=deps /evil-cards .
+COPY --from=deps-prod /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/load-balancer
@@ -46,7 +65,7 @@ WORKDIR /evil-cards/apps/load-balancer
 EXPOSE 1337
 ENV PORT 1337
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
 
 ###################################################################
 # Stage 3: Run load balancer (stage)                              #
@@ -54,9 +73,11 @@ CMD ["npm", "start"]
 
 FROM node:18.16.0-alpine AS runner-stage
 
+RUN corepack enable
+
 WORKDIR /evil-cards
 COPY tsconfig.json .
-COPY --from=deps /evil-cards .
+COPY --from=deps-prod /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/load-balancer
@@ -64,4 +85,24 @@ WORKDIR /evil-cards/apps/load-balancer
 EXPOSE 1337
 ENV PORT 1337
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
+
+###################################################################
+# Stage 3: Run load balancer (dev)                              #
+###################################################################
+
+FROM node:18.16.0-alpine AS runner-dev
+
+RUN corepack enable
+
+WORKDIR /evil-cards
+COPY tsconfig.json .
+COPY --from=deps-all /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
+
+WORKDIR /evil-cards/apps/load-balancer
+
+EXPOSE 1337
+ENV PORT 1337
+
+CMD ["pnpm", "dev"]

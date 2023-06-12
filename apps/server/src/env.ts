@@ -1,9 +1,5 @@
-import * as dotenv from "dotenv"
 import z from "zod"
-
 import type { ZodFormattedError } from "zod"
-
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 
 /**
  * Specify your environment variables schema here.

@@ -117,3 +117,25 @@ EXPOSE 3000
 ENV PORT 3000
 
 CMD ["node", "apps/client/server.js"]
+
+###################################################################
+# Stage 4: Run client (dev)                                       #
+###################################################################
+
+FROM node:18.16.0-alpine AS runner-dev
+
+RUN corepack enable
+
+WORKDIR /evil-cards
+
+COPY tsconfig.json .
+COPY prettier.config.cjs .
+COPY --from=deps /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
+
+WORKDIR /evil-cards/apps/client
+
+EXPOSE 3000
+ENV PORT 3000
+
+CMD ["pnpm", "dev"]

@@ -18,7 +18,6 @@
     "@fastify/websocket": "^8.1.0",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.5",
-    "dotenv": "^16.0.3",
     "emittery": "^1.0.0",
     "nanoid": "^4.0.0",
     "pino-loki": "^2.1.3",

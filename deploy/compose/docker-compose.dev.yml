@@ -6,6 +6,7 @@ services:
       file: common.yml
       service: keydb
     restart: "no"
+
   server:
     image: tilt/server
     depends_on:
@@ -15,3 +16,25 @@ services:
     environment:
       - KEYDB_URL=redis://keydb:6379
       - CORS_ORIGIN=*
+
+  load-balancer:
+    image: tilt/load-balancer
+    depends_on:
+      - keydb
+      - server
+    ports:
+      - 1337:1337
+    environment:
+      - KEYDB_URL=redis://keydb:6379
+      - SITE_DOMAIN=localhost
+      - CORS_ORIGIN=*
+      - WS_PROTOCOL=ws
+      - INITIAL_AVAILABLE_SERVERS=1
+
+  client:
+    image: tilt/client
+    ports:
+      - 3000:3000
+    environment:
+      - NEXT_PUBLIC_WS_HOST=ws://server:8000
+      - NEXT_PUBLIC_SITE_HOST=http://localhost:3000

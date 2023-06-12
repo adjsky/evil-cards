@@ -7,14 +7,13 @@
   "license": "MIT",
   "scripts": {
     "start": "cross-env NODE_ENV=production ts-node --transpileOnly ./src/app.ts",
-    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node ./src/app.ts"
+    "dev": "cross-env NODE_ENV=development ts-node ./src/app.ts"
   },
   "dependencies": {
     "@evil-cards/ctx-log": "workspace:^",
     "@evil-cards/fastify": "workspace:^",
     "@evil-cards/keydb": "workspace:^",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.0.3",
     "pino-loki": "^2.1.3",
     "round-robin-js": "^3.0.5",
     "ts-node": "^10.9.1",
@@ -26,7 +25,6 @@
     "@types/node": "^18.16.16",
     "eslint": "^8.28.0",
     "jest": "^29.3.1",
-    "nodemon": "^2.0.20",
     "pino-pretty": "^9.1.1",
     "prettier": "^2.8.0"
   }
