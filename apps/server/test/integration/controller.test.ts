@@ -7,7 +7,7 @@ import SessionManager from "../../src/game/session-manager.ts"
 import { SessionFactory } from "../../src/game/session.ts"
 
 import type { Client } from "@evil-cards/keydb"
-import type { FastifyBaseLogger } from "fastify"
+import type { FastifyBaseLogger } from "@evil-cards/fastify"
 import type { ReqContext } from "@evil-cards/ctx-log"
 
 jest.unstable_mockModule(

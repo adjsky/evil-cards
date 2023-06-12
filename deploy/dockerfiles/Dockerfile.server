@@ -14,10 +14,10 @@ COPY . .
 RUN turbo prune --scope=@evil-cards/server --docker
 
 ###################################################################
-# Stage 2: Install server dependencies                            #
+# Stage 2: Install server production dependencies                 #
 ###################################################################
 
-FROM node:18.16.0-alpine AS deps
+FROM node:18.16.0-alpine AS deps-prod
 
 RUN apk add --no-cache libc6-compat
 RUN corepack enable
@@ -31,16 +31,34 @@ COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm --frozen-lockfile -P install
 
 ###################################################################
+# Stage 2: Install server all dependencies                        #
+###################################################################
+
+FROM node:18.16.0-alpine AS deps-all
+
+RUN apk add --no-cache libc6-compat
+RUN corepack enable
+
+WORKDIR /evil-cards
+
+COPY --from=prune /evil-cards/out/json/ .
+COPY --from=prune /evil-cards/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+
+RUN pnpm --frozen-lockfile install
+
+###################################################################
 # Stage 3: Run server (prod)                                      #
 ###################################################################
 
 FROM node:18.16.0-alpine AS runner-prod
 
 RUN apk --no-cache add bind-tools
+RUN corepack enable
 
 WORKDIR /evil-cards
 COPY tsconfig.json .
-COPY --from=deps /evil-cards .
+COPY --from=deps-prod /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/server
@@ -56,9 +74,11 @@ CMD ["sh", "./scripts/start-with-server-number.sh"]
 
 FROM node:18.16.0-alpine AS runner-stage
 
+RUN corepack enable
+
 WORKDIR /evil-cards
 COPY tsconfig.json .
-COPY --from=deps /evil-cards .
+COPY --from=deps-prod /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/server
@@ -66,4 +86,24 @@ WORKDIR /evil-cards/apps/server
 EXPOSE 8000
 ENV PORT 8000
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
+
+###################################################################
+# Stage 3: Run server (dev)                                     #
+###################################################################
+
+FROM node:18.16.0-alpine AS runner-dev
+
+RUN corepack enable
+
+WORKDIR /evil-cards
+COPY tsconfig.json .
+COPY --from=deps-all /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
+
+WORKDIR /evil-cards/apps/server
+
+EXPOSE 8000
+ENV PORT 8000
+
+CMD ["pnpm", "dev"]

@@ -35,7 +35,7 @@ import type {
   Player,
   BroadcastCallback
 } from "./types.ts"
-import type { FastifyBaseLogger } from "fastify"
+import type { FastifyBaseLogger } from "@evil-cards/fastify"
 import type { ReqContext } from "@evil-cards/ctx-log"
 import type { Client } from "@evil-cards/keydb"
 

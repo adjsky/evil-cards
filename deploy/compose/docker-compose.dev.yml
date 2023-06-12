@@ -5,5 +5,13 @@ services:
     extends:
       file: common.yml
       service: keydb
+    restart: "no"
+  server:
+    image: tilt/server
+    depends_on:
+      - keydb
     ports:
-      - 6379:6379
+      - 8000:8000
+    environment:
+      - KEYDB_URL=redis://keydb:6379
+      - CORS_ORIGIN=*
