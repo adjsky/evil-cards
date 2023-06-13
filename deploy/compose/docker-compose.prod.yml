@@ -46,6 +46,9 @@ services:
           "http://localhost:8001/api/health"
         ]
       interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 0s
 
   keydb:
     extends:
@@ -70,6 +73,9 @@ services:
           "http://localhost:3100/ready"
         ]
       interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 0s
 
   server:
     extends:

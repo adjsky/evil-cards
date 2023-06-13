@@ -8,6 +8,9 @@ services:
     healthcheck:
       test: [ "CMD", "keydb-cli", "ping" ]
       interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 0s
 
   server:
     restart: always
@@ -22,6 +25,9 @@ services:
           "http://localhost:8000/health"
         ]
       interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 0s
     env_file:
       - ../envs/server.env
 
@@ -38,6 +44,9 @@ services:
           "http://localhost:1337/health"
         ]
       interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 0s
     env_file:
       - ../envs/load-balancer.env
 
