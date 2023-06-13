@@ -28,7 +28,7 @@ export async function getServer(options: Options) {
   }
 
   await fastify.register(fastifyMetrics)
-  await fastify.register(fastifyHealthcheck)
+  await fastify.register(fastifyHealthcheck, { logLevel: "silent" })
 
   return fastify
 }

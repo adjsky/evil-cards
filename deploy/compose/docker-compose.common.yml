@@ -5,18 +5,39 @@ services:
       - ../keydb/keydb.conf:/usr/local/etc/keydb/keydb.conf
     command: keydb-server /usr/local/etc/keydb/keydb.conf
     restart: always
+    healthcheck:
+      test: [ "CMD", "keydb-cli", "ping" ]
+      interval: 5s
 
   server:
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "-nv",
+          "-t1",
+          "--spider",
+          "http://localhost:8000/health"
+        ]
       interval: 5s
-      timeout: 5s
     env_file:
       - ../envs/server.env
 
   load-balancer:
     restart: always
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-nv",
+          "-t=1",
+          "--spider",
+          "http://localhost:1337/health"
+        ]
+      interval: 5s
     env_file:
       - ../envs/load-balancer.env
 

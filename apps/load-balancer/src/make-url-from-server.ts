@@ -1,7 +1,7 @@
 import { env } from "./env.ts"
 
 function makeURLFromServer(server: number) {
-  return `${env.WS_PROTOCOL}://sv-${server}.${env.SITE_DOMAIN}`
+  return env.PATTERN.replace("{}", server.toString())
 }
 
 export default makeURLFromServer

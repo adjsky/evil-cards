@@ -35,6 +35,17 @@ services:
       - mail
     env_file:
       - ../envs/plausible.env
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-nv",
+          "-t=1",
+          "--spider",
+          "http://localhost:8001/api/health"
+        ]
+      interval: 5s
 
   keydb:
     extends:
@@ -48,6 +59,17 @@ services:
       - loki-data:/loki
       - ../loki/config.yaml:/etc/loki/config.yaml
     restart: always
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-nv",
+          "-t=1",
+          "--spider",
+          "http://localhost:3100/ready"
+        ]
+      interval: 5s
 
   server:
     extends:
@@ -57,10 +79,13 @@ services:
     deploy:
       replicas: 2
     depends_on:
-      - keydb
-      - loki
+      keydb:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
     labels:
       - prometheus-job=server
+      - balancer-target=server
 
   load-balancer:
     extends:
@@ -68,9 +93,12 @@ services:
       service: load-balancer
     image: ghcr.io/adjsky/evil-cards/load-balancer-prod:${GITHUB_BRANCH:-master}
     depends_on:
-      - keydb
-      - server
-      - loki
+      keydb:
+        condition: service_healthy
+      server:
+        condition: service_started
+      loki:
+        condition: service_healthy
     labels:
       - prometheus-job=load-balancer
 
@@ -101,7 +129,8 @@ services:
       service: client
     image: ghcr.io/adjsky/evil-cards/client-prod:${GITHUB_BRANCH:-master}
     depends_on:
-      - plausible
+      plausible:
+        condition: service_healthy
 
   nginx:
     extends:
@@ -110,10 +139,14 @@ services:
     volumes:
       - ../nginx/default.prod.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - plausible
-      - client
-      - server
-      - load-balancer
+      plausible:
+        condition: service_healthy
+      client:
+        condition: service_started
+      server:
+        condition: service_healthy
+      load-balancer:
+        condition: service_healthy
 
 volumes:
   db-data:

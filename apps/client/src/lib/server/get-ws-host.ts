@@ -10,13 +10,9 @@ type SuccessLoadBalancerResponse = {
 }
 
 async function getWsHost(sessionId?: string): Promise<Result<string, Error>> {
-  if (env.NEXT_PUBLIC_WS_HOST) {
-    return Result.ok(env.NEXT_PUBLIC_WS_HOST)
-  }
-
   try {
     const response = await ky
-      .get("/api/server", {
+      .get(env.NEXT_PUBLIC_BALANCER_PATH, {
         searchParams: sessionId
           ? {
               sessionId

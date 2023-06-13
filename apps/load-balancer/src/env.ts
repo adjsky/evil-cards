@@ -9,10 +9,9 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   PORT: z.coerce.number().default(1337),
   KEYDB_URL: z.string().url(),
-  SITE_DOMAIN: z.string(),
-  WS_PROTOCOL: z.string(),
-  INITIAL_AVAILABLE_SERVERS: z.coerce.number(),
   CORS_ORIGIN: z.string(),
+  PATTERN: z.string(),
+  TARGET: z.string(),
   LOKI_HOST: z.string().optional(),
   LOKI_USERNAME: z.string().optional(),
   LOKI_PASSWORD: z.string().optional()

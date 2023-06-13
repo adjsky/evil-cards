@@ -1,20 +1,36 @@
-import getServersFromCache from "./get-servers-from-cache.ts"
 import { SequentialRoundRobin } from "round-robin-js"
-import type { Client } from "@evil-cards/keydb"
+import { env } from "./env.ts"
+import type Docker from "dockerode"
 
-async function setupRoundRobin(redis: Client, subscriber: Client) {
-  const serversRoundRobin = new SequentialRoundRobin(
-    await getServersFromCache(redis)
-  )
+const INTERVAL_MS = 30 * 1000 // 30s
 
-  await subscriber.pSubscribe("__keyspace@*__:servers", async () => {
-    const servers = await getServersFromCache(redis)
+async function setupRoundRobin(docker: Docker) {
+  const roundRobin = new SequentialRoundRobin(await getAvailableTargets(docker))
 
-    serversRoundRobin.clear()
-    servers.forEach((server) => serversRoundRobin.add(server))
-  })
+  const interval = setInterval(async () => {
+    const targets = await getAvailableTargets(docker)
 
-  return serversRoundRobin
+    roundRobin.clear()
+    targets.forEach((target) => roundRobin.add(target))
+  }, INTERVAL_MS)
+
+  return {
+    roundRobin,
+    cleanup() {
+      clearInterval(interval)
+    }
+  }
+}
+
+async function getAvailableTargets(docker: Docker) {
+  const containers = await docker.listContainers()
+
+  return containers
+    .filter((container) => container.Labels["balancer-target"] == env.TARGET)
+    .map((container) =>
+      Number(container.Labels["com.docker.compose.container-number"])
+    )
+    .filter((containerNumber) => !isNaN(containerNumber))
 }
 
 export default setupRoundRobin

@@ -1,5 +1,10 @@
 docker_compose("./deploy/compose/docker-compose.dev.yml")
 
+dc_resource("server", labels=["application"])
+dc_resource("load-balancer", labels=["application"])
+dc_resource("client", labels=["application"])
+dc_resource("keydb", labels=["database"])
+
 sync_src = sync(".", "/evil-cards")
 run_install_deps = run("pnpm install", "./pnpm-lock.yaml")
 

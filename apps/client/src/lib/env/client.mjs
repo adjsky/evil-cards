@@ -10,7 +10,7 @@ import formatErrors from "./format-errors.mjs"
  */
 const clientEnv = {
   NODE_ENV: process.env.NODE_ENV,
-  NEXT_PUBLIC_WS_HOST: process.env.NEXT_PUBLIC_WS_HOST,
+  NEXT_PUBLIC_BALANCER_PATH: process.env.NEXT_PUBLIC_BALANCER_PATH,
   NEXT_PUBLIC_SITE_HOST: process.env.NEXT_PUBLIC_SITE_HOST,
   NEXT_PUBLIC_WITH_ANALYTICS: process.env.NEXT_PUBLIC_WITH_ANALYTICS,
   NEXT_PUBLIC_WITH_SENTRY: process.env.NEXT_PUBLIC_WITH_SENTRY

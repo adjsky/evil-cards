@@ -1,17 +1,12 @@
-import { z } from "zod"
-import Docker from "dockerode"
-import { createCtxFromReq } from "@evil-cards/ctx-log"
 import { SessionCache, createClient } from "@evil-cards/keydb"
 import { getServer } from "@evil-cards/fastify"
+import Docker from "dockerode"
 
-import makeURLFromServer from "./make-url-from-server.ts"
 import setupRoundRobin from "./setup-round-robin.ts"
 import { env } from "./env.ts"
+import router from "./router.ts"
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" })
-
-const containers = await docker.listContainers()
-console.log(containers)
 
 const fastify = await getServer({
   logger: {
@@ -37,48 +32,14 @@ const fastify = await getServer({
 })
 
 const redis = createClient(env.KEYDB_URL, fastify.log)
-const subscriber = redis.duplicate()
-await Promise.all([redis.connect(), subscriber.connect()])
-
+await redis.connect()
 const sessionCache = new SessionCache(redis)
 
-const roundRobin = await setupRoundRobin(redis, subscriber)
+const { roundRobin } = await setupRoundRobin(docker)
 
-const getQuerySchema = z.object({
-  sessionId: z.string().optional()
-})
-
-fastify.get("/", async (req, res) => {
-  const query = getQuerySchema.safeParse(req.query)
-
-  if (!query.success) {
-    return res.status(400).send({ message: "invalid query" })
-  }
-
-  const sessionId = query.data.sessionId
-  const ctx = createCtxFromReq(req)
-
-  if (sessionId) {
-    const cachedSession = await sessionCache.get(ctx, sessionId)
-
-    if (cachedSession.none) {
-      return res.status(404).send({ message: "could not find session server" })
-    }
-
-    const server = cachedSession.unwrap().server
-
-    return res.send({ host: makeURLFromServer(server), message: "ok" })
-  }
-
-  if (roundRobin.count() == 0) {
-    return res
-      .status(500)
-      .send({ message: "could not find any available server" })
-  }
-
-  const server = roundRobin.next()
-
-  res.send({ host: server.value, message: "ok" })
+await fastify.register(router, {
+  sessionCache,
+  roundRobin
 })
 
 await fastify.listen({
