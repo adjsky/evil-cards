@@ -5,8 +5,8 @@
   "scripts": {
     "build": "next build",
     "build-with-sitemap": "run-s build generate-sitemap",
-    "build:production": "cross-env NEXT_PUBLIC_SITE_HOST=https://evilcards.online WITH_PWA=true NEXT_PUBLIC_WITH_ANALYTICS=true NEXT_PUBLIC_WITH_SENTRY=true npm run build-with-sitemap",
-    "build:stage": "cross-env NEXT_PUBLIC_SITE_HOST=https://stage.evilcards.online NEXT_PUBLIC_WS_HOST=wss://stage.evilcards.online WITH_PWA=true npm run build-with-sitemap",
+    "build:production": "cross-env NEXT_PUBLIC_SITE_HOST=https://evilcards.online NEXT_PUBLIC_BALANCER_PATH=/api/server WITH_PWA=true NEXT_PUBLIC_WITH_ANALYTICS=true NEXT_PUBLIC_WITH_SENTRY=true npm run build-with-sitemap",
+    "build:stage": "cross-env NEXT_PUBLIC_SITE_HOST=https://stage.evilcards.online NEXT_PUBLIC_BALANCER_PATH=/api/server WITH_PWA=true npm run build-with-sitemap",
     "dev": "next dev",
     "lint": "next lint",
     "start": "cross-env SKIP_CLIENT_ENV_VALIDATION=true next start",

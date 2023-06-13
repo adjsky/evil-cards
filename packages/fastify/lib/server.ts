@@ -2,6 +2,7 @@ import Fastify from "fastify"
 import fastifyCompress from "@fastify/compress"
 import fastifyCors from "@fastify/cors"
 import fastifyMetrics from "fastify-metrics"
+import fastifyHealthcheck from "fastify-healthcheck"
 import getLogger from "./logger.ts"
 
 import type { Options as LoggerOptions } from "./logger.ts"
@@ -27,6 +28,7 @@ export async function getServer(options: Options) {
   }
 
   await fastify.register(fastifyMetrics)
+  await fastify.register(fastifyHealthcheck, { logLevel: "silent" })
 
   return fastify
 }
