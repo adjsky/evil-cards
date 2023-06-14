@@ -35,20 +35,20 @@ services:
       - mail
     env_file:
       - ../envs/plausible.env
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "-nv",
-    #       "-t=1",
-    #       "--spider",
-    #       "http://localhost:8001/api/health"
-    #     ]
-    #   interval: 5s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 0s
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-nv",
+          "-t=1",
+          "--spider",
+          "http://localhost:8001/api/health"
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   keydb:
     extends:
@@ -62,20 +62,20 @@ services:
       - loki-data:/loki
       - ../loki/config.yaml:/etc/loki/config.yaml
     restart: always
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "-nv",
-    #       "-t=1",
-    #       "--spider",
-    #       "http://localhost:3100/ready"
-    #     ]
-    #   interval: 5s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 0s
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-nv",
+          "-t=1",
+          "--spider",
+          "http://localhost:3100/ready"
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   server:
     extends:
@@ -88,7 +88,7 @@ services:
       keydb:
         condition: service_healthy
       loki:
-        condition: service_started
+        condition: service_healthy
     labels:
       - prometheus-job=server
       - balancer-target=server
@@ -106,7 +106,7 @@ services:
       server:
         condition: service_started
       loki:
-        condition: service_started
+        condition: service_healthy
     labels:
       - prometheus-job=load-balancer
 
@@ -138,7 +138,7 @@ services:
     image: ghcr.io/adjsky/evil-cards/client-prod:${GITHUB_BRANCH:-master}
     depends_on:
       plausible:
-        condition: service_started
+        condition: service_healthy
 
   nginx:
     extends:
@@ -148,7 +148,7 @@ services:
       - ../nginx/default.prod.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       plausible:
-        condition: service_started
+        condition: service_healthy
       client:
         condition: service_started
       server:
