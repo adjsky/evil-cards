@@ -1,5 +1,9 @@
 import { SequentialRoundRobin } from "round-robin-js"
+
+import { log } from "@evil-cards/core/fastify"
+
 import { env } from "./env.ts"
+
 import type Docker from "dockerode"
 
 const INTERVAL_MS = 30 * 1000 // 30s
@@ -25,8 +29,20 @@ async function setupRoundRobin(docker: Docker) {
 async function getAvailableTargets(docker: Docker) {
   const containers = await docker.listContainers()
 
-  return containers
-    .filter((container) => container.Labels["balancer-target"] == env.TARGET)
+  const matchedContainers = containers.filter(
+    (container) => container.Labels["balancer-target"] == env.TARGET
+  )
+
+  log.info(
+    {
+      matchedContainers: matchedContainers.map((container) =>
+        container.Names.join(" | ")
+      )
+    },
+    "Got available docker targets"
+  )
+
+  return matchedContainers
     .map((container) =>
       Number(container.Labels["com.docker.compose.container-number"])
     )

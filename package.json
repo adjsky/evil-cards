@@ -2,7 +2,9 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "test:ci": "turbo test:ci"
+    "test:ci": "turbo test:ci",
+    "test:client": "turbo test --filter=client",
+    "test:server": "turbo test --filter=server"
   },
   "devDependencies": {
     "turbo": "^1.8.8",

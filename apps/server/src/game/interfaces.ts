@@ -1,10 +1,10 @@
 import type {
-  Vote,
-  Player,
   Configuration,
-  Status,
+  Player,
   SessionEvents,
-  Timeouts
+  Status,
+  Timeouts,
+  Vote
 } from "./types.ts"
 
 type PublicEvents = {

@@ -1,4 +1,4 @@
-const config = require("../../prettier.config.cjs")
+const config = require("@evil-cards/prettier-config")
 
 module.exports = {
   ...config,

@@ -1,22 +1,22 @@
 import dayjs from "dayjs"
-import { jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import waitForExpect from "wait-for-expect"
 
-import Session from "../../src/game/session.ts"
 import {
-  GAME_START_DELAY_MS,
   BEST_CARD_VIEW_DURATION_MS,
+  GAME_START_DELAY_MS,
   LEAVE_TIMEOUT_MS
 } from "../../src/game/constants.ts"
+import Session from "../../src/game/session.ts"
 
 let session: Session
 
 beforeEach(() => {
   session = new Session()
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 })
 afterEach(() => {
-  jest.useRealTimers()
+  vi.useRealTimers()
 })
 
 describe("regular gameplay", () => {
@@ -31,7 +31,7 @@ describe("regular gameplay", () => {
     session.startGame(firstPlayer.id)
     expect(session.status).toBe("starting")
 
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
     expect(session.status).toBe("voting")
 
     session.players.forEach((player) => {
@@ -73,7 +73,7 @@ describe("regular gameplay", () => {
     session.chooseWinner(firstPlayer.id, secondPlayer.id)
     expect(session.status).toBe("winnercardview")
 
-    jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
+    vi.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
 
     expect(secondPlayer.score).toBe(1)
     expect(session.votes.length).toBe(0)
@@ -99,34 +99,34 @@ describe("regular gameplay", () => {
 
     session.chooseWinner(secondPlayer.id, firstPlayer.id)
 
-    jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
+    vi.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
 
     expect(session.status).toBe("end")
   })
 
   it("emits all events", async () => {
-    const leaveMock = jest.fn(() => {
+    const leaveMock = vi.fn(() => {
       //
     })
-    const joinMock = jest.fn(() => {
+    const joinMock = vi.fn(() => {
       //
     })
-    const chooseMock = jest.fn(() => {
+    const chooseMock = vi.fn(() => {
       //
     })
-    const chooseWinnerMock = jest.fn(() => {
+    const chooseWinnerMock = vi.fn(() => {
       //
     })
-    const configurationChangeMock = jest.fn(() => {
+    const configurationChangeMock = vi.fn(() => {
       //
     })
-    const sessionEndMock = jest.fn(() => {
+    const sessionEndMock = vi.fn(() => {
       //
     })
-    const statusChangeMock = jest.fn(() => {
+    const statusChangeMock = vi.fn(() => {
       //
     })
-    const voteMock = jest.fn(() => {
+    const voteMock = vi.fn(() => {
       //
     })
 
@@ -151,7 +151,7 @@ describe("regular gameplay", () => {
 
     session.startGame(firstPlayer.id)
 
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
     session.vote(secondPlayer.id, secondPlayer.deck[0].id)
     session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
@@ -165,7 +165,7 @@ describe("regular gameplay", () => {
 
     session.endGame()
 
-    jest.useRealTimers()
+    vi.useRealTimers()
     await waitForExpect(() => {
       expect(statusChangeMock).toBeCalledWith("starting")
       expect(statusChangeMock).toBeCalledWith("end")
@@ -186,10 +186,10 @@ describe("regular gameplay", () => {
 
     session.startGame(session.players[0].id)
 
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
     expect(session.status).toBe("voting")
 
-    jest.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
+    vi.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
     expect(session.status).toBe("choosing")
 
     session.endGame()
@@ -202,8 +202,8 @@ describe("regular gameplay", () => {
 
     session.startGame(session.players[0].id)
 
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
-    jest.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
 
     expect(session.players[1].deck.length).toBe(9)
     expect(session.players[2].deck.length).toBe(9)
@@ -220,11 +220,11 @@ describe("regular gameplay", () => {
     session.join("5", 0)
 
     session.startGame(session.players[0].id)
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
     session.leave(session.players[1].id)
     session.leave(session.players[0].id)
-    jest.advanceTimersByTime(LEAVE_TIMEOUT_MS)
+    vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[1].master).toBeFalsy()
     expect(session.players[2].master).toBeTruthy()
@@ -252,7 +252,7 @@ describe("regular gameplay", () => {
     expect(session.configuration).toEqual(configuration)
 
     session.startGame(firstPlayer.id)
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
     expect(dayjs(session.getTimeoutDate("voting")).diff(dayjs(), "s")).toBe(
       configuration.votingDurationSeconds
@@ -267,7 +267,7 @@ describe("regular gameplay", () => {
     session.choose(firstPlayer.id, thirdPlayer.id)
 
     session.chooseWinner(firstPlayer.id, secondPlayer.id)
-    jest.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
+    vi.advanceTimersByTime(BEST_CARD_VIEW_DURATION_MS)
 
     expect(session.status).toBe("end")
   })
@@ -282,7 +282,7 @@ describe("cards discarding", () => {
     expect(() => session.discardCards(player.id)).toThrow()
 
     session.startGame(player.id)
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
     expect(() => session.discardCards(player.id)).toThrow()
 
@@ -296,7 +296,7 @@ describe("cards discarding", () => {
     session.join("user3", 0)
 
     session.startGame(player.id)
-    jest.advanceTimersByTime(GAME_START_DELAY_MS)
+    vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
     player2.score = 3
 

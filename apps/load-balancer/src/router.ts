@@ -1,9 +1,9 @@
 import { z } from "zod"
-import makeURLFromServer from "./make-url-from-server.ts"
-import { createCtxFromReq } from "@evil-cards/ctx-log"
 
-import type { FastifyPluginCallback } from "@evil-cards/fastify"
-import type { SessionCache } from "@evil-cards/keydb"
+import makeURLFromServer from "./make-url-from-server.ts"
+
+import type { FastifyPluginCallback } from "@evil-cards/core/fastify"
+import type { SessionCache } from "@evil-cards/core/keydb"
 import type { SequentialRoundRobin } from "round-robin-js"
 
 const router: FastifyPluginCallback<{
@@ -22,18 +22,17 @@ const router: FastifyPluginCallback<{
     }
 
     const sessionId = query.data.sessionId
-    const ctx = createCtxFromReq(req)
 
     if (sessionId) {
-      const cachedSession = await sessionCache.get(ctx, sessionId)
+      const cachedSession = await sessionCache.get(sessionId)
 
-      if (cachedSession.none) {
+      if (!cachedSession) {
         return res
           .status(404)
           .send({ message: "could not find session server" })
       }
 
-      const server = cachedSession.unwrap().server
+      const server = cachedSession.server
 
       return res.send({ host: makeURLFromServer(server), message: "ok" })
     }

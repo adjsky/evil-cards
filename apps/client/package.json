@@ -38,6 +38,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "@evil-cards/eslint-config": "workspace:^",
+    "@evil-cards/prettier-config": "workspace:^",
     "@evil-cards/server": "workspace:^",
     "@next/bundle-analyzer": "^13.0.2",
     "@next/env": "^13.1.6",

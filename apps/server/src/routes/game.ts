@@ -1,24 +1,20 @@
-import { createCtxFromReq } from "@evil-cards/ctx-log"
-
-import type { FastifyPluginCallback } from "@evil-cards/fastify"
-import type { AvailableSession } from "../lib/ws/send.ts"
 import type Controller from "../game/controller.ts"
-import type { Subscribe } from "@evil-cards/keydb"
+import type { AvailableSession } from "../lib/ws/send.ts"
+import type { FastifyPluginCallback } from "@evil-cards/core/fastify"
+import type { Subscriber } from "@evil-cards/core/keydb"
 
 const gameRoutes: FastifyPluginCallback<{
   controller: Controller
-  subscribe: Subscribe
+  subscribe: Subscriber[0]
 }> = async (fastify, { controller, subscribe }, done) => {
-  fastify.get("/session", { websocket: true }, ({ socket }, req) => {
-    const ctx = createCtxFromReq(req)
-
-    controller.handleConnection(ctx, socket)
+  fastify.get("/session", { websocket: true }, ({ socket }) => {
+    controller.handleConnection(socket)
   })
 
   fastify.get(
     "/available-sessions",
     { websocket: true },
-    async ({ socket }, req) => {
+    async ({ socket }) => {
       const sendSessions = (sessions: AvailableSession[]) => {
         socket.send(
           JSON.stringify(
@@ -39,12 +35,7 @@ const gameRoutes: FastifyPluginCallback<{
         )
       }
 
-      const ctx = createCtxFromReq(req)
-
-      const sessions = await controller.sessionCache.getAll(ctx)
-      if (sessions.some) {
-        sendSessions(sessions.unwrap())
-      }
+      sendSessions(await controller.sessionCache.getAll())
 
       const listener = (sessions: AvailableSession[]) => {
         sendSessions(sessions)

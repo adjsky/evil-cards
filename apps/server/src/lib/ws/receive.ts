@@ -1,5 +1,6 @@
-import z from "zod"
 import semverValid from "semver/functions/valid.js"
+import z from "zod"
+
 import { implement } from "../zod-implements.ts"
 
 import type { Configuration } from "../../game/types.ts"

@@ -1,45 +1,22 @@
-import { jest } from "@jest/globals"
-import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants.ts"
-import { mock } from "jest-mock-extended"
 import { fromPartial } from "@total-typescript/shoehorn"
+import { afterEach, expect, it, vi } from "vitest"
+import { mock } from "vitest-mock-extended"
 import waitForExpect from "wait-for-expect"
+import WebSocket from "ws"
+
+import { ALIVE_CHECK_INTERVAL_MS } from "../../src/game/constants.ts"
+import Controller from "../../src/game/controller.ts"
 import SessionManager from "../../src/game/session-manager.ts"
 import { SessionFactory } from "../../src/game/session.ts"
 
-import type { Client } from "@evil-cards/keydb"
-import type { FastifyBaseLogger } from "@evil-cards/fastify"
-import type { ReqContext } from "@evil-cards/ctx-log"
+import type { RedisClient } from "@evil-cards/core/keydb"
+import type { Mock } from "vitest"
 
-jest.unstable_mockModule(
-  "ws",
-  async () => await import("../config/mocked-web-socket.ts")
-)
-
-const Controller = (await import("../../src/game/controller.ts")).default
-const WebSocket = (await import("ws")).default
-
-function getMockLog() {
-  return mock<FastifyBaseLogger>({
-    child: getMockLog
-  })
-}
-
-function getMulti() {
-  return fromPartial<ReturnType<Client["multi"]>>({
-    exec() {
-      return Promise.resolve(["1", "1"])
-    },
-    hSet() {
-      return fromPartial(this)
-    },
-    addCommand() {
-      return fromPartial(this)
-    }
-  })
-}
+vi.mock("ws", async () => import("../config/mocked-web-socket.ts"))
+vi.mock("@evil-cards/core/fastify", () => import("../config/core-fastify.ts"))
 
 function getCacheClient() {
-  return mock<Client>({
+  return mock<RedisClient>({
     hDel() {
       return Promise.resolve(1)
     },
@@ -49,41 +26,45 @@ function getCacheClient() {
     hGetAll() {
       return Promise.resolve({})
     },
-    multi: getMulti,
-    withContext: getCacheClient
+    multi() {
+      return fromPartial<ReturnType<RedisClient["multi"]>>({
+        exec() {
+          return Promise.resolve(["1", "1"])
+        },
+        hSet() {
+          return fromPartial(this)
+        },
+        addCommand() {
+          return fromPartial(this)
+        }
+      })
+    }
   })
 }
 
 const sessionManager = new SessionManager(new SessionFactory())
 const cacheClient = getCacheClient()
-const log = getMockLog()
-const ctx = mock<ReqContext>()
 
 afterEach(() => {
-  jest.useRealTimers()
+  vi.useRealTimers()
 })
 
 it("terminates connection after two failed pings", async () => {
-  const controller = new Controller(
-    sessionManager,
-    cacheClient,
-    {
-      serverNumber: 1
-    },
-    log
-  )
+  const controller = new Controller(sessionManager, cacheClient, {
+    serverNumber: 1
+  })
   const socket = new WebSocket("")
 
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 
-  controller.handleConnection(ctx, socket)
+  controller.handleConnection(socket)
 
-  jest.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
+  vi.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
   expect(socket.terminate).not.toBeCalled()
 
-  jest.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
+  vi.advanceTimersByTime(ALIVE_CHECK_INTERVAL_MS)
 
-  jest.useRealTimers()
+  vi.useRealTimers()
 
   await waitForExpect(() => {
     expect(socket.terminate).toBeCalled()
@@ -91,21 +72,16 @@ it("terminates connection after two failed pings", async () => {
 })
 
 it("checks app and session versions", async () => {
-  const controller = new Controller(
-    sessionManager,
-    cacheClient,
-    {
-      serverNumber: 1
-    },
-    log
-  )
+  const controller = new Controller(sessionManager, cacheClient, {
+    serverNumber: 1
+  })
 
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 
   const socket = new WebSocket("")
-  controller.handleConnection(ctx, socket)
+  controller.handleConnection(socket)
 
-  jest.useRealTimers()
+  vi.useRealTimers()
 
   socket.emit(
     "message",
@@ -124,7 +100,7 @@ it("checks app and session versions", async () => {
   await waitForExpect(() => {
     expect(socket.send).toBeCalledTimes(1)
 
-    const sendMock = socket.send as jest.Mock
+    const sendMock = socket.send as Mock
     const data = JSON.parse(sendMock.mock.calls[0][0] as string)
 
     expect(data).toEqual(
@@ -136,12 +112,12 @@ it("checks app and session versions", async () => {
     sessionId = data.details.changedState.id
   })
 
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 
   const joinSocket = new WebSocket("")
-  controller.handleConnection(ctx, joinSocket)
+  controller.handleConnection(joinSocket)
 
-  jest.useRealTimers()
+  vi.useRealTimers()
 
   joinSocket.emit(
     "message",
@@ -159,7 +135,7 @@ it("checks app and session versions", async () => {
   await waitForExpect(() => {
     expect(joinSocket.send).toBeCalledTimes(1)
 
-    const sendMock = joinSocket.send as jest.Mock
+    const sendMock = joinSocket.send as Mock
     expect(JSON.parse(sendMock.mock.calls[0][0] as string)).toEqual(
       expect.objectContaining({
         type: "error"
@@ -183,7 +159,7 @@ it("checks app and session versions", async () => {
   await waitForExpect(() => {
     expect(joinSocket.send).toBeCalledTimes(2)
 
-    const sendMock = joinSocket.send as jest.Mock
+    const sendMock = joinSocket.send as Mock
     expect(JSON.parse(sendMock.mock.calls[1][0] as string)).toEqual(
       expect.objectContaining({
         type: "join"
