@@ -1,9 +1,9 @@
 import type {
-  Status,
-  Player as GamePlayer,
+  Card,
   Configuration,
-  Vote,
-  Card
+  Player as GamePlayer,
+  Status,
+  Vote
 } from "../../game/types.ts"
 
 export type AvailableSession = {

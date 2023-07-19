@@ -1,10 +1,11 @@
-import { SessionCache, createClient } from "@evil-cards/keydb"
-import { getServer } from "@evil-cards/fastify"
 import Docker from "dockerode"
 
-import setupRoundRobin from "./setup-round-robin.ts"
+import { getServer } from "@evil-cards/core/fastify"
+import { createClient, SessionCache } from "@evil-cards/core/keydb"
+
 import { env } from "./env.ts"
 import router from "./router.ts"
+import setupRoundRobin from "./setup-round-robin.ts"
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" })
 
@@ -28,10 +29,13 @@ const fastify = await getServer({
   },
   cors: {
     origin: env.CORS_ORIGIN
+  },
+  async onShutdown() {
+    await fastify.close()
   }
 })
 
-const redis = createClient(env.KEYDB_URL, fastify.log)
+const redis = createClient(env.KEYDB_URL)
 await redis.connect()
 const sessionCache = new SessionCache(redis)
 

@@ -1,11 +1,15 @@
-import { jest } from "@jest/globals"
+import { nanoid } from "nanoid"
+import { expect, test, vi } from "vitest"
+
+import Session from "../../src/game/session.ts"
 
 const plannedId = "fakeId"
-jest.unstable_mockModule("nanoid", () => ({
-  nanoid: jest.fn(() => plannedId)
-}))
-const Session = (await import("../../src/game/session.ts")).default
-const nanoid = (await import("nanoid")).nanoid
+
+vi.mock("nanoid", () => {
+  return {
+    nanoid: vi.fn(() => plannedId)
+  }
+})
 
 test("session creates with random id provided by nanoid", async () => {
   const newSession = new Session()

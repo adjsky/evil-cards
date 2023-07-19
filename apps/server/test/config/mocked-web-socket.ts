@@ -1,15 +1,16 @@
 import { EventEmitter } from "node:events"
-import { jest } from "@jest/globals"
+
+import { vi } from "vitest"
 
 class MockedWebSocket extends EventEmitter {
-  send = jest.fn()
-  terminate = jest.fn()
+  send = vi.fn()
+  terminate = vi.fn()
 
   clearMocks() {
     for (const key of Object.keys(this)) {
       const value = this[key as keyof MockedWebSocket]
 
-      if (jest.isMockFunction(value)) {
+      if (vi.isMockFunction(value)) {
         value.mockClear()
       }
     }

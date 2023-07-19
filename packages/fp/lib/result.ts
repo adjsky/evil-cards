@@ -11,11 +11,13 @@ export type Result<O, E> = {
 } & (
   | {
       ok: true
+      err: false
       unwrap(): O
       unwrapErr(): never
     }
   | {
       ok: false
+      err: true
       unwrap(): never
       unwrapErr(): E
     }
@@ -24,6 +26,7 @@ export type Result<O, E> = {
 function ok<O, E>(value: O): Result<O, E> {
   return {
     ok: true,
+    err: false,
     unwrap() {
       return value
     },
@@ -39,6 +42,7 @@ function ok<O, E>(value: O): Result<O, E> {
 function err<O, E>(err: E): Result<O, E> {
   return {
     ok: false,
+    err: true,
     unwrap() {
       throw new ReferenceError("Cannot unwrap Ok value of Result.Err")
     },

@@ -1,10 +1,11 @@
-import { serializeError } from "serialize-error"
 import Emittery from "emittery"
-import semverSatisfies from "semver/functions/satisfies.js"
 import { omit } from "ramda"
-import { logWithCtx } from "@evil-cards/ctx-log"
-import { createInternalCtx } from "@evil-cards/ctx-log"
-import { SessionCache } from "@evil-cards/keydb"
+import semverSatisfies from "semver/functions/satisfies.js"
+import { serializeError } from "serialize-error"
+
+import { log } from "@evil-cards/core/fastify"
+import { getFastifyInstance } from "@evil-cards/core/fastify"
+import { SessionCache } from "@evil-cards/core/keydb"
 
 import { messageSchema } from "../lib/ws/receive.ts"
 import stringify from "../lib/ws/stringify.ts"
@@ -15,6 +16,7 @@ import {
   CUSTOM_WS_CLOSE_REASON
 } from "./constants.ts"
 import {
+  GameError,
   InSessionError,
   NoPlayerError,
   NoSessionError,
@@ -22,22 +24,19 @@ import {
   SessionNotFoundError,
   VersionMismatchError
 } from "./errors.ts"
-import { isShuttingDown } from "../plugins/graceful-shutdown.ts"
 
-import type { ISessionManager, ISession } from "./interfaces.ts"
+import type { ISession, ISessionManager } from "./interfaces.ts"
 import type {
-  ControllerWebSocket,
+  BroadcastCallback,
+  Configuration,
   ControllerEvents,
+  ControllerWebSocket,
+  Player,
   ServerEvent,
   Status,
-  Vote,
-  Configuration,
-  Player,
-  BroadcastCallback
+  Vote
 } from "./types.ts"
-import type { FastifyBaseLogger } from "@evil-cards/fastify"
-import type { ReqContext } from "@evil-cards/ctx-log"
-import type { Client } from "@evil-cards/keydb"
+import type { RedisClient } from "@evil-cards/core/keydb"
 
 export type ControllerConfig = {
   serverNumber: number
@@ -48,7 +47,6 @@ class Controller {
   private events: ControllerEvents
   private _sessionCache: SessionCache
   private config: ControllerConfig
-  private log: FastifyBaseLogger
 
   private versionMap: Map<string, string>
   private socketMap: Map<string, ControllerWebSocket>
@@ -59,15 +57,13 @@ class Controller {
 
   public constructor(
     sessionManager: ISessionManager,
-    cacheClient: Client,
-    config: ControllerConfig,
-    log: FastifyBaseLogger
+    redisClient: RedisClient,
+    config: ControllerConfig
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
-    this._sessionCache = new SessionCache(cacheClient)
+    this._sessionCache = new SessionCache(redisClient)
     this.config = config
-    this.log = log.child({ component: "game controller" })
 
     this.versionMap = new Map()
     this.socketMap = new Map()
@@ -82,16 +78,32 @@ class Controller {
     this.events.on("vote", this.vote.bind(this))
     this.events.on("discardcards", this.discardCards.bind(this))
     this.events.on("kickplayer", this.kick.bind(this))
-    this.events.on("close", ({ ctx, socket }) => {
+    this.events.on("close", ({ socket }) => {
+      /**
+       * Here we have to check if the server is shutting down
+       * to prevent UB (trying to sync cache or writing to a closed redis instance)
+       * because when shutting down the following things happen:
+       * 1) the server is being closed (all connections terminate)
+       * 2) the cleanSessionCache method is called (all sessions are cleared)
+       * 3) the redis instance is being closed
+       */
+      if (getFastifyInstance()?.isShuttingDown()) {
+        return
+      }
+
       try {
         this.disconnect(socket)
       } catch (error) {
-        logWithCtx(ctx, this.log).error(error, "this.disconnect")
+        if (error instanceof GameError) {
+          return
+        }
+
+        log.error(error, "Failed to disconnect controller socket")
       }
     })
   }
 
-  public handleConnection(ctx: ReqContext, socket: ControllerWebSocket) {
+  public handleConnection(socket: ControllerWebSocket) {
     socket.alive = true
 
     const aliveInterval = setInterval(() => {
@@ -127,13 +139,13 @@ class Controller {
           socket.active = true
           await this.events.emit(
             message.type,
-            "details" in message
-              ? { ...message.details, socket, ctx }
-              : { socket, ctx }
+            "details" in message ? { ...message.details, socket } : { socket }
           )
         }
       } catch (error) {
-        logWithCtx(ctx, this.log).error(error, "socket.on message")
+        if (!(error instanceof GameError)) {
+          log.error(error, "Failed to process controller socket message")
+        }
 
         socket.send(
           stringify({
@@ -150,12 +162,11 @@ class Controller {
     })
 
     socket.on("error", (error) =>
-      logWithCtx(ctx, this.log).error(error, "socket.on error")
+      log.error(error, "Received a controller socket error")
     )
   }
 
   private async createSession({
-    ctx,
     socket,
     nickname,
     avatarId,
@@ -171,8 +182,16 @@ class Controller {
     const player = session.join(nickname, avatarId)
     socket.player = player
 
-    const isSynchronized = await this.syncSessionCache(ctx, session)
+    /**
+     * Here we have to check whether sync was successful or not
+     * because if a newly created session stays out of sync with the cache
+     * nobody won't be able to connect to this session
+     */
+    const isSynchronized = await this.syncSessionCache(session)
     if (!isSynchronized) {
+      socket.session = null
+      socket.player = null
+
       this.handleSessionEnd(session)
 
       throw new SessionCacheSynchronizeError()
@@ -181,11 +200,11 @@ class Controller {
     this.versionMap.set(session.id, appVersion)
     this.socketMap.set(player.id, socket)
 
-    this.setupSessionListeners(ctx, session)
+    this.setupSessionListeners(session)
     session.events.on("sessionend", () => this.handleSessionEnd(session))
 
     socket.on("close", () => {
-      this.events.emit("close", { socket, ctx })
+      this.events.emit("close", { socket })
     })
 
     socket.send(
@@ -205,7 +224,6 @@ class Controller {
   }
 
   private joinSession({
-    ctx,
     socket,
     nickname,
     avatarId,
@@ -217,13 +235,11 @@ class Controller {
     }
 
     const session = this.sessionManager.get(sessionId)
-
     if (!session) {
       throw new SessionNotFoundError()
     }
 
     const sessionVersion = this.versionMap.get(session.id)
-
     if (sessionVersion && !semverSatisfies(appVersion, `^${sessionVersion}`)) {
       throw new VersionMismatchError()
     }
@@ -236,7 +252,7 @@ class Controller {
     this.socketMap.set(player.id, socket)
 
     socket.on("close", () => {
-      this.events.emit("close", { socket, ctx })
+      this.events.emit("close", { socket })
     })
 
     socket.send(
@@ -298,13 +314,11 @@ class Controller {
     ...configuration
   }: ServerEvent["updateconfiguration"]) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -314,13 +328,11 @@ class Controller {
 
   private startGame({ socket }: ServerEvent["startgame"]) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -330,13 +342,11 @@ class Controller {
 
   private vote({ socket, cardId }: ServerEvent["vote"]) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -346,13 +356,11 @@ class Controller {
 
   private choose({ socket, playerId }: ServerEvent["choose"]) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -362,13 +370,11 @@ class Controller {
 
   private chooseWinner({ socket, playerId }: ServerEvent["choosewinner"]) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -378,13 +384,11 @@ class Controller {
 
   private discardCards({ socket }: ServerEvent["discardcards"]) {
     const session = socket.session
-
     if (!session) {
       throw new NoSessionError()
     }
 
     const player = socket.player
-
     if (!player) {
       throw new NoPlayerError()
     }
@@ -392,11 +396,11 @@ class Controller {
     session.discardCards(player.id)
   }
 
-  private setupSessionListeners(ctx: ReqContext, session: ISession) {
+  private setupSessionListeners(session: ISession) {
     const handleStatusChange = (status: Status) => {
       switch (status) {
         case "starting": {
-          this.syncSessionCache(ctx, session)
+          this.syncSessionCache(session)
 
           this.broadcast(session, () => ({
             type: "gamestart",
@@ -473,7 +477,7 @@ class Controller {
         }
 
         case "end": {
-          this.syncSessionCache(ctx, session)
+          this.syncSessionCache(session)
 
           this.broadcast(session, (players) => ({
             type: "gameend",
@@ -526,7 +530,7 @@ class Controller {
     }
 
     const handleConfigurationChange = (configuration: Configuration) => {
-      this.syncSessionCache(ctx, session)
+      this.syncSessionCache(session)
 
       this.broadcast(session, () => ({
         type: "configurationchange",
@@ -540,7 +544,7 @@ class Controller {
 
     const handleJoin = (joinedPlayer: Player) => {
       if (session.isWaiting()) {
-        this.syncSessionCache(ctx, session)
+        this.syncSessionCache(session)
       }
 
       this.broadcast(session, (players, player) => {
@@ -561,7 +565,7 @@ class Controller {
 
     const handleLeave = () => {
       if (session.isWaiting()) {
-        this.syncSessionCache(ctx, session)
+        this.syncSessionCache(session)
       }
 
       this.broadcast(session, (players) => ({
@@ -608,7 +612,6 @@ class Controller {
       }
 
       const result = callback(players, player)
-
       if (!result) {
         return
       }
@@ -621,28 +624,24 @@ class Controller {
     return players.map((player) => omit(["leaveTimeout", "deck"], player))
   }
 
-  private async syncSessionCache(ctx: ReqContext, session: ISession) {
-    if (isShuttingDown()) {
-      return false
-    }
-
+  private async syncSessionCache(session: ISession) {
     const host = session.players.find((player) => player.host)
 
     let hostNickname = host?.nickname
     let hostAvatarId = host?.avatarId
 
     if (!hostNickname || !hostAvatarId) {
-      const prevCachedSession = await this._sessionCache.get(ctx, session.id)
+      const prevCachedSession = await this._sessionCache.get(session.id)
 
-      if (prevCachedSession.none) {
+      if (!prevCachedSession) {
         return false
       }
 
-      hostNickname = prevCachedSession.unwrap().hostNickname
-      hostAvatarId = prevCachedSession.unwrap().hostAvatarId
+      hostNickname = prevCachedSession.hostNickname
+      hostAvatarId = prevCachedSession.hostAvatarId
     }
 
-    return this._sessionCache.set(ctx, {
+    return this._sessionCache.set({
       id: session.id,
       players: session.players.length,
       playing: session.isPlaying(),
@@ -661,30 +660,26 @@ class Controller {
   }
 
   public handleSessionEnd(session: ISession) {
-    const ctx = createInternalCtx()
-
-    this.log.info({ sessionId: session.id }, "handling session end")
+    log.info({ sessionId: session.id }, "Starting session cleanup")
 
     session.events.clearListeners()
 
-    this._sessionCache.del(ctx, session.id)
+    this._sessionCache.del(session.id)
 
     this.versionMap.delete(session.id)
     this.sessionManager.delete(session.id)
   }
 
   public async cleanSessionCache() {
-    this.log.info("cleaning session cache")
-
-    const ctx = createInternalCtx()
+    log.info("Starting session cache cleanup")
 
     await Promise.all(
       this.sessionManager
         .getAll()
-        .map((session) => this._sessionCache.del(ctx, session.id))
+        .map((session) => this._sessionCache.del(session.id))
     )
 
-    this.log.info("successfully cleaned session cache")
+    log.info("Finished session cache cleanup")
   }
 }
 

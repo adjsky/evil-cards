@@ -1,50 +1,50 @@
-import { nanoid } from "nanoid"
-import Emittery from "emittery"
 import dayjs from "dayjs"
+import Emittery from "emittery"
+import { nanoid } from "nanoid"
 
-import { whiteCards, redCards } from "./cards.ts"
 import getRandomInt from "../functions/get-random-int.ts"
 import shuffleArray from "../functions/shuffle-array.ts"
 import { setDateTimeout } from "../lib/date-timeout.ts"
+import { redCards, whiteCards } from "./cards.ts"
 import {
   BEST_CARD_VIEW_DURATION_MS,
   GAME_START_DELAY_MS,
-  SESSION_END_TIMEOUT_MS,
+  LEAVE_TIMEOUT_MS,
   MAX_PLAYERS_IN_SESSSION,
   MIN_PLAYERS_TO_START_GAME,
+  SESSION_END_TIMEOUT_MS,
   SESSION_ID_SIZE,
-  USER_ID_SIZE,
-  LEAVE_TIMEOUT_MS
+  USER_ID_SIZE
 } from "./constants.ts"
 import {
+  DiscardCardsError,
+  DisconnectedError,
   ForbiddenNicknameError,
   ForbiddenToChooseError,
   ForbiddenToChooseWinnerError,
   ForbiddenToVoteError,
   GameStartedError,
+  HostError,
   InvalidCardError,
   InvalidChoosedPlayerIdError,
   InvalidPlayerIdError,
   NoPlayerError,
-  HostError,
   NotEnoughPlayersError,
-  DisconnectedError,
-  TooManyPlayersError,
-  DiscardCardsError,
-  NotPlayingError
+  NotPlayingError,
+  TooManyPlayersError
 } from "./errors.ts"
 
-import type {
-  Card,
-  Status,
-  Player,
-  Vote,
-  Configuration,
-  SessionEvents,
-  Timeouts
-} from "./types.ts"
 import type { Card as StoredCard } from "./cards.ts"
 import type { ISession, ISessionFactory } from "./interfaces.ts"
+import type {
+  Card,
+  Configuration,
+  Player,
+  SessionEvents,
+  Status,
+  Timeouts,
+  Vote
+} from "./types.ts"
 
 class Session implements ISession {
   private _id: string
@@ -296,7 +296,7 @@ class Session implements ISession {
       throw new InvalidPlayerIdError()
     }
 
-    if (card == undefined) {
+    if (!card) {
       throw new InvalidCardError()
     }
 
@@ -398,7 +398,7 @@ class Session implements ISession {
     }
 
     if (!this._availableWhiteCards) {
-      throw new Error("received null availableWhiteCards")
+      throw new Error("Received null availableWhiteCards")
     }
 
     this._availableWhiteCards = this._availableWhiteCards.concat(player.deck)
@@ -444,7 +444,7 @@ class Session implements ISession {
 
   private startVoting() {
     if (!this._availableRedCards) {
-      throw new Error("received null availableRedCards")
+      throw new Error("Received null availableRedCards")
     }
 
     if (this._availableRedCards.length == 0) {
@@ -578,7 +578,7 @@ class Session implements ISession {
 
   private fillPlayerDeck(player: Player) {
     if (!this._availableWhiteCards) {
-      throw new Error("received null availableWhiteCards")
+      throw new Error("Received null availableWhiteCards")
     }
 
     const deckLength = player.deck.length

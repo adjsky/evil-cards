@@ -1,12 +1,12 @@
 docker_compose("./deploy/compose/docker-compose.dev.yml")
 
+# ------------------------------------ apps ------------------------------------
+
 dc_resource("server", labels=["application"])
 dc_resource("load-balancer", labels=["application"])
 dc_resource("client", labels=["application"])
-dc_resource("keydb", labels=["database"])
 
 sync_src = sync(".", "/evil-cards")
-run_install_deps = run("pnpm install", "./pnpm-lock.yaml")
 
 docker_build(
   ref="tilt/server",
@@ -15,7 +15,6 @@ docker_build(
   target="runner-dev",
   live_update=[
     sync_src,
-    run_install_deps,
     restart_container()
   ]
 )
@@ -27,7 +26,6 @@ docker_build(
   target="runner-dev",
   live_update=[
     sync_src,
-    run_install_deps,
     restart_container()
   ]
 )
@@ -38,7 +36,26 @@ docker_build(
   dockerfile="./deploy/dockerfiles/Dockerfile.client",
   target="runner-dev",
   live_update=[
-    sync_src,
-    run_install_deps
+    sync_src
   ]
+)
+
+# ------------------------------------- db -------------------------------------
+
+dc_resource("keydb", labels="database")
+
+# ------------------------------------ test ------------------------------------
+
+local_resource(
+  "client-test",
+  serve_cmd="pnpm test:client",
+  labels=["test"],
+  allow_parallel=True
+)
+
+local_resource(
+  "server-test",
+  serve_cmd="pnpm test:server",
+  labels=["test"],
+  allow_parallel=True
 )

@@ -1,0 +1,30 @@
+{
+  "folders": [
+    {
+      "path": "..",
+      "name": "root"
+    },
+    {
+      "path": "../apps/client"
+    },
+    {
+      "path": "../apps/server"
+    },
+    {
+      "path": "../apps/load-balancer"
+    },
+    {
+      "path": "../packages/eslint-config"
+    },
+    {
+      "path": "../packages/prettier-config"
+    },
+    {
+      "path": "../packages/core"
+    },
+    {
+      "path": "../packages/fp"
+    }
+  ],
+  "settings": {}
+}

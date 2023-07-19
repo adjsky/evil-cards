@@ -39,7 +39,6 @@ FROM node:18.16.0-alpine AS builder-production
 WORKDIR /evil-cards
 
 COPY tsconfig.json .
-COPY prettier.config.cjs .
 COPY --from=deps /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
@@ -60,7 +59,6 @@ FROM node:18.16.0-alpine AS builder-stage
 WORKDIR /evil-cards
 
 COPY tsconfig.json .
-COPY prettier.config.cjs .
 COPY --from=deps /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
@@ -129,7 +127,6 @@ RUN corepack enable
 WORKDIR /evil-cards
 
 COPY tsconfig.json .
-COPY prettier.config.cjs .
 COPY --from=deps /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
