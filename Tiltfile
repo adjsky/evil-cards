@@ -1,9 +1,10 @@
 docker_compose("./deploy/compose/docker-compose.dev.yml")
 
+# ------------------------------------ apps ------------------------------------
+
 dc_resource("server", labels=["application"])
 dc_resource("load-balancer", labels=["application"])
 dc_resource("client", labels=["application"])
-dc_resource("keydb", labels=["database"])
 
 sync_src = sync(".", "/evil-cards")
 
@@ -38,6 +39,12 @@ docker_build(
     sync_src
   ]
 )
+
+# ------------------------------------- db -------------------------------------
+
+dc_resource("keydb", labels="database")
+
+# ------------------------------------ test ------------------------------------
 
 local_resource(
   "client-test",
