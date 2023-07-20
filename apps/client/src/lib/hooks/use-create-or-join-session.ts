@@ -99,27 +99,23 @@ const useCreateOrJoinSession = (options?: Options) => {
     setConnecting(true)
     setSessionId(sessionId ?? null)
 
-    const result = await getWSHost(sessionId)
-
-    result.match({
-      err(error) {
+    getWSHost(sessionId).match(
+      (wsHost) => setUrl(`${wsHost}/ws/session`),
+      (err) => {
         updateSnackbar({
-          message: startErrors[error],
+          message: startErrors[err],
           open: true,
-          severity: error == "nosession" ? "information" : "error",
+          severity: err == "nosession" ? "information" : "error",
           infinite: false
         })
         setConnecting(false)
         setSessionId(null)
 
-        if (error == "nosession") {
+        if (err == "nosession") {
           router.replace("/", undefined, { shallow: true })
         }
-      },
-      ok(wsHost) {
-        setUrl(`${wsHost}/ws/session`)
       }
-    })
+    )
   }
 
   return { createOrJoinSession, connecting, sessionId }

@@ -4,8 +4,8 @@ import { mockAnimationsApi } from "jsdom-testing-mocks"
 import WS from "jest-websocket-mock"
 import { Provider } from "jotai"
 import { sessionSocketURLAtom } from "@/lib/atoms"
+import { okAsync } from "neverthrow"
 
-import { Result } from "@evil-cards/fp"
 import Entry from "@/screens/entry"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import mockLocation from "../../helpers/mock-location"
@@ -22,7 +22,7 @@ jest.mock("next/router", () => ({
 }))
 jest.mock("@/lib/server/get-ws-host", () => ({
   __esModule: true,
-  default: () => Promise.resolve(Result.ok(host))
+  default: () => okAsync(host)
 }))
 mockAnimationsApi()
 

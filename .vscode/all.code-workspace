@@ -21,9 +21,6 @@
     },
     {
       "path": "../packages/core"
-    },
-    {
-      "path": "../packages/fp"
     }
   ],
   "settings": {}
