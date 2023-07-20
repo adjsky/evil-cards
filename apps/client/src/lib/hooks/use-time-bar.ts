@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+
 import useIsomorphicLayoutEffect from "./use-isomorphic-layout-effect"
 
 const easingFunctions = {

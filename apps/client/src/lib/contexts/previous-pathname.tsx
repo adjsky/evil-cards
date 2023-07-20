@@ -1,5 +1,5 @@
-import React, { createContext, useContext } from "react"
 import { useRouter } from "next/router"
+import React, { createContext, useContext } from "react"
 
 import { usePreviousN2 } from "../hooks"
 

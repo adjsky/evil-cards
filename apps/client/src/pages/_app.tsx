@@ -1,23 +1,29 @@
 import "@/styles/globals.css"
-import React, { useEffect } from "react"
-import Head from "next/head"
 import { useAtom, useAtomValue } from "jotai"
-import SingletonRouter, { useRouter } from "next/router"
 import PlausibleProvider from "next-plausible"
-import packageJson from "../../package.json"
+import Head from "next/head"
+import SingletonRouter, { useRouter } from "next/router"
+import { omit } from "ramda"
+import React, { useEffect } from "react"
 
-import getMetaTags from "@/lib/seo"
-import { gameStateAtom, soundsAtom, reconnectingGameAtom } from "@/lib/atoms"
-import { useSessionSocket } from "@/lib/hooks"
+import raise from "@/core/raise"
+
+import { soundsAtom } from "@/lib/atoms/game"
+import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
+import { processMessageAndPlaySound, processMessageAndSpeak } from "@/lib/audio"
 import { PreviousPathnameProvider } from "@/lib/contexts/previous-pathname"
-import { useSnackbar, updateSnackbar } from "@/components/snackbar/use"
-import { mapErrorMessage } from "@/lib/functions"
-import { processMessageAndSpeak, processMessageAndPlaySound } from "@/lib/audio"
 import { env } from "@/lib/env/client.mjs"
+import { mapErrorMessage } from "@/lib/functions"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
+import { useSessionSocket } from "@/lib/hooks"
+import getMetaTags from "@/lib/seo"
 
-import ExclamationTriangle from "../assets/exclamation-triangle.svg"
+import ClientOnly from "@/components/client-only"
 import Modal from "@/components/modal"
+import { updateSnackbar, useSnackbar } from "@/components/snackbar/use"
+
+import packageJson from "../../package.json"
+import ExclamationTriangle from "../assets/exclamation-triangle.svg"
 
 import type { AppProps } from "next/app"
 
@@ -51,10 +57,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         selfHosted
       >
         <PreviousPathnameProvider>
-          {Snackbar}
-          <Component {...pageProps} />
+          <ClientOnly>
+            {Snackbar}
+            <Component {...pageProps} />
 
-          <Reconnecting visible={reconnecting} />
+            <Reconnecting visible={reconnecting} />
+          </ClientOnly>
         </PreviousPathnameProvider>
       </PlausibleProvider>
     </>
@@ -77,111 +85,17 @@ const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
 const useSocketEvents = () => {
   const Snackbar = useSnackbar()
 
-  const [gameState, setGameState] = useAtom(gameStateAtom)
+  const [session, setSession] = useAtom(sessionAtom)
   const sounds = useAtomValue(soundsAtom)
 
-  const [reconnectingGame, setReconnectingGame] = useAtom(reconnectingGameAtom)
+  const [reconnectingSession, setReconnectingSession] = useAtom(
+    reconnectingSessionAtom
+  )
 
   const { sendJsonMessage, close, resetUrl } = useSessionSocket({
-    onJsonMessage(message) {
-      // HANDLE ERRORS //
-
-      if (message.type == "error" && message.details) {
-        updateSnackbar({
-          message: mapErrorMessage(message.details),
-          severity: "information",
-          open: true,
-          infinite: false
-        })
-      }
-
-      // HANDLE RECONNECTION //
-
-      if (reconnectingGame) {
-        setReconnectingGame(false)
-
-        if (message.type == "error") {
-          setGameState(null)
-          resetUrl()
-          close()
-
-          return
-        }
-      }
-
-      // HANDLE AUDIO //
-
-      if (sounds) {
-        if (gameState?.configuration.reader) {
-          processMessageAndSpeak(message)
-        }
-
-        processMessageAndPlaySound(message)
-      }
-
-      // SYNC GAME STATE //
-
-      switch (message.type) {
-        case "join":
-          setGameState({
-            ...message.details.changedState,
-            winners: null
-          })
-
-          break
-        case "create":
-          setGameState({
-            ...message.details.changedState,
-            redCard: null,
-            votes: [],
-            deck: [],
-            votingEndsAt: null,
-            winners: null
-          })
-
-          break
-        default: {
-          if (message.type == "error") {
-            break
-          }
-
-          setGameState((prev) => {
-            if (!prev) {
-              console.error("Trying to sync a non-initialized game state")
-
-              return prev
-            }
-
-            let winners = prev.winners
-            if (
-              message.type == "gameend" &&
-              message.details.changedState.players.length >= 3
-            ) {
-              winners = [...message.details.changedState.players]
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 3)
-            }
-
-            const votingEndsAt =
-              message.type == "choosingstart"
-                ? null
-                : "votingEndsAt" in message.details.changedState
-                ? message.details.changedState.votingEndsAt
-                : prev.votingEndsAt
-
-            return {
-              ...prev,
-              ...message.details.changedState,
-              votingEndsAt,
-              winners
-            }
-          })
-        }
-      }
-    },
     onClose(event, { gracefully, reconnecting }) {
       if (!reconnecting) {
-        setGameState(null)
+        setSession(null)
       }
 
       if (!gracefully && !reconnecting) {
@@ -211,16 +125,14 @@ const useSocketEvents = () => {
         }
       }
 
-      setReconnectingGame(reconnecting)
+      setReconnectingSession(reconnecting)
     },
     onOpen() {
-      if (gameState == null || !reconnectingGame) {
+      if (session == null || !reconnectingSession) {
         return
       }
 
-      const player = gameState.players.find(
-        (player) => player.id == gameState.playerId
-      )
+      const { player } = session
 
       if (player) {
         sendJsonMessage({
@@ -228,7 +140,7 @@ const useSocketEvents = () => {
           details: {
             avatarId: player.avatarId,
             nickname: player.nickname,
-            sessionId: gameState.id,
+            sessionId: session.id,
             appVersion: packageJson.version
           }
         })
@@ -248,10 +160,181 @@ const useSocketEvents = () => {
       }
 
       return SingletonRouter.pathname != "/"
+    },
+    onJsonMessage(message) {
+      // ---------------------------- HANDLE ERRORS ----------------------------
+
+      if (message.type == "error" && message.details) {
+        updateSnackbar({
+          message: mapErrorMessage(message.details),
+          severity: "information",
+          open: true,
+          infinite: false
+        })
+      }
+
+      // ------------------------- HANDLE RECONNECTION -------------------------
+
+      if (reconnectingSession) {
+        setReconnectingSession(false)
+
+        if (message.type == "error") {
+          setSession(null)
+          resetUrl()
+          close()
+
+          return
+        }
+      }
+
+      // ---------------------------- HANDLE AUDIO -----------------------------
+
+      if (sounds) {
+        if (session?.configuration.reader) {
+          processMessageAndSpeak(message)
+        }
+
+        processMessageAndPlaySound(message)
+      }
+
+      // --------------------------- SYNC GAME STATE ---------------------------
+
+      switch (message.type) {
+        case "playerjoin":
+        case "playerleave": {
+          setSession((prev) => {
+            if (!prev) {
+              raise(`Expected session to be defined`)
+            }
+
+            return {
+              ...prev,
+              players: message.details.changedState.players
+            }
+          })
+
+          break
+        }
+
+        case "gamestart":
+        case "gameend": {
+          setSession((prev) => {
+            if (!prev) {
+              raise(`Expected session to be defined`)
+            }
+
+            const { status, ...rest } = message.details.changedState
+
+            return {
+              ...prev,
+              ...rest,
+              playing: false,
+              gameState: {
+                status
+              }
+            }
+          })
+
+          break
+        }
+
+        case "configurationchange": {
+          setSession((prev) => {
+            if (!prev) {
+              raise(`Expected session to be defined}`)
+            }
+
+            return {
+              ...prev,
+              configuration: message.details.changedState.configuration
+            }
+          })
+
+          break
+        }
+
+        case "votingstart": {
+          setSession((prev) => {
+            if (!prev) {
+              raise(`Expected session to be defined`)
+            }
+
+            const { players, ...gameState } = message.details.changedState
+
+            return {
+              ...prev,
+              player:
+                players.find((player) => player.id == prev.player.id) ??
+                raise(`Expected to find player in the players list`),
+              playing: true,
+              players,
+              gameState
+            }
+          })
+
+          break
+        }
+
+        case "choosewinner":
+        case "choosingwinnerstart":
+        case "discardcards":
+        case "choosingstart":
+        case "winnercardview":
+        case "vote":
+        case "choose": {
+          setSession((prev) => {
+            if (!prev || !prev.playing) {
+              raise(`Expected session to be defined / in playing state`)
+            }
+
+            return {
+              ...prev,
+              player:
+                "players" in message.details.changedState
+                  ? message.details.changedState.players.find(
+                      (player) => player.id == prev.player.id
+                    ) ?? raise(`Expected to find player in the players list`)
+                  : prev.player,
+              players:
+                "players" in message.details.changedState
+                  ? message.details.changedState.players
+                  : prev.players,
+              gameState: {
+                ...prev.gameState,
+                ...omit(["players"], message.details.changedState)
+              }
+            }
+          })
+
+          break
+        }
+
+        case "chat": {
+          setSession((prev) => {
+            if (!prev) {
+              raise(`Expected session to be defined`)
+            }
+
+            return {
+              ...prev,
+              chat: [
+                ...prev.chat,
+                {
+                  nickname: message.details.nickname,
+                  avatarId: message.details.avatarId,
+                  message: message.details.message
+                }
+              ]
+            }
+          })
+
+          break
+        }
+      }
     }
   })
 
-  return { Snackbar, reconnecting: reconnectingGame }
+  return { Snackbar, reconnecting: reconnectingSession }
 }
 
 function isKickCloseEvent(event: WebSocketEventMap["close"]) {

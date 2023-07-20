@@ -1,15 +1,18 @@
-import { useState } from "react"
 import EasySpeech from "easy-speech"
+import { useAtomValue, useSetAtom } from "jotai"
 import { useRouter } from "next/router"
-import { useAtomValue } from "jotai"
+import { useState } from "react"
 
-import { nicknameAtom, avatarAtom } from "@/lib/atoms"
+import raise from "@/core/raise"
+
+import { sessionAtom } from "@/lib/atoms/session"
 import { preloadSounds } from "@/lib/audio"
 import getWSHost from "@/lib/server/get-ws-host"
 
 import { updateSnackbar } from "@/components/snackbar/use"
 
 import packageJson from "../../../package.json"
+import { avatarAtom, nicknameAtom } from "../atoms/game"
 import useSessionSocket from "./use-session-socket"
 
 const errorsToIgnore = ["nickname is taken"]
@@ -26,6 +29,8 @@ type Options = {
 const useCreateOrJoinSession = (options?: Options) => {
   const [connecting, setConnecting] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+
+  const setSession = useSetAtom(sessionAtom)
 
   const router = useRouter()
 
@@ -55,6 +60,40 @@ const useCreateOrJoinSession = (options?: Options) => {
           router.replace("/", undefined, { shallow: true })
         }
       } else if (message.type == "join" || message.type == "create") {
+        const { configuration, id, playerId, players, ...gameState } =
+          message.details.changedState
+
+        const player = players.find((player) => player.id == playerId)
+
+        setSession({
+          configuration,
+          id,
+          players,
+          player:
+            player ?? raise(`Expected to find player in the players list`),
+          chat: [],
+          ...(gameState.status == "voting" ||
+          gameState.status == "choosing" ||
+          gameState.status == "choosingwinner" ||
+          gameState.status == "winnercardview"
+            ? {
+                playing: true,
+                gameState: {
+                  status: gameState.status,
+                  deck: gameState.deck,
+                  redCard: gameState.redCard,
+                  votes: gameState.votes,
+                  votingEndsAt: gameState.votingEndsAt
+                }
+              }
+            : {
+                playing: false,
+                gameState: {
+                  status: gameState.status
+                }
+              })
+        })
+
         router.push("/room", undefined, { shallow: true })
 
         preloadSounds()

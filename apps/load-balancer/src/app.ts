@@ -29,9 +29,6 @@ const fastify = await getServer({
   },
   cors: {
     origin: env.CORS_ORIGIN
-  },
-  async onShutdown() {
-    await fastify.close()
   }
 })
 

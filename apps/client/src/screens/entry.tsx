@@ -1,20 +1,21 @@
-import React, { useRef } from "react"
 import { useAtom } from "jotai"
+import React, { useRef } from "react"
 
-import { nicknameAtom, avatarAtom } from "@/lib/atoms"
-import { useScreenFactor } from "@/lib/hooks"
+import { avatarAtom, nicknameAtom } from "@/lib/atoms/game"
 import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
+import { useScreenFactor } from "@/lib/hooks"
 import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
-import Button from "@/components/button"
-import NicknameInput from "@/components/nickname-input"
-import FadeIn from "@/components/fade-in"
-import Arrow from "@/assets/arrows/left-line.svg"
-import Logo from "@/components/logo"
-import Loader from "@/components/loader"
 import AvailableSessions from "@/components/available-sessions"
+import Button from "@/components/button"
+import FadeIn from "@/components/fade-in"
+import Loader from "@/components/loader"
+import Logo from "@/components/logo"
+import NicknameInput from "@/components/nickname-input"
+
+import Arrow from "@/assets/arrows/left-line.svg"
 
 const Entry: React.FC = () => {
   const unsupported = useRef(isBrowserUnsupported())
@@ -33,7 +34,7 @@ const Entry: React.FC = () => {
 
   return (
     <FadeIn
-      className="flex h-full items-center justify-center"
+      className="flex h-full flex-row items-center justify-center"
       disabled={previousPathname != "/room"}
       duration={100}
     >

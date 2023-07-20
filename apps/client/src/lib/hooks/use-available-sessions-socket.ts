@@ -1,10 +1,12 @@
 import { useAtom } from "jotai"
-import useSocketWithUrlAtom from "./use-socket/hook-jotai"
+
+import getWsHost from "@/lib/server/get-ws-host"
+
 import {
   availableSessionsSocketURLAtom,
   availableSessionsStateAtom
-} from "../atoms"
-import getWsHost from "@/lib/server/get-ws-host"
+} from "../atoms/session"
+import useSocketWithUrlAtom from "./use-socket-jotai"
 
 import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
 

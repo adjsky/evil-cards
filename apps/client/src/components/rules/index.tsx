@@ -5,6 +5,7 @@ import SecondRulePreview from "@/assets/rules/2.svg"
 import ThirdRulePreview from "@/assets/rules/3.svg"
 import FourthRulePreview from "@/assets/rules/4.svg"
 import FifthRulePreview from "@/assets/rules/5.svg"
+
 import styles from "./rules.module.css"
 
 const rules = [

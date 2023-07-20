@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react"
-import type { RefCallback, CSSProperties } from "react"
+import { useCallback, useEffect, useState } from "react"
+
+import type { CSSProperties, RefCallback } from "react"
 
 type UseScreenFactorOptions = {
   // Reduce screen size in one or both dimensions.

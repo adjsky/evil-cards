@@ -14,7 +14,7 @@ COPY . .
 RUN turbo prune --scope=@evil-cards/client --docker
 
 ###################################################################
-# Stage 2: Install all necessary dependencies                     #
+# Stage 2: Install client dependencies                            #
 ###################################################################
 
 FROM node:18.16.0-alpine AS deps
@@ -31,10 +31,10 @@ COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm --frozen-lockfile install
 
 ###################################################################
-# Stage 3: Build client (production)                              #
+# Stage 3: Build client                                           #
 ###################################################################
 
-FROM node:18.16.0-alpine AS builder-production
+FROM node:18.16.0-alpine AS builder
 
 WORKDIR /evil-cards
 
@@ -51,24 +51,6 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
   npm run build:production
 
 ###################################################################
-# Stage 3: Build client (stage)                                   #
-###################################################################
-
-FROM node:18.16.0-alpine AS builder-stage
-
-WORKDIR /evil-cards
-
-COPY tsconfig.json .
-COPY --from=deps /evil-cards .
-COPY --from=prune /evil-cards/out/full/ .
-
-WORKDIR /evil-cards/apps/client
-
-ENV BUILD_STANDALONE true
-
-RUN npm run build:stage
-
-###################################################################
 # Stage 4: Run client (prod)                                      #
 ###################################################################
 
@@ -81,33 +63,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder-production /evil-cards/apps/client/public ./apps/client/public
-COPY --from=builder-production --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
-COPY --from=builder-production --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
-
-USER nextjs
-
-EXPOSE 3000
-ENV PORT 3000
-
-CMD ["node", "apps/client/server.js"]
-
-###################################################################
-# Stage 4: Run client (stage)                                     #
-###################################################################
-
-FROM node:18.16.0-alpine AS runner-stage
-
-WORKDIR /evil-cards
-
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder-stage /evil-cards/apps/client/public ./apps/client/public
-COPY --from=builder-stage --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
-COPY --from=builder-stage --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
+COPY --from=builder /evil-cards/apps/client/public ./apps/client/public
+COPY --from=builder --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
 
 USER nextjs
 
@@ -125,14 +83,11 @@ FROM node:18.16.0-alpine AS runner-dev
 RUN corepack enable
 
 WORKDIR /evil-cards
+COPY . .
 
-COPY tsconfig.json .
-COPY --from=deps /evil-cards .
-COPY --from=prune /evil-cards/out/full/ .
-
-WORKDIR /evil-cards/apps/client
+RUN pnpm --frozen-lockfile install
 
 EXPOSE 3000
 ENV PORT 3000
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "dev:client"]

@@ -1,6 +1,7 @@
-import { env } from "../env/client.mjs"
-import { fromPromise } from "neverthrow"
 import ky, { HTTPError } from "ky"
+import { fromPromise } from "neverthrow"
+
+import { env } from "../env/client.mjs"
 
 type SuccessLoadBalancerResponse = {
   message: "ok"

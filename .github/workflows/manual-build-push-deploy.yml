@@ -85,7 +85,7 @@ jobs:
           platforms: linux/amd64
           secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
-          target: runner-${{ inputs.deploy-env }}
+          target: runner-${{ inputs.deploy-env == 'stage' && 'prod' || inputs.deploy-env }}
 
   deploy:
     runs-on: ubuntu-latest

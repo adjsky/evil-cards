@@ -14,23 +14,6 @@ COPY . .
 RUN turbo prune --scope=@evil-cards/load-balancer --docker
 
 ###################################################################
-# Stage 2: Install all load-balancer dependencies                 #
-###################################################################
-
-FROM node:18.16.0-alpine AS deps-all
-
-RUN apk add --no-cache libc6-compat
-RUN corepack enable
-
-WORKDIR /evil-cards
-
-COPY --from=prune /evil-cards/out/json/ .
-COPY --from=prune /evil-cards/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
-
-RUN pnpm --frozen-lockfile install 
-
-###################################################################
 # Stage 2: Install production load-balancer dependencies          #
 ###################################################################
 
@@ -60,35 +43,13 @@ COPY tsconfig.json .
 COPY --from=deps-prod /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 
-WORKDIR /evil-cards/apps/load-balancer
-
 EXPOSE 1337
 ENV PORT 1337
 
-CMD ["pnpm", "start"]
+CMD ["pnpm", "start:load-balancer"]
 
 ###################################################################
-# Stage 3: Run load balancer (stage)                              #
-###################################################################
-
-FROM node:18.16.0-alpine AS runner-stage
-
-RUN corepack enable
-
-WORKDIR /evil-cards
-COPY tsconfig.json .
-COPY --from=deps-prod /evil-cards .
-COPY --from=prune /evil-cards/out/full/ .
-
-WORKDIR /evil-cards/apps/load-balancer
-
-EXPOSE 1337
-ENV PORT 1337
-
-CMD ["pnpm", "start"]
-
-###################################################################
-# Stage 3: Run load balancer (dev)                              #
+# Stage 3: Run load balancer (dev)                                #
 ###################################################################
 
 FROM node:18.16.0-alpine AS runner-dev
@@ -96,13 +57,11 @@ FROM node:18.16.0-alpine AS runner-dev
 RUN corepack enable
 
 WORKDIR /evil-cards
-COPY tsconfig.json .
-COPY --from=deps-all /evil-cards .
-COPY --from=prune /evil-cards/out/full/ .
+COPY . .
 
-WORKDIR /evil-cards/apps/load-balancer
+RUN pnpm --frozen-lockfile install
 
 EXPOSE 1337
 ENV PORT 1337
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "dev:load-balancer"]

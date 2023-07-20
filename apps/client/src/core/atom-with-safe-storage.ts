@@ -1,4 +1,5 @@
 import { atomWithStorage } from "jotai/utils"
+
 import isLocalStorageAvailable from "./is-local-storage-available"
 
 type Unsubscribe = () => void

@@ -1,16 +1,17 @@
-import React, { useState } from "react"
-import Image from "next/image"
 import clsx from "clsx"
+import Image from "next/image"
+import React, { useState } from "react"
 
 import { getScoreLabel } from "@/lib/functions"
 
 import CheckMark from "@/assets/check-mark.svg"
+import Close from "@/assets/close/rounded.svg"
 import Crown from "@/assets/crown.svg"
 import Question from "@/assets/question.svg"
-import Close from "@/assets/close/rounded.svg"
-import Modal from "./modal"
+
 import ExclamationTriangleIcon from "../assets/exclamation-triangle.svg"
 import Button from "./button"
+import Modal from "./modal"
 
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
 

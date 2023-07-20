@@ -21,6 +21,7 @@ services:
     environment:
       - KEYDB_URL=redis://keydb:6379
       - CORS_ORIGIN=*
+      - SERVER_NUMBER=1
     labels:
       - balancer-target=server
 

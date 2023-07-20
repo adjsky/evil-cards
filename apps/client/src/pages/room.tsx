@@ -1,40 +1,31 @@
-import { useEffect } from "react"
-import { useAtom } from "jotai"
-import Router from "next/router"
-
-import { gameStateAtom } from "@/lib/atoms"
-
 import Game from "@/screens/game"
 import Waiting from "@/screens/waiting"
-import ClientOnly from "@/components/client-only"
+import { useAtom } from "jotai"
+import Router from "next/router"
+import { useEffect } from "react"
+
+import { sessionAtom } from "@/lib/atoms/session"
 
 import type { NextPage } from "next"
 
 const Room: NextPage = () => {
-  const [gameState, setGameState] = useAtom(gameStateAtom)
+  const [session] = useAtom(sessionAtom)
 
   useEffect(() => {
-    if (!gameState) {
+    if (!session) {
       Router.push("/")
     }
-  }, [gameState])
+  }, [session])
 
-  if (!gameState) {
+  if (!session) {
     return null
   }
 
-  const gameStatus = gameState.status
-  const waiting =
-    gameStatus == "waiting" || gameStatus == "end" || gameStatus == "starting"
-  const playing = !waiting
-
   return (
-    <ClientOnly>
-      {gameState && waiting && (
-        <Waiting gameState={gameState} onGameStateUpdate={setGameState} />
-      )}
-      {gameState && playing && <Game gameState={gameState} />}
-    </ClientOnly>
+    <>
+      {!session.playing && <Waiting />}
+      {session.playing && <Game />}
+    </>
   )
 }
 

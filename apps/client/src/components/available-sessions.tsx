@@ -1,19 +1,19 @@
-import React, { useState } from "react"
 import Image from "next/image"
+import React, { useState } from "react"
 
 import useAvailableSessions from "@/lib/hooks/use-available-sessions-socket"
 import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
-import Button from "./button"
-import Modal from "./modal"
-import Loader from "./loader"
-
-import Close from "@/assets/close/rounded.svg"
-import ClockCold from "@/assets/clocks/cold.svg"
-import ClockNormal from "@/assets/clocks/normal.svg"
-import ClockHot from "@/assets/clocks/hot.svg"
-import CatBaby from "@/assets/cats/baby.svg"
 import CatAdult from "@/assets/cats/adult.svg"
+import CatBaby from "@/assets/cats/baby.svg"
+import ClockCold from "@/assets/clocks/cold.svg"
+import ClockHot from "@/assets/clocks/hot.svg"
+import ClockNormal from "@/assets/clocks/normal.svg"
+import Close from "@/assets/close/rounded.svg"
+
+import Button from "./button"
+import Loader from "./loader"
+import Modal from "./modal"
 
 const AvailableSessions: React.FC = () => {
   const { connect, close, resetUrl } = useAvailableSessions()

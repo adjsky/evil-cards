@@ -1,6 +1,8 @@
 import { useState } from "react"
-import Snackbar from "./index"
+
 import { createEventBus } from "@/core/event-bus"
+
+import Snackbar from "./index"
 
 import type { SnackbarProps } from "./types"
 

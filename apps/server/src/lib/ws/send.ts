@@ -25,7 +25,7 @@ export type Created = {
   details: {
     changedState: {
       id: string
-      status: Status
+      status: "waiting"
       players: SendPlayer[]
       playerId: string
       configuration: Configuration
@@ -38,15 +38,19 @@ export type Joined = {
   details: {
     changedState: {
       id: string
-      status: Status
       players: SendPlayer[]
       playerId: string
-      deck: Card[]
-      redCard: string | null
-      votingEndsAt: number | null
       configuration: Configuration
-      votes: Vote[]
-    }
+    } & (
+      | { status: Extract<Status, "waiting" | "end" | "starting"> }
+      | {
+          status: Exclude<Status, "waiting" | "end" | "starting">
+          deck: Card[]
+          redCard: string
+          votingEndsAt: number
+          votes: Vote[]
+        }
+    )
   }
 }
 
@@ -73,19 +77,19 @@ export type Voted = {
 
 export type GameStart = {
   type: "gamestart"
-  details: { changedState: { status: Status } }
+  details: { changedState: { status: "starting" } }
 }
 
 export type VotingStarted = {
   type: "votingstart"
   details: {
     changedState: {
-      status: Status
+      status: "voting"
       deck: Card[]
       redCard: string
       players: SendPlayer[]
       votes: Vote[]
-      votingEndsAt: number | null
+      votingEndsAt: number
     }
   }
 }
@@ -93,7 +97,7 @@ export type VotingStarted = {
 export type ChoosingStarted = {
   type: "choosingstart"
   details: {
-    changedState: { status: Status; votes: Vote[]; deck: Card[] }
+    changedState: { status: "choosing"; votes: Vote[]; deck: Card[] }
   }
 }
 
@@ -107,7 +111,7 @@ export type Choose = {
 
 export type ChoosingWinnerStarted = {
   type: "choosingwinnerstart"
-  details: { changedState: { status: Status } }
+  details: { changedState: { status: "choosingwinner" } }
 }
 
 export type ChooseWinner = {
@@ -120,13 +124,13 @@ export type ChooseWinner = {
 export type WinnerCardView = {
   type: "winnercardview"
   details: {
-    changedState: { status: Status }
+    changedState: { status: "winnercardview" }
   }
 }
 
 export type GameEnd = {
   type: "gameend"
-  details: { changedState: { status: Status; players: SendPlayer[] } }
+  details: { changedState: { status: "end"; players: SendPlayer[] } }
 }
 
 export type DiscardCards = {
@@ -153,6 +157,13 @@ export type ConfigurationChanged = {
   details: { changedState: { configuration: Configuration } }
 }
 
+export type Chat = {
+  type: "chat"
+  details: {
+    message: string
+  } & Pick<SendPlayer, "avatarId" | "nickname">
+}
+
 export type Message =
   | Created
   | Joined
@@ -171,6 +182,7 @@ export type Message =
   | ConfigurationChanged
   | WinnerCardView
   | DiscardCards
+  | Chat
 
 export type { Status, Configuration, Vote, Card } from "../../game/types"
 export type Player = SendPlayer

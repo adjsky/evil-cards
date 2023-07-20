@@ -40,6 +40,10 @@ export const kickSchema = z.object({
 })
 export type Kick = z.TypeOf<typeof chooseSchema>
 
+export const chatSchema = z.object({
+  message: z.string()
+})
+
 export const configurationSchema = implement<Configuration>().with({
   votingDurationSeconds: z.literal(30).or(z.literal(60)).or(z.literal(90)),
   reader: z.boolean(),
@@ -85,6 +89,10 @@ export const messageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("kickplayer"),
     details: kickSchema
+  }),
+  z.object({
+    type: z.literal("chat"),
+    details: chatSchema
   })
 ])
 export type Message = z.TypeOf<typeof messageSchema>

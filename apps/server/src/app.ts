@@ -39,25 +39,30 @@ const fastify = await getServer({
   }
 })
 
-// REDIS
+// ----------------------------------- REDIS -----------------------------------
+
 const redisClient = createClient(env.KEYDB_URL)
 await redisClient.connect()
 
-// GAME
+// ------------------------------------ GAME -----------------------------------
+
 const sessionFactory = new SessionFactory()
 const sessionManager = new SessionManager(sessionFactory)
 const controller = new Controller(sessionManager, redisClient, {
   serverNumber: env.SERVER_NUMBER
 })
 
-// REDIS SESSION SUBSCRIBER
+// -------------------------- REDIS SESSION SUBSCRIBER -------------------------
+
 const [subscribe, subscriberCleanup] =
   await controller.sessionCache.initializeSubscriber()
 
-// FASTIFY PLUGINS
+// ------------------------------ FASTIFY PLUGINS ------------------------------
+
 await fastify.register(websocketPlugin)
 
-// ROUTES
+// ----------------------------------- ROUTES ----------------------------------
+
 await fastify.register(gameRoutes, {
   controller,
   subscribe,
