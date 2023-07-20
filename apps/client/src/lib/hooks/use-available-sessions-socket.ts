@@ -32,23 +32,21 @@ const useAvailableSessions = () => {
     }
   })
 
-  const connect = async () => {
-    const result = await getWsHost()
-
-    result.match({
-      err() {
-        setState({
-          loading: false,
-          sessions: state.sessions ?? []
-        })
-      },
-      ok(wsHost) {
-        setUrl(`${wsHost}/ws/available-sessions`)
-      }
-    })
+  return {
+    async connect() {
+      getWsHost().match(
+        (wsHost) => setUrl(`${wsHost}/ws/available-sessions`),
+        () =>
+          setState({
+            loading: false,
+            sessions: state.sessions ?? []
+          })
+      )
+    },
+    close,
+    state,
+    resetUrl
   }
-
-  return { connect, close, state, resetUrl }
 }
 
 export default useAvailableSessions

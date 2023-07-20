@@ -1,17 +1,15 @@
 import { env } from "../env/client.mjs"
-import { Result } from "@evil-cards/fp"
+import { fromPromise } from "neverthrow"
 import ky, { HTTPError } from "ky"
-
-type Error = "nosession" | "fetcherror"
 
 type SuccessLoadBalancerResponse = {
   message: "ok"
   host: string
 }
 
-async function getWsHost(sessionId?: string): Promise<Result<string, Error>> {
-  try {
-    const response = await ky
+function getWsHost(sessionId?: string) {
+  return fromPromise(
+    ky
       .get(env.NEXT_PUBLIC_BALANCER_PATH, {
         searchParams: sessionId
           ? {
@@ -19,18 +17,19 @@ async function getWsHost(sessionId?: string): Promise<Result<string, Error>> {
             }
           : undefined
       })
-      .json<SuccessLoadBalancerResponse>()
+      .json<SuccessLoadBalancerResponse>(),
+    (err) => err
+  )
+    .mapErr((err) => {
+      console.error(err)
 
-    return Result.ok(response.host)
-  } catch (error) {
-    console.error(error)
+      if (err instanceof HTTPError && err.response.status == 404) {
+        return "nosession"
+      }
 
-    if (error instanceof HTTPError && error.response.status == 404) {
-      return Result.err("nosession")
-    }
-
-    return Result.err("fetcherror")
-  }
+      return "fetcherror"
+    })
+    .map((response) => response.host)
 }
 
 export default getWsHost
