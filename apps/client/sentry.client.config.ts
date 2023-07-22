@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs"
+
 import { env } from "@/lib/env/client.mjs"
 
 const dsn =

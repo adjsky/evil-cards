@@ -1,8 +1,6 @@
-import { useEffect } from "react"
-import Router from "next/router"
-
 import Entry from "@/screens/entry"
-import ClientOnly from "@/components/client-only"
+import Router from "next/router"
+import { useEffect } from "react"
 
 import type { NextPage } from "next"
 
@@ -11,11 +9,7 @@ const Home: NextPage = () => {
     Router.prefetch("/room")
   }, [])
 
-  return (
-    <ClientOnly>
-      <Entry />
-    </ClientOnly>
-  )
+  return <Entry />
 }
 
 export default Home

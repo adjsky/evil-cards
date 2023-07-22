@@ -1,6 +1,6 @@
 // @ts-check
-import { clientSchema } from "./schema.mjs"
 import formatErrors from "./format-errors.mjs"
+import { clientSchema } from "./schema.mjs"
 
 /**
  * You can't destruct `process.env` as a regular object, so you have to do

@@ -7,6 +7,9 @@
   },
   "type": "module",
   "license": "MIT",
+  "scripts": {
+    "ts-check": "tsc"
+  },
   "dependencies": {
     "@fastify/compress": "^6.3.0",
     "@fastify/cors": "^8.2.1",
@@ -20,8 +23,6 @@
     "zod": "^3.20.6"
   },
   "devDependencies": {
-    "@evil-cards/eslint-config": "workspace:^",
-    "@evil-cards/prettier-config": "workspace:^",
     "redis": "^4.6.5"
   }
 }

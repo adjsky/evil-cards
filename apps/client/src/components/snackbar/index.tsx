@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react"
-import { createPortal } from "react-dom"
 import clsx from "clsx"
+import React, { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
 import { useIsomorphicLayoutEffect } from "@/lib/hooks"
 
@@ -8,7 +8,7 @@ import Close from "@/assets/close/square.svg"
 import CrossMark from "@/assets/cross-mark.svg"
 import ExclamationMark from "@/assets/exclamation-mark.svg"
 
-import type { SnackbarProps, Severity, Colors } from "./types"
+import type { Colors, Severity, SnackbarProps } from "./types"
 
 const isBrowser = typeof window != "undefined"
 

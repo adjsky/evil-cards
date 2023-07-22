@@ -1,45 +1,56 @@
-import React, { useEffect, useState, useRef, useCallback } from "react"
-import clsx from "clsx"
-import Image from "next/image"
 import { Transition } from "@headlessui/react"
-import { useAtom, useSetAtom } from "jotai"
+import clsx from "clsx"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import Image from "next/image"
 import { useRouter } from "next/router"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 
+import raise from "@/core/raise"
+
+import { soundsAtom, winnersAtom } from "@/lib/atoms/game"
+import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
+import { copyText, getScoreLabel } from "@/lib/functions"
 import {
-  useSessionSocket,
-  useToggle,
   useCountdown,
+  useLeavePreventer,
   useScreenFactor,
-  useLeavePreventer
+  useSessionSocket,
+  useToggle
 } from "@/lib/hooks"
-import { getScoreLabel, copyText } from "@/lib/functions"
-import { reconnectingGameAtom, soundsAtom } from "@/lib/atoms"
-import { updateSnackbar } from "@/components/snackbar/use"
 
+import Authors from "@/components/authors"
+import BackButton from "@/components/back-button"
 import Button from "@/components/button"
+import Configuration from "@/components/configuration"
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
-import BackButton from "@/components/back-button"
 import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
-import Configuration from "@/components/configuration"
-import Authors from "@/components/authors"
-import SoundOn from "@/assets/sound-on.svg"
-import SoundOff from "@/assets/sound-off.svg"
-import Gear from "@/assets/gear.svg"
-import Close from "@/assets/close/rounded.svg"
+import { updateSnackbar } from "@/components/snackbar/use"
+
 import Author from "@/assets/author.svg"
+import Close from "@/assets/close/rounded.svg"
+import Gear from "@/assets/gear.svg"
+import SoundOff from "@/assets/sound-off.svg"
+import SoundOn from "@/assets/sound-on.svg"
 
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
-import type { GameState } from "@/lib/atoms"
 
-const Waiting: React.FC<{
-  gameState: GameState
-  onGameStateUpdate?: (gameState: GameState | null) => void
-}> = ({ gameState, onGameStateUpdate }) => {
+const Waiting: React.FC = () => {
   useLeavePreventer()
   const [sounds, setSounds] = useAtom(soundsAtom)
-  const setReconnectingGame = useSetAtom(reconnectingGameAtom)
+  const setReconnectingSession = useSetAtom(reconnectingSessionAtom)
+  const winners = useAtomValue(winnersAtom)
+
+  const [session, setSession] = useAtom(sessionAtom)
+
+  const { player, configuration, id, players, gameState, playing } =
+    session ??
+    raise("Trying to render 'Waiting' screen with no session created")
+
+  if (playing) {
+    raise(`Trying to render 'Waiting' screen when session is in playing state`)
+  }
 
   const [isStarting, setIsStarting] = useState(false)
 
@@ -67,13 +78,6 @@ const Waiting: React.FC<{
     }
   })
 
-  const player = gameState.players.find(
-    (player) => player.id == gameState.playerId
-  )
-  const lowerButtonOpacity =
-    !player?.host &&
-    (gameState.status == "waiting" || gameState.status == "end")
-
   const onStart = () => {
     sendJsonMessage({ type: "startgame" })
   }
@@ -84,9 +88,9 @@ const Waiting: React.FC<{
     }
 
     const handleAnimationFinish = () => {
-      onGameStateUpdate && onGameStateUpdate(null)
+      setSession(null)
       updateSnackbar({ open: false })
-      setReconnectingGame(false)
+      setReconnectingSession(false)
 
       close()
       resetUrl()
@@ -108,7 +112,7 @@ const Waiting: React.FC<{
     } else {
       handleAnimationFinish()
     }
-  }, [onGameStateUpdate, close, resetUrl, setReconnectingGame])
+  }, [close, resetUrl, setReconnectingSession, setSession])
 
   const router = useRouter()
   useEffect(() => {
@@ -127,9 +131,7 @@ const Waiting: React.FC<{
 
   return (
     <FadeIn className="h-full" ref={screenRef}>
-      {gameState.status == "end" && gameState.winners && (
-        <Winners winners={gameState.winners} />
-      )}
+      {gameState.status == "end" && winners && <Winners winners={winners} />}
       <div className="relative h-full">
         <div
           ref={containerRef}
@@ -154,9 +156,9 @@ const Waiting: React.FC<{
           <div className="flex h-full w-full flex-col sm:h-full sm:flex-row sm:gap-4">
             <div className="sm:h-[500px]">
               <PlayerList
-                players={gameState.players}
+                players={players}
                 variant="waiting"
-                withKick={player?.host && gameState.status != "starting"}
+                withKick={player?.host && status != "starting"}
                 onKick={(player) => {
                   sendJsonMessage({
                     type: "kickplayer",
@@ -173,7 +175,7 @@ const Waiting: React.FC<{
                 {visibleMainScreen == "authors" && <Authors />}
                 {visibleMainScreen == "configuration" && (
                   <Configuration
-                    configuration={gameState.configuration}
+                    configuration={configuration}
                     host={player?.host}
                     onSave={(configuration) => {
                       sendJsonMessage({
@@ -211,9 +213,8 @@ const Waiting: React.FC<{
                 )}
               </div>
               <div className="flex w-full justify-center gap-2">
-                <InviteButton id={gameState.id} />
+                <InviteButton id={id} />
                 <StartButton
-                  lowerOpacity={lowerButtonOpacity}
                   onClick={onStart}
                   disabled={isStarting || !player?.host}
                   secondsLeft={secondsLeft}
@@ -229,17 +230,16 @@ const Waiting: React.FC<{
 }
 
 const StartButton: React.FC<{
-  lowerOpacity?: boolean
   secondsLeft?: number
   withCountdown?: boolean
   disabled?: boolean
   onClick?: () => void
-}> = ({ lowerOpacity, secondsLeft, withCountdown, disabled, onClick }) => {
+}> = ({ secondsLeft, withCountdown, disabled, onClick }) => {
   return (
     <Button
       variant="filled"
       onClick={onClick}
-      className={clsx("w-28 uppercase sm:w-32", lowerOpacity && "opacity-50")}
+      className={clsx("w-28 uppercase sm:w-32", disabled && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
@@ -298,7 +298,9 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
 
 const HEIGHT_PER_SCORE = 29
 
-const Winners: React.FC<{ winners: Player[] }> = ({ winners }) => {
+const Winners: React.FC<{ winners: [Player, Player, Player] }> = ({
+  winners
+}) => {
   const [show, setShow] = useState(true)
   useEffect(() => {
     const timeout = setTimeout(() => setShow(false), 5000)
@@ -338,10 +340,6 @@ const Winners: React.FC<{ winners: Player[] }> = ({ winners }) => {
       </div>
     </div>
   )
-
-  if (winners.length < 3) {
-    return null
-  }
 
   return (
     <Transition

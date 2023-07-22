@@ -14,7 +14,7 @@ type Signal = typeof signals[number]
 let shuttingDown = false
 
 export type GracefulShutdownOptions = {
-  onShutdown?: (signal?: Signal) => Promise<void>
+  onShutdown: (signal?: Signal) => Promise<void>
 }
 
 const gracefulShutdown: FastifyPluginCallback<GracefulShutdownOptions> = (
@@ -38,7 +38,7 @@ const gracefulShutdown: FastifyPluginCallback<GracefulShutdownOptions> = (
     )
 
     try {
-      await onShutdown?.(signal)
+      await onShutdown(signal)
 
       process.exit(0)
     } catch (error) {

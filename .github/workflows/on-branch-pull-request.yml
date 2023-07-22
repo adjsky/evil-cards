@@ -34,7 +34,7 @@ jobs:
       - name: Run tests
         run: pnpm test:ci
 
-  lint-changed-files:
+  lint:
     runs-on: ubuntu-latest
     name: Lint changed files
 
@@ -58,6 +58,7 @@ jobs:
       - name: Run eslint on changed files
         uses: tj-actions/eslint-changed-files@v14
         with:
+          reporter: github-pr-check
           extra_args: "--max-warnings=0"
           file_extensions: |
             **/*.ts
@@ -65,3 +66,27 @@ jobs:
             **/*.js
             **/*.mjs
             **/*.cjs
+
+  ts-check:
+    runs-on: ubuntu-latest
+    name: Check typescript errors
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.16.0
+
+      - name: Enable corepack
+        run: |
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Install deps
+        run: pnpm --frozen-lockfile install
+
+      - name: Run ts-check
+        run: pnpm ts-check

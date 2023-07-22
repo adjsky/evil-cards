@@ -8,20 +8,19 @@
       "path": "../apps/client"
     },
     {
+      "path": "../apps/e2e"
+    },
+    {
       "path": "../apps/server"
     },
     {
       "path": "../apps/load-balancer"
     },
     {
-      "path": "../packages/eslint-config"
-    },
-    {
-      "path": "../packages/prettier-config"
-    },
-    {
       "path": "../packages/core"
     }
   ],
-  "settings": {}
+  "settings": {
+    "typescript.tsdk": "root/node_modules/typescript/lib"
+  }
 }

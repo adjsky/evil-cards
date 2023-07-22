@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from "react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
+import React, { useEffect, useRef } from "react"
 
 import { usePrevious } from "@/lib/hooks"
 
 import Cat from "@/assets/cats/regular.svg"
+
 import styles from "./card.module.css"
 
 const Card: React.FC<{

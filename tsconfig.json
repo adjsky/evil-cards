@@ -12,6 +12,7 @@
     "noUncheckedIndexedAccess": false,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "resolveJsonModule": true
   }
 }

@@ -1,6 +1,6 @@
 // @ts-check
-import { serverSchema } from "./schema.mjs"
 import formatErrors from "./format-errors.mjs"
+import { serverSchema } from "./schema.mjs"
 
 const _serverEnv = serverSchema.safeParse(process.env)
 

@@ -18,6 +18,7 @@ import {
 import {
   GameError,
   InSessionError,
+  InvalidSessionStateError,
   NoPlayerError,
   NoSessionError,
   SessionCacheSynchronizeError,
@@ -78,6 +79,7 @@ class Controller {
     this.events.on("vote", this.vote.bind(this))
     this.events.on("discardcards", this.discardCards.bind(this))
     this.events.on("kickplayer", this.kick.bind(this))
+    this.events.on("chat", this.chat.bind(this))
     this.events.on("close", ({ socket }) => {
       /**
        * Here we have to check if the server is shutting down
@@ -177,6 +179,9 @@ class Controller {
     }
 
     const session = this.sessionManager.create()
+    if (session.status != "waiting") {
+      throw new InvalidSessionStateError()
+    }
     socket.session = session
 
     const player = session.join(nickname, avatarId)
@@ -255,24 +260,51 @@ class Controller {
       this.events.emit("close", { socket })
     })
 
-    socket.send(
-      stringify({
-        type: "join",
-        details: {
-          changedState: {
-            id: session.id,
-            status: session.status,
-            playerId: player.id,
-            players: this.getNormalizedPlayers(session.players),
-            deck: player.deck,
-            redCard: session.redCard,
-            votingEndsAt: session.getTimeoutDate("voting")?.getTime() ?? null,
-            configuration: session.configuration,
-            votes: session.votes
+    if (
+      session.status == "waiting" ||
+      session.status == "starting" ||
+      session.status == "end"
+    ) {
+      socket.send(
+        stringify({
+          type: "join",
+          details: {
+            changedState: {
+              id: session.id,
+              status: session.status,
+              playerId: player.id,
+              players: this.getNormalizedPlayers(session.players),
+              configuration: session.configuration
+            }
           }
-        }
-      })
-    )
+        })
+      )
+    } else {
+      const votingEndsAt = session.getTimeoutDate("voting")?.getTime()
+
+      if (!session.redCard || !votingEndsAt) {
+        throw new InvalidSessionStateError()
+      }
+
+      socket.send(
+        stringify({
+          type: "join",
+          details: {
+            changedState: {
+              id: session.id,
+              status: session.status,
+              playerId: player.id,
+              players: this.getNormalizedPlayers(session.players),
+              deck: player.deck,
+              redCard: session.redCard,
+              votingEndsAt,
+              configuration: session.configuration,
+              votes: session.votes
+            }
+          }
+        })
+      )
+    }
   }
 
   private kick({ playerId, socket }: ServerEvent["kickplayer"]) {
@@ -396,6 +428,27 @@ class Controller {
     session.discardCards(player.id)
   }
 
+  private chat({ socket, message }: ServerEvent["chat"]) {
+    const session = socket.session
+    if (!session) {
+      throw new NoSessionError()
+    }
+
+    const player = socket.player
+    if (!player) {
+      throw new NoPlayerError()
+    }
+
+    this.broadcast(session, () => ({
+      type: "chat",
+      details: {
+        message,
+        avatarId: player.avatarId,
+        nickname: player.nickname
+      }
+    }))
+  }
+
   private setupSessionListeners(session: ISession) {
     const handleStatusChange = (status: Status) => {
       switch (status) {
@@ -420,6 +473,15 @@ class Controller {
               return
             }
 
+            const votingEndsAt = session.getTimeoutDate("voting")?.getTime()
+
+            if (!votingEndsAt) {
+              return {
+                type: "error",
+                details: new InvalidSessionStateError().message
+              }
+            }
+
             return {
               type: "votingstart",
               details: {
@@ -429,8 +491,7 @@ class Controller {
                   redCard: session.redCard,
                   status,
                   votes: session.votes,
-                  votingEndsAt:
-                    session.getTimeoutDate("voting")?.getTime() ?? null
+                  votingEndsAt
                 }
               }
             }

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
+import { autoUpdate, useFloating } from "@floating-ui/react-dom"
+import { Listbox, RadioGroup, Transition } from "@headlessui/react"
 import clsx from "clsx"
-import { Listbox, Transition, RadioGroup } from "@headlessui/react"
+import React, { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
+
 import ArrowDown from "@/assets/arrows/down.svg"
-import { useFloating, autoUpdate } from "@floating-ui/react-dom"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/send"
 
@@ -11,20 +12,24 @@ const visibilityOptions = [
   { value: false, name: "НЕТ" },
   { value: true, name: "ДА" }
 ] as const
+
 const votingPeriodOptions = [
   { value: 60, name: "НОРМАЛЬНАЯ" },
   { value: 30, name: "БЫСТРАЯ" },
   { value: 90, name: "МЕДЛЕННАЯ" }
 ] as const
+
 const maxScoreOptions = [
   { value: 10, name: "10" },
   { value: 15, name: "15" },
   { value: 20, name: "20" }
 ] as const
+
 const readerOptions = [
   { value: false, name: "НЕТ" },
   { value: true, name: "ЕСТЬ" }
 ] as const
+
 const version18PlusOptions = [
   { value: false, name: "НЕТ" },
   { value: true, name: "ДА" }

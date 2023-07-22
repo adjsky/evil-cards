@@ -2,8 +2,8 @@
 import path from "node:path"
 import url from "node:url"
 
-import { withSentryConfig } from "@sentry/nextjs"
 import getWithBundleAnalyzer from "@next/bundle-analyzer"
+import { withSentryConfig } from "@sentry/nextjs"
 // @ts-expect-error @types/next-pwa are broken, due to that we have to suppress TS error
 import getWithPWA from "next-pwa"
 

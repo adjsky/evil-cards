@@ -41,7 +41,8 @@ export async function getServer(options: Options) {
     })
   }
 
-  // third party plugins
+  // --------------------------- THIRD PARTY PLUGINS ---------------------------
+
   await fastify.register(fastifyMetrics)
   await fastify.register(fastifyHealthcheck, { logLevel: "silent" })
   await fastify.register(fastifyRequestContext, {
@@ -53,9 +54,13 @@ export async function getServer(options: Options) {
     })
   })
 
-  // internal plugins
+  // ---------------------------- INTERNAL PLUGINS -----------------------------
+
   await fastify.register(memoryLogPlugin, { enabled: options.logMemory })
-  await fastify.register(gracefulShutdown, { onShutdown: options.onShutdown })
+
+  if (options.onShutdown) {
+    await fastify.register(gracefulShutdown, { onShutdown: options.onShutdown })
+  }
 
   return fastify
 }

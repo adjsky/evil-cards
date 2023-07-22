@@ -1,10 +1,10 @@
 const errorMessages: Record<string, string | undefined> = {
-  "nickname is taken": "Ой, в комнате уже есть игрок с таким никнеймом",
-  "session not found": "Комната не найдена",
-  "the game has already started": "Упс, игра уже началась",
-  "need more players": "Нельзя начать игру, пока не наберется хотя бы 3 игрока",
-  "too many players": "Комната заполнена",
-  "session and client version mismatch":
+  "Nickname is taken": "Ой, в комнате уже есть игрок с таким никнеймом",
+  "Session not found": "Комната не найдена",
+  "The game has already started": "Упс, игра уже началась",
+  "Need more players": "Нельзя начать игру, пока не наберется хотя бы 3 игрока",
+  "Too many players": "Комната заполнена",
+  "Session and client version mismatch":
     "Сессия создана на устаревшей версии клиента"
 }
 
