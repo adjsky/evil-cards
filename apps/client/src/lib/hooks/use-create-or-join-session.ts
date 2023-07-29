@@ -15,7 +15,7 @@ import packageJson from "../../../package.json"
 import { avatarAtom, nicknameAtom } from "../atoms/game"
 import useSessionSocket from "./use-session-socket"
 
-const errorsToIgnore = ["nickname is taken"]
+const errorsToIgnore = ["Nickname is taken"]
 
 const startErrors = {
   nosession: "Комната не найдена",

@@ -27,7 +27,7 @@ const PlayerList: React.FC<{
 
   return (
     <div
-      className="sm:scrollable flex w-full touch-pan-x overflow-x-auto sm:h-full sm:flex-col sm:gap-2"
+      className="sm:scrollable flex w-full touch-pan-x overflow-x-auto sm:h-full sm:w-auto sm:flex-col sm:gap-2"
       data-testid="player-list"
     >
       {filteredPlayers.map((player) => (
@@ -99,14 +99,14 @@ const MobilePlayer: React.FC<{
             <Question width={44} height={44} />
           )}
           {displayCrown && (
-            <div className="absolute left-0 bottom-0">
+            <div className="absolute bottom-0 left-0">
               <Crown />
             </div>
           )}
           {(displayMark || displayKick) && (
             <div
               className={clsx(
-                "absolute right-0 bottom-0",
+                "absolute bottom-0 right-0",
                 displayKick && "rounded-full bg-gray-100 p-1"
               )}
             >
@@ -220,7 +220,7 @@ const KickModal: React.FC<{
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="w-full max-w-sm rounded-xl bg-gray-100 p-6 text-gray-900 shadow-lg"
+      className="w-full max-w-sm rounded-xl bg-gray-900 p-6 text-gray-100 shadow-lg"
     >
       <Modal.Title as="h3" className="text-center text-xl font-bold uppercase">
         Выгнать игрока?
@@ -235,7 +235,7 @@ const KickModal: React.FC<{
 
       <div className="mt-4 flex w-full gap-2">
         <Button
-          variant="outlinedReverse"
+          variant="outlined"
           className="flex-1 py-3 uppercase"
           onClick={onClose}
         >

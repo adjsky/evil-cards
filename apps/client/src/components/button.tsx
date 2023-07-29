@@ -13,7 +13,7 @@ const variantClasses: Record<Variant, string> = {
   filled:
     "bg-red-500 text-gray-100 enabled:hover:bg-gray-100 enabled:hover:text-red-500",
   filledBorder:
-    "border border-red-500 bg-red-500 text-gray-100 enabled:hover:bg-gray-100 enabled:hover:text-red-500",
+    "border border-red-500 bg-red-500 text-gray-100 enabled:hover:bg-gray-100 enabled:hover:text-red-500 enabled:hover:border-gray-100",
   outlined:
     "border border-gray-100 bg-gray-900 text-gray-100 hover:bg-gray-100 hover:text-gray-900",
   outlinedReverse:

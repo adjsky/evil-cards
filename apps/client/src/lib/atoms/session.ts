@@ -18,13 +18,15 @@ export type PlayingGameState = {
   deck: Card[]
   votes: Vote[]
   redCard: string
-  votingEndsAt: number
+  votingEndsAt: number | null
 }
 
 export type ChatMessage = {
+  id: string
   message: string
   nickname: string
   avatarId: number
+  read: boolean
 }
 
 export type Session = {

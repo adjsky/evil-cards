@@ -161,6 +161,7 @@ export type Chat = {
   type: "chat"
   details: {
     message: string
+    id: string
   } & Pick<SendPlayer, "avatarId" | "nickname">
 }
 
