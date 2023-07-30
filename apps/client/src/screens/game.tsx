@@ -1,8 +1,8 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 import clsx from "clsx"
 import { Interweave } from "interweave"
-import { useAtomValue, useSetAtom } from "jotai"
-import React, { useCallback, useEffect, useState } from "react"
+import { useAtom, useSetAtom } from "jotai"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 
 import raise from "@/core/raise"
 
@@ -14,13 +14,17 @@ import {
   useSessionSocket,
   useTimeBar
 } from "@/lib/hooks"
+import useDebounce from "@/lib/hooks/use-debounce"
 
 import Button from "@/components/button"
 import Card from "@/components/card"
+import BaseChat from "@/components/chat"
 import FadeIn from "@/components/fade-in"
 import Modal from "@/components/modal"
 import PlayerList from "@/components/player-list"
 
+import ChatIcon from "../assets/chat.svg"
+import CloseIcon from "../assets/close/rounded.svg"
 import DiscardIcon from "../assets/discard.svg"
 import ExclamationTriangleIcon from "../assets/exclamation-triangle.svg"
 import styles from "./game.module.css"
@@ -30,11 +34,7 @@ import type { Player } from "@evil-cards/server/src/lib/ws/send"
 
 const Game: React.FC = () => {
   useLeavePreventer()
-  const { sendJsonMessage } = useSessionSocket()
-
-  const setWinners = useSetAtom(winnersAtom)
-
-  useSessionSocket({
+  const { sendJsonMessage } = useSessionSocket({
     onJsonMessage(message) {
       if (message.type == "gameend") {
         const sortedByScore = [...message.details.changedState.players].sort(
@@ -46,9 +46,10 @@ const Game: React.FC = () => {
     }
   })
 
-  const session = useAtomValue(sessionAtom)
+  const setWinners = useSetAtom(winnersAtom)
+  const [session, setSession] = useAtom(sessionAtom)
 
-  const { player, configuration, players, gameState, playing } =
+  const { player, configuration, players, gameState, playing, chat } =
     session ?? raise("Trying to render 'Game' screen with no session created")
 
   if (!playing) {
@@ -73,10 +74,6 @@ const Game: React.FC = () => {
     }
   }
 
-  const onDiscard = () => {
-    sendJsonMessage({ type: "discardcards" })
-  }
-
   return (
     <FadeIn className="mx-auto h-full sm:relative sm:flex sm:items-center sm:justify-center">
       <div
@@ -91,8 +88,30 @@ const Game: React.FC = () => {
           player={player}
           gameState={gameState}
           players={players}
+          chat={chat}
           onCardClick={onBoardCardClick}
-          onDiscard={onDiscard}
+          onDiscard={() => sendJsonMessage({ type: "discardcards" })}
+          onChat={(message) =>
+            sendJsonMessage({ type: "chat", details: { message } })
+          }
+          onMessageRead={(id) => {
+            setSession((prev) => {
+              if (!prev) {
+                return prev
+              }
+
+              return {
+                ...prev,
+                chat: prev.chat.map((message) => {
+                  if (message.id != id) {
+                    return message
+                  }
+
+                  return { ...message, read: true }
+                })
+              }
+            })
+          }}
         />
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden sm:block">
@@ -120,13 +139,24 @@ const Game: React.FC = () => {
   )
 }
 
-const Board: React.FC<{
-  player: Player
-  players: Player[]
-  gameState: PlayingGameState
-  onCardClick?: (userId: string) => void
-  onDiscard?: () => void
-}> = ({ player, players, gameState, onCardClick, onDiscard }) => {
+const Board: React.FC<
+  {
+    player: Player
+    players: Player[]
+    gameState: PlayingGameState
+    onCardClick?: (userId: string) => void
+    onDiscard?: () => void
+  } & Parameters<typeof BaseChat>[0]
+> = ({
+  player,
+  players,
+  gameState,
+  chat,
+  onCardClick,
+  onDiscard,
+  onChat,
+  onMessageRead
+}) => {
   const [boardRefAnimate, enable] = useAutoAnimate(
     (element, action, oldCoords, newCoords) => {
       let keyframes: Keyframe[] = []
@@ -246,6 +276,7 @@ const Board: React.FC<{
         )}
       </div>
       <Discard score={player?.score ?? 0} onDiscard={onDiscard} />
+      <Chat chat={chat} onChat={onChat} onMessageRead={onMessageRead} />
     </div>
   )
 }
@@ -299,7 +330,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
       <Modal
         isOpen={isOpen}
         onClose={() => setOpen(false)}
-        className="w-full max-w-sm rounded-xl bg-gray-100 p-6 text-gray-900 shadow-lg"
+        className="w-full max-w-sm rounded-xl bg-gray-900 p-6 text-gray-100 shadow-lg"
       >
         <Modal.Title
           as="h3"
@@ -316,7 +347,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
 
         <div className="mt-4 flex w-full gap-2">
           <Button
-            variant="outlinedReverse"
+            variant="outlined"
             className="flex-1 py-3 uppercase"
             onClick={() => setOpen(false)}
           >
@@ -334,6 +365,59 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
             Да
           </Button>
         </div>
+      </Modal>
+    </>
+  )
+}
+
+const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
+  chat,
+  onChat,
+  onMessageRead
+}) => {
+  const [isOpen, setOpen] = useState(false)
+
+  const hasUnreadMessages = useMemo(
+    () => chat.some((message) => !message.read),
+    [chat]
+  )
+  const debouncedHasUnreadMessages = useDebounce(hasUnreadMessages, 100)
+
+  return (
+    <>
+      <button
+        className="absolute bottom-2 left-2 sm:bottom-0 sm:left-[210px]"
+        onClick={() => setOpen(true)}
+      >
+        <ChatIcon />
+        {debouncedHasUnreadMessages && (
+          <span className="absolute -right-1 -top-0.5 h-3 w-3 rounded-full bg-red-500" />
+        )}
+      </button>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setOpen(false)}
+        className="relative flex h-full max-h-[450px] w-full max-w-sm flex-col rounded-xl bg-gray-900 p-6 text-gray-100 shadow-lg"
+      >
+        <Modal.Title
+          as="h3"
+          className="text-center text-xl font-bold uppercase leading-none"
+        >
+          Чат комнаты
+        </Modal.Title>
+
+        <hr className="border-none py-1.5" />
+
+        <div className="flex-1">
+          <BaseChat chat={chat} onChat={onChat} onMessageRead={onMessageRead} />
+        </div>
+
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute right-4 top-4 p-1"
+        >
+          <CloseIcon className="h-6 w-6" />
+        </button>
       </Modal>
     </>
   )

@@ -35,11 +35,8 @@ const Rules: React.FC = () => {
   const [currentRuleIndex, setCurrentRuleIndex] = useState(0)
 
   return (
-    <div className="flex w-full flex-auto flex-col gap-4">
-      <h2 className="text-center text-xl font-bold uppercase text-gray-100 sm:text-3xl">
-        Правила
-      </h2>
-      <div className="flex flex-auto flex-col items-center justify-center gap-4">
+    <>
+      <div className="flex h-full w-full flex-col items-center justify-center gap-4">
         <div className="flex h-[210px] items-center justify-center">
           {rules[currentRuleIndex]?.preview}
         </div>
@@ -53,7 +50,7 @@ const Rules: React.FC = () => {
         onNext={setCurrentRuleIndex}
         running
       />
-    </div>
+    </>
   )
 }
 
@@ -68,6 +65,7 @@ const NextButtons: React.FC<{
       {Array.from({ length: count }).map((_, index) => (
         <button
           className="relative"
+          aria-label={`Слайд ${index + 1}`}
           key={index}
           onClick={() => onNext && onNext(index)}
         >
@@ -94,7 +92,7 @@ const NextButtons: React.FC<{
               strokeLinecap="round"
             />
           </svg>
-          <div className="absolute top-1/2 left-1/2 h-[21px] w-[21px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-100"></div>
+          <div className="absolute left-1/2 top-1/2 h-[21px] w-[21px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-100"></div>
         </button>
       ))}
     </div>

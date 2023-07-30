@@ -1,4 +1,5 @@
 import Emittery from "emittery"
+import { nanoid } from "nanoid"
 import { omit } from "ramda"
 import semverSatisfies from "semver/functions/satisfies.js"
 import { serializeError } from "serialize-error"
@@ -12,6 +13,7 @@ import stringify from "../lib/ws/stringify.ts"
 import {
   ACTIVITY_CHECK_INTERVAL_MS,
   ALIVE_CHECK_INTERVAL_MS,
+  CHAT_MESSAGE_ID_SIZE,
   CUSTOM_WS_CLOSE_CODE,
   CUSTOM_WS_CLOSE_REASON
 } from "./constants.ts"
@@ -443,6 +445,7 @@ class Controller {
       type: "chat",
       details: {
         message,
+        id: nanoid(CHAT_MESSAGE_ID_SIZE),
         avatarId: player.avatarId,
         nickname: player.nickname
       }

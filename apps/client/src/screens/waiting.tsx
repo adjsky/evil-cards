@@ -3,7 +3,8 @@ import clsx from "clsx"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import Image from "next/image"
 import { useRouter } from "next/router"
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { twMerge } from "tailwind-merge"
 
 import raise from "@/core/raise"
 
@@ -17,10 +18,12 @@ import {
   useSessionSocket,
   useToggle
 } from "@/lib/hooks"
+import useDebounce from "@/lib/hooks/use-debounce"
 
 import Authors from "@/components/authors"
 import BackButton from "@/components/back-button"
 import Button from "@/components/button"
+import Chat from "@/components/chat"
 import Configuration from "@/components/configuration"
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
@@ -29,6 +32,7 @@ import Rules from "@/components/rules"
 import { updateSnackbar } from "@/components/snackbar/use"
 
 import Author from "@/assets/author.svg"
+import ChatIcon from "@/assets/chat.svg"
 import Close from "@/assets/close/rounded.svg"
 import Gear from "@/assets/gear.svg"
 import SoundOff from "@/assets/sound-off.svg"
@@ -44,9 +48,15 @@ const Waiting: React.FC = () => {
 
   const [session, setSession] = useAtom(sessionAtom)
 
-  const { player, configuration, id, players, gameState, playing } =
+  const { player, configuration, id, players, gameState, playing, chat } =
     session ??
     raise("Trying to render 'Waiting' screen with no session created")
+
+  const hasUnreadMessages = useMemo(
+    () => chat.some((message) => !message.read),
+    [chat]
+  )
+  const debouncedHasUnreadMessages = useDebounce(hasUnreadMessages, 100)
 
   if (playing) {
     raise(`Trying to render 'Waiting' screen when session is in playing state`)
@@ -55,7 +65,7 @@ const Waiting: React.FC = () => {
   const [isStarting, setIsStarting] = useState(false)
 
   const [visibleMainScreen, setVisibleMainScreen] = useState<
-    "configuration" | "rules" | "authors"
+    "configuration" | "rules" | "authors" | "chat"
   >("rules")
 
   const screenRef = useRef<HTMLDivElement>(null)
@@ -114,6 +124,34 @@ const Waiting: React.FC = () => {
     }
   }, [close, resetUrl, setReconnectingSession, setSession])
 
+  const onChat = (message: string) => {
+    sendJsonMessage({
+      type: "chat",
+      details: {
+        message
+      }
+    })
+  }
+
+  const onMessageRead = (id: string) => {
+    setSession((prev) => {
+      if (!prev) {
+        return prev
+      }
+
+      return {
+        ...prev,
+        chat: prev.chat.map((message) => {
+          if (message.id != id) {
+            return message
+          }
+
+          return { ...message, read: true }
+        })
+      }
+    })
+  }
+
   const router = useRouter()
   useEffect(() => {
     const handler = (path: string) => {
@@ -136,11 +174,11 @@ const Waiting: React.FC = () => {
         <div
           ref={containerRef}
           style={screenStyles}
-          className="flex h-full flex-col items-center justify-center gap-6 sm:h-auto sm:w-[850px]"
+          className="flex h-full flex-col items-center justify-center gap-6 sm:h-auto sm:w-[1140px]"
         >
           <div className="relative hidden w-full items-end justify-between sm:flex">
             <BackButton onClick={onBack} />
-            <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <Logo />
             </div>
             <div className="invisible">
@@ -153,45 +191,68 @@ const Waiting: React.FC = () => {
               {sounds ? <SoundOn /> : <SoundOff />}
             </button>
           </div>
-          <div className="flex h-full w-full flex-col sm:h-full sm:flex-row sm:gap-4">
-            <div className="sm:h-[500px]">
-              <PlayerList
-                players={players}
-                variant="waiting"
-                withKick={player?.host && status != "starting"}
-                onKick={(player) => {
-                  sendJsonMessage({
-                    type: "kickplayer",
-                    details: {
-                      playerId: player.id
-                    }
-                  })
-                }}
-              />
-            </div>
-            <div className="flex min-h-0 w-full flex-1 flex-col gap-3 p-2 pb-12 sm:h-[500px] sm:gap-6 sm:p-0">
+          <div className="flex h-full w-full flex-col sm:h-[500px] sm:flex-row sm:gap-4">
+            <PlayerList
+              players={players}
+              variant="waiting"
+              withKick={player?.host && status != "starting"}
+              onKick={(player) => {
+                sendJsonMessage({
+                  type: "kickplayer",
+                  details: {
+                    playerId: player.id
+                  }
+                })
+              }}
+            />
+            <div className="flex min-h-0 w-full flex-1 flex-col gap-3 p-2 pb-12 sm:gap-6 sm:p-0">
               <div className="relative flex min-h-0 w-full flex-auto flex-col rounded-lg border-2 border-gray-200 p-4">
-                {visibleMainScreen == "rules" && <Rules />}
-                {visibleMainScreen == "authors" && <Authors />}
-                {visibleMainScreen == "configuration" && (
-                  <Configuration
-                    configuration={configuration}
-                    host={player?.host}
-                    onSave={(configuration) => {
-                      sendJsonMessage({
-                        type: "updateconfiguration",
-                        details: configuration
-                      })
-                    }}
-                  />
+                {visibleMainScreen == "rules" && (
+                  <MainScreen title="Правила">
+                    <Rules />
+                  </MainScreen>
                 )}
+                {visibleMainScreen == "authors" && (
+                  <MainScreen title="Авторы">
+                    <Authors />
+                  </MainScreen>
+                )}
+                {visibleMainScreen == "chat" && (
+                  <MainScreen title="Чат комнаты" className="min-h-0">
+                    <Chat
+                      chat={chat}
+                      onChat={onChat}
+                      onMessageRead={onMessageRead}
+                    />
+                  </MainScreen>
+                )}
+                {visibleMainScreen == "configuration" && (
+                  <MainScreen title="Настройки" className="min-h-0">
+                    <Configuration
+                      configuration={configuration}
+                      host={player?.host}
+                      onSave={(configuration) => {
+                        sendJsonMessage({
+                          type: "updateconfiguration",
+                          details: configuration
+                        })
+                      }}
+                    />
+                  </MainScreen>
+                )}
+
                 <button
-                  className="absolute top-3 right-3 p-1"
+                  className="absolute right-3 top-3 p-1"
                   onClick={() => {
                     setVisibleMainScreen((currentScreen) =>
                       currentScreen != "rules" ? "rules" : "configuration"
                     )
                   }}
+                  aria-label={
+                    visibleMainScreen == "configuration"
+                      ? "Показать правила"
+                      : "Показать настройки"
+                  }
                   data-testid={
                     visibleMainScreen == "configuration"
                       ? "show-rules"
@@ -200,16 +261,33 @@ const Waiting: React.FC = () => {
                 >
                   {visibleMainScreen != "rules" ? <Close /> : <Gear />}
                 </button>
+
                 {visibleMainScreen == "rules" && (
-                  <button
-                    className="absolute top-3 left-3 p-1"
-                    onClick={() => {
-                      setVisibleMainScreen("authors")
-                    }}
-                    data-testid="show-authors"
-                  >
-                    <Author />
-                  </button>
+                  <>
+                    <button
+                      className="absolute bottom-3 right-3 p-1 sm:bottom-auto sm:left-3 sm:right-auto sm:top-3"
+                      onClick={() => {
+                        setVisibleMainScreen("authors")
+                      }}
+                      aria-label="Показать авторов"
+                      data-testid="show-authors"
+                    >
+                      <Author />
+                    </button>
+                    <button
+                      className="absolute left-3 top-3 p-1"
+                      onClick={() => {
+                        setVisibleMainScreen("chat")
+                      }}
+                      aria-label="Показать чат"
+                      data-testid="show-chat"
+                    >
+                      <ChatIcon />
+                      {debouncedHasUnreadMessages && (
+                        <span className="absolute right-0 top-0.5 h-3 w-3 rounded-full bg-red-500" />
+                      )}
+                    </button>
+                  </>
                 )}
               </div>
               <div className="flex w-full justify-center gap-2">
@@ -222,10 +300,37 @@ const Waiting: React.FC = () => {
                 />
               </div>
             </div>
+            <div className="hidden w-[300px] rounded-lg border-2 border-gray-200 p-3 sm:flex">
+              <MainScreen title="Чат" className="min-h-0">
+                <Chat
+                  chat={chat}
+                  onChat={onChat}
+                  onMessageRead={onMessageRead}
+                />
+              </MainScreen>
+            </div>
           </div>
         </div>
       </div>
     </FadeIn>
+  )
+}
+
+const MainScreen: React.FC<
+  React.PropsWithChildren<{ title: string; className?: string }>
+> = ({ title, className, children }) => {
+  return (
+    <div
+      className={twMerge(
+        "flex w-full flex-auto flex-col items-center gap-4",
+        className
+      )}
+    >
+      <h2 className="text-center text-xl font-bold uppercase text-gray-100 sm:text-3xl">
+        {title}
+      </h2>
+      {children}
+    </div>
   )
 }
 
@@ -286,7 +391,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
       </Button>
       <span
         className={clsx(
-          "absolute left-1/2 -bottom-[25px] -translate-x-1/2 text-xs font-bold uppercase tracking-wider text-gold-500 transition-opacity",
+          "text-gold-500 absolute -bottom-[25px] left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-wider transition-opacity",
           copied ? "opacity-100" : "opacity-0"
         )}
       >
@@ -343,7 +448,7 @@ const Winners: React.FC<{ winners: [Player, Player, Player] }> = ({
 
   return (
     <Transition
-      className="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-gray-900"
+      className="fixed left-0 top-0 z-50 flex h-full w-full items-center justify-center bg-gray-900"
       show={show}
       enterFrom="opacity-0"
       enterTo="opacity-100"

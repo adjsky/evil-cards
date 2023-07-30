@@ -69,7 +69,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="flex h-full max-h-[390px] w-full max-w-xl flex-col rounded-xl bg-gray-100 px-3 pt-4 pb-6 text-gray-900 shadow-lg sm:max-h-[560px] sm:px-6 sm:pb-8 sm:pt-5"
+      className="flex h-full max-h-[390px] w-full max-w-xl flex-col rounded-xl bg-gray-900 px-3 pb-6 pt-4 text-gray-100 shadow-lg sm:max-h-[560px] sm:px-6 sm:pb-8 sm:pt-5"
     >
       <div className="relative flex items-center justify-center">
         <Modal.Title
@@ -79,13 +79,13 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
           Комнаты
         </Modal.Title>
         <button onClick={onClose} className="absolute -right-1 -top-1 p-1">
-          <Close className="h-6 w-6 fill-gray-900 sm:h-7 sm:w-7" />
+          <Close className="h-6 w-6 fill-gray-100 sm:h-7 sm:w-7" />
         </button>
       </div>
       <hr className="border-none py-2 sm:py-2.5" />
       {state.loading && (
         <div className="flex flex-grow items-center justify-center">
-          <Loader className="fill-gray-900" width={30} height={30} />
+          <Loader className="fill-gray-100" width={30} height={30} />
         </div>
       )}
       {!state.loading && state.sessions.length == 0 && (
@@ -98,7 +98,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
           {state.sessions.map((session) => (
             <button
               key={session.id}
-              className="flex items-center justify-between rounded-lg bg-gray-200 p-2 sm:p-3"
+              className="flex items-center justify-between rounded-lg bg-gray-100 p-2 text-gray-900 sm:p-3"
               onClick={() => handleJoin(session.id)}
               disabled={connecting}
             >
@@ -108,7 +108,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
                   width={60}
                   height={60}
                   alt="Avatar"
-                  className="w-9 flex-shrink-0 overflow-hidden rounded-full bg-gray-100 sm:w-14"
+                  className="w-9 flex-shrink-0 overflow-hidden rounded-full bg-gray-200 sm:w-14"
                 />
                 <span className="font-bold sm:text-xl">
                   {session.hostNickname}

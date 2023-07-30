@@ -2,6 +2,7 @@ export const MIN_PLAYERS_TO_START_GAME = 3
 export const MAX_PLAYERS_IN_SESSSION = 10
 
 export const USER_ID_SIZE = 5
+export const CHAT_MESSAGE_ID_SIZE = 10
 export const SESSION_ID_SIZE = 5
 
 export const GAME_START_DELAY_MS = 3 * 1000 // 3s

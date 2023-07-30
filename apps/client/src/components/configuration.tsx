@@ -61,57 +61,52 @@ const Configuration: React.FC<{
   }
 
   return (
-    <div className="flex min-h-0 w-full flex-auto flex-col items-center gap-4">
-      <h2 className="text-center text-xl font-bold text-gray-100 sm:text-3xl">
-        НАСТРОЙКИ
-      </h2>
-      <div className="scrollable flex min-h-0 w-full flex-auto flex-col gap-4">
-        <Row label="Комната публична">
-          <Radio
-            label="Комната публична"
-            options={visibilityOptions}
-            value={configurationCopy["public"]}
-            disabled={!host}
-            onChange={(_public) => handleChange({ public: _public })}
-          />
-        </Row>
-        <Row label="Скорость игры">
-          <Select
-            options={votingPeriodOptions}
-            value={configurationCopy["votingDurationSeconds"]}
-            disabled={!host}
-            onChange={(votingDurationSeconds) =>
-              handleChange({ votingDurationSeconds })
-            }
-          />
-        </Row>
-        <Row label="Озвучка">
-          <Radio
-            label="Озвучка"
-            options={readerOptions}
-            value={configurationCopy["reader"]}
-            disabled={!host}
-            onChange={(reader) => handleChange({ reader })}
-          />
-        </Row>
-        <Row label="Количество очков для победы">
-          <Select
-            options={maxScoreOptions}
-            value={configurationCopy["maxScore"]}
-            disabled={!host}
-            onChange={(maxScore) => handleChange({ maxScore })}
-          />
-        </Row>
-        <Row label="Версия 18+">
-          <Radio
-            label="Версия 18+"
-            options={version18PlusOptions}
-            value={configurationCopy["version18Plus"]}
-            disabled={!host}
-            onChange={(version18Plus) => handleChange({ version18Plus })}
-          />
-        </Row>
-      </div>
+    <div className="scrollable flex h-full min-h-0 w-full flex-col gap-4">
+      <Row label="Комната публична">
+        <Radio
+          label="Комната публична"
+          options={visibilityOptions}
+          value={configurationCopy["public"]}
+          disabled={!host}
+          onChange={(_public) => handleChange({ public: _public })}
+        />
+      </Row>
+      <Row label="Скорость игры">
+        <Select
+          options={votingPeriodOptions}
+          value={configurationCopy["votingDurationSeconds"]}
+          disabled={!host}
+          onChange={(votingDurationSeconds) =>
+            handleChange({ votingDurationSeconds })
+          }
+        />
+      </Row>
+      <Row label="Озвучка">
+        <Radio
+          label="Озвучка"
+          options={readerOptions}
+          value={configurationCopy["reader"]}
+          disabled={!host}
+          onChange={(reader) => handleChange({ reader })}
+        />
+      </Row>
+      <Row label="Количество очков для победы">
+        <Select
+          options={maxScoreOptions}
+          value={configurationCopy["maxScore"]}
+          disabled={!host}
+          onChange={(maxScore) => handleChange({ maxScore })}
+        />
+      </Row>
+      <Row label="Версия 18+">
+        <Radio
+          label="Версия 18+"
+          options={version18PlusOptions}
+          value={configurationCopy["version18Plus"]}
+          disabled={!host}
+          onChange={(version18Plus) => handleChange({ version18Plus })}
+        />
+      </Row>
     </div>
   )
 }
@@ -125,7 +120,7 @@ function Row({
 }) {
   return (
     <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-      <span className="text-center text-base font-bold uppercase text-gray-100">
+      <span className="text-center font-bold uppercase text-gray-100 sm:text-left">
         {label}
       </span>
       {children}
@@ -155,7 +150,7 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
       <Listbox.Button
         className={({ disabled }) =>
           clsx(
-            "flex w-full items-center justify-between gap-4 rounded-lg bg-gray-100 p-4 sm:w-56",
+            "flex w-full flex-shrink-0 items-center justify-between gap-4 rounded-lg bg-gray-100 p-4 sm:w-56",
             disabled && "opacity-50"
           )
         }
@@ -228,7 +223,7 @@ function Radio<T>({
       value={value}
       onChange={onChange}
       disabled={disabled}
-      className="w-full sm:w-56"
+      className="w-full flex-shrink-0 sm:w-56"
     >
       <RadioGroup.Label className="sr-only">{label}</RadioGroup.Label>
       <div

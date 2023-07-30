@@ -21,6 +21,9 @@
     }
   ],
   "settings": {
-    "typescript.tsdk": "root/node_modules/typescript/lib"
+    "typescript.tsdk": "root/node_modules/typescript/lib",
+    "tailwindCSS.experimental.classRegex": [
+      "(?:enter|leave)(?:From|To)?=\\s*(?:\"|'|{`)([^(?:\"|'|`})]*)"
+    ]
   }
 }

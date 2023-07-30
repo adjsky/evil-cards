@@ -301,7 +301,11 @@ const useSocketEvents = () => {
                   : prev.players,
               gameState: {
                 ...prev.gameState,
-                ...omit(["players"], message.details.changedState)
+                ...omit(["players"], message.details.changedState),
+                votingEndsAt:
+                  message.type == "choosingstart"
+                    ? null
+                    : prev.gameState.votingEndsAt
               }
             }
           })
@@ -320,9 +324,11 @@ const useSocketEvents = () => {
               chat: [
                 ...prev.chat,
                 {
+                  id: message.details.id,
                   nickname: message.details.nickname,
                   avatarId: message.details.avatarId,
-                  message: message.details.message
+                  message: message.details.message,
+                  read: false
                 }
               ]
             }
