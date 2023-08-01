@@ -7,9 +7,7 @@
     "test:ci": "vitest run --coverage",
     "dev:client": "turbo dev --filter=client",
     "dev:server": "turbo dev --filter=server",
-    "dev:load-balancer": "turbo dev --filter=load-balancer",
-    "start:server": "turbo start --filter=server",
-    "start:load-balancer": "turbo start --filter=load-balancer"
+    "dev:load-balancer": "turbo dev --filter=load-balancer"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "4.1.0",

@@ -47,6 +47,7 @@ COPY --from=prune /evil-cards/out/full/ .
 EXPOSE 8000
 ENV PORT 8000
 
+WORKDIR /evil-cards/apps/server
 COPY ./deploy/scripts/start-server-with-server-number.sh .
 
 CMD ["sh", "./start-server-with-server-number.sh"]

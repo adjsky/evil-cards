@@ -46,7 +46,9 @@ COPY --from=prune /evil-cards/out/full/ .
 EXPOSE 1337
 ENV PORT 1337
 
-CMD ["pnpm", "start:load-balancer"]
+WORKDIR /evil-cards/apps/load-balancer
+
+CMD ["pnpm", "start"]
 
 ###################################################################
 # Stage 3: Run load balancer (dev)                                #
