@@ -7,8 +7,8 @@
   "license": "MIT",
   "scripts": {
     "ts-check": "tsc",
-    "start": "cross-env NODE_ENV=production ts-node --transpileOnly ./src/app.ts",
-    "dev": "cross-env NODE_ENV=development ts-node ./src/app.ts"
+    "start": "cross-env NODE_ENV=production tsx ./src/app.ts",
+    "dev": "cross-env NODE_ENV=development tsx watch ./src/app.ts"
   },
   "dependencies": {
     "@evil-cards/core": "workspace:^",
@@ -16,7 +16,7 @@
     "dockerode": "^3.3.5",
     "pino-loki": "^2.1.3",
     "round-robin-js": "^3.0.5",
-    "ts-node": "^10.9.1",
+    "tsx": "^3.12.7",
     "typescript": "^5.1.3",
     "zod": "^3.20.6"
   },

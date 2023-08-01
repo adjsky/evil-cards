@@ -54,3 +54,10 @@ local_resource(
   labels=["test"],
   allow_parallel=True
 )
+
+local_resource(
+  "tsc",
+  cmd="pnpm ts-check",
+  labels=["test"],
+  allow_parallel=True
+)
