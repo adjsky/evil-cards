@@ -275,7 +275,7 @@ const Waiting: React.FC = () => {
                       <Author />
                     </button>
                     <button
-                      className="absolute left-3 top-3 p-1"
+                      className="absolute left-3 top-3 p-1 sm:hidden"
                       onClick={() => {
                         setVisibleMainScreen("chat")
                       }}
