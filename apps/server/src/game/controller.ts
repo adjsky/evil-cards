@@ -282,9 +282,9 @@ class Controller {
         })
       )
     } else {
-      const votingEndsAt = session.getTimeoutDate("voting")?.getTime()
+      const votingEndsAt = session.getTimeoutDate("voting")?.getTime() ?? null
 
-      if (!session.redCard || !votingEndsAt) {
+      if (!session.redCard) {
         throw new InvalidSessionStateError()
       }
 

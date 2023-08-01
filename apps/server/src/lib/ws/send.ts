@@ -47,7 +47,7 @@ export type Joined = {
           status: Exclude<Status, "waiting" | "end" | "starting">
           deck: Card[]
           redCard: string
-          votingEndsAt: number
+          votingEndsAt: number | null
           votes: Vote[]
         }
     )
