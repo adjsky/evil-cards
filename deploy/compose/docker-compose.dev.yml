@@ -45,6 +45,7 @@ services:
       - CORS_ORIGIN=*
       - PATTERN=ws://localhost:8000
       - TARGET=server
+      - UPDATE_TOKEN=hui
 
   client:
     image: tilt/client

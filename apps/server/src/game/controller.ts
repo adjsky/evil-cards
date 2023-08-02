@@ -8,6 +8,7 @@ import { log } from "@evil-cards/core/fastify"
 import { getFastifyInstance } from "@evil-cards/core/fastify"
 import { SessionCache } from "@evil-cards/core/keydb"
 
+import packageJson from "../../package.json"
 import { messageSchema } from "../lib/ws/receive.ts"
 import stringify from "../lib/ws/stringify.ts"
 import {
@@ -51,7 +52,6 @@ class Controller {
   private _sessionCache: SessionCache
   private config: ControllerConfig
 
-  private versionMap: Map<string, string>
   private socketMap: Map<string, ControllerWebSocket>
 
   public get sessionCache() {
@@ -68,7 +68,6 @@ class Controller {
     this._sessionCache = new SessionCache(redisClient)
     this.config = config
 
-    this.versionMap = new Map()
     this.socketMap = new Map()
 
     this.events.on("createsession", this.createSession.bind(this))
@@ -176,6 +175,10 @@ class Controller {
     avatarId,
     appVersion
   }: ServerEvent["createsession"]) {
+    if (!semverSatisfies(appVersion, `^${packageJson.version}`)) {
+      throw new VersionMismatchError()
+    }
+
     if (socket.session) {
       throw new InSessionError()
     }
@@ -204,7 +207,6 @@ class Controller {
       throw new SessionCacheSynchronizeError()
     }
 
-    this.versionMap.set(session.id, appVersion)
     this.socketMap.set(player.id, socket)
 
     this.setupSessionListeners(session)
@@ -237,6 +239,10 @@ class Controller {
     sessionId,
     appVersion
   }: ServerEvent["joinsession"]) {
+    if (!semverSatisfies(appVersion, `^${packageJson.version}`)) {
+      throw new VersionMismatchError()
+    }
+
     if (socket.session) {
       throw new InSessionError()
     }
@@ -244,11 +250,6 @@ class Controller {
     const session = this.sessionManager.get(sessionId)
     if (!session) {
       throw new SessionNotFoundError()
-    }
-
-    const sessionVersion = this.versionMap.get(session.id)
-    if (sessionVersion && !semverSatisfies(appVersion, `^${sessionVersion}`)) {
-      throw new VersionMismatchError()
     }
 
     const player = session.join(nickname, avatarId)
@@ -730,7 +731,6 @@ class Controller {
 
     this._sessionCache.del(session.id)
 
-    this.versionMap.delete(session.id)
     this.sessionManager.delete(session.id)
   }
 
