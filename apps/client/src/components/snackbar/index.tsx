@@ -1,7 +1,7 @@
-import clsx from "clsx"
 import React, { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
+import { cn } from "@/lib/functions"
 import { useIsomorphicLayoutEffect } from "@/lib/hooks"
 
 import Close from "@/assets/close/square.svg"
@@ -182,7 +182,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
         borderStyle: "solid",
         borderColor: severityColor.fg
       }}
-      className="fixed top-3 left-1/2 z-50 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl py-3 px-3 sm:top-10 sm:py-4 sm:px-5 md:min-w-[350px] md:max-w-[440px]"
+      className="fixed left-1/2 top-3 z-50 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl px-3 py-3 sm:top-10 sm:px-5 sm:py-4 md:min-w-[350px] md:max-w-[440px]"
       onMouseEnter={() => !state.closeAnimation && stopAutoHide()}
       onMouseLeave={() =>
         !state.closeAnimation &&
@@ -193,7 +193,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
       <span>{icon}</span>
       <span
         style={{ color: severityColor.fg }}
-        className={clsx(
+        className={cn(
           "ml-2 text-sm font-bold leading-tight sm:ml-5 sm:text-base",
           !infinite && "mr-5 sm:mr-8"
         )}

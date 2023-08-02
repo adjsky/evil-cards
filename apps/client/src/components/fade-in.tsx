@@ -1,5 +1,6 @@
-import clsx from "clsx"
 import React, { forwardRef } from "react"
+
+import { cn } from "@/lib/functions"
 
 const FadeIn = forwardRef<
   HTMLDivElement,
@@ -13,7 +14,7 @@ const FadeIn = forwardRef<
   return (
     <div
       ref={ref}
-      className={clsx(className, !disabled && "animate-fade-in")}
+      className={cn(className, !disabled && "animate-fade-in")}
       style={{ animationDuration: `${duration}ms` }}
     >
       {children}

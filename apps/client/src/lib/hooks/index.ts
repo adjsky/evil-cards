@@ -1,6 +1,7 @@
 export { default as useAvailableSessionsSocket } from "./use-available-sessions-socket"
 export { default as useCountdown } from "./use-countdown"
 export { default as useCreateOrJoinSession } from "./use-create-or-join-session"
+export { default as useDebounce } from "./use-debounce"
 export { default as useHasMounted } from "./use-has-mounted"
 export { default as useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect"
 export { default as useLeavePreventer } from "./use-leave-preventer"

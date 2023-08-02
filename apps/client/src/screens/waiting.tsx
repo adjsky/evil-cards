@@ -1,24 +1,22 @@
 import { Transition } from "@headlessui/react"
-import clsx from "clsx"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import Image from "next/image"
 import { useRouter } from "next/router"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { twMerge } from "tailwind-merge"
 
 import raise from "@/core/raise"
 
 import { soundsAtom, winnersAtom } from "@/lib/atoms/game"
 import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
-import { copyText, getScoreLabel } from "@/lib/functions"
+import { cn, copyText, getScoreLabel } from "@/lib/functions"
 import {
   useCountdown,
+  useDebounce,
   useLeavePreventer,
   useScreenFactor,
   useSessionSocket,
   useToggle
 } from "@/lib/hooks"
-import useDebounce from "@/lib/hooks/use-debounce"
 
 import Authors from "@/components/authors"
 import BackButton from "@/components/back-button"
@@ -321,7 +319,7 @@ const MainScreen: React.FC<
 > = ({ title, className, children }) => {
   return (
     <div
-      className={twMerge(
+      className={cn(
         "flex w-full flex-auto flex-col items-center gap-4",
         className
       )}
@@ -344,7 +342,7 @@ const StartButton: React.FC<{
     <Button
       variant="filled"
       onClick={onClick}
-      className={clsx("w-28 uppercase sm:w-32", disabled && "opacity-50")}
+      className={cn("w-28 uppercase sm:w-32", disabled && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
@@ -390,7 +388,7 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
         Пригласить
       </Button>
       <span
-        className={clsx(
+        className={cn(
           "text-gold-500 absolute -bottom-[25px] left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-wider transition-opacity",
           copied ? "opacity-100" : "opacity-0"
         )}
@@ -431,7 +429,7 @@ const Winners: React.FC<{ winners: [Player, Player, Player] }> = ({
       />
       <div
         style={{ minHeight: 100, height: player.score * HEIGHT_PER_SCORE }}
-        className={clsx(
+        className={cn(
           "flex w-56 flex-col items-center justify-end p-4",
           place == 1 && "bg-gold-300",
           place == 2 && "bg-gold-700",

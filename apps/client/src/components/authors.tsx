@@ -1,5 +1,6 @@
-import { clsx } from "clsx"
 import React from "react"
+
+import { cn } from "@/lib/functions"
 
 import packageJson from "../../package.json"
 
@@ -63,7 +64,7 @@ const ExternalUnderlineLink: React.FC<
 > = ({ children, className, ...props }) => {
   return (
     <a
-      className={clsx(
+      className={cn(
         className,
         "text-blue underline decoration-transparent transition-colors hover:decoration-current"
       )}

@@ -1,5 +1,6 @@
-import clsx from "clsx"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
+
+import { cn } from "@/lib/functions"
 
 import Send from "../assets/send.svg"
 
@@ -112,7 +113,7 @@ const Chat: React.FC<{
             <textarea
               ref={textAreaRef}
               value={message}
-              className={clsx(
+              className={cn(
                 "peer w-full resize-none overflow-y-hidden text-[13px] outline-none",
                 "bg-transparent text-gray-100 placeholder-gray-100 placeholder-opacity-60"
               )}

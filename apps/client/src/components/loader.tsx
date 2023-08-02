@@ -1,5 +1,6 @@
-import clsx from "clsx"
 import React from "react"
+
+import { cn } from "@/lib/functions"
 
 type LoaderProps = {
   width?: number
@@ -9,7 +10,7 @@ type LoaderProps = {
 
 const Loader: React.FC<LoaderProps> = ({ width, height, className }) => (
   <svg
-    className={clsx("animate-spin", className)}
+    className={cn("animate-spin", className)}
     style={
       width != undefined && height != undefined ? { width, height } : undefined
     }

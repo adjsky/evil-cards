@@ -1,7 +1,7 @@
-import clsx from "clsx"
 import { Interweave } from "interweave"
 import React, { useEffect, useRef } from "react"
 
+import { cn } from "@/lib/functions"
 import { usePrevious } from "@/lib/hooks"
 
 import Cat from "@/assets/cats/regular.svg"
@@ -34,7 +34,7 @@ const Card: React.FC<{
   return (
     <button
       onClick={onClick}
-      className={clsx(
+      className={cn(
         "flex aspect-[120/167] w-full text-left sm:w-[140px] sm:min-w-0 sm:max-w-full",
         "transition-transform enabled:hover:-translate-y-1",
         lowerOpacity && "opacity-60",
@@ -45,7 +45,7 @@ const Card: React.FC<{
     >
       <span
         ref={flipableCardRef}
-        className={clsx(
+        className={cn(
           "flex h-full w-full whitespace-pre-line break-words rounded-[0.25rem] bg-gray-100 p-2 text-[0.5rem] font-medium sm:rounded-lg sm:p-3 sm:text-xs sm:leading-normal",
           text && "flex-col justify-between",
           !text && "items-center justify-center",
@@ -55,9 +55,9 @@ const Card: React.FC<{
         {flipable && (
           <>
             <Cat
-              className={clsx(
+              className={cn(
                 styles["front"],
-                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               )}
             />
             {text && <Interweave content={text} className={styles["back"]} />}
@@ -66,7 +66,7 @@ const Card: React.FC<{
         {!flipable && (text ? <Interweave content={text} /> : <Cat />)}
         {author && (
           <span
-            className={clsx(
+            className={cn(
               "block overflow-hidden text-ellipsis whitespace-nowrap text-right",
               flipable && styles["back"]
             )}

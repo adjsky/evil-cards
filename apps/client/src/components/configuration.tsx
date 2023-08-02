@@ -1,8 +1,9 @@
 import { autoUpdate, useFloating } from "@floating-ui/react-dom"
 import { Listbox, RadioGroup, Transition } from "@headlessui/react"
-import clsx from "clsx"
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
+
+import { cn } from "@/lib/functions"
 
 import ArrowDown from "@/assets/arrows/down.svg"
 
@@ -149,7 +150,7 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
     <Listbox value={value} onChange={onChange} disabled={disabled}>
       <Listbox.Button
         className={({ disabled }) =>
-          clsx(
+          cn(
             "flex w-full flex-shrink-0 items-center justify-between gap-4 rounded-lg bg-gray-100 p-4 sm:w-56",
             disabled && "opacity-50"
           )
@@ -161,7 +162,7 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
             <span className="text-base font-semibold leading-none text-gray-900">
               {options.find((option) => option.value == value)?.name}
             </span>
-            <ArrowDown className={clsx(open && "rotate-180")} />
+            <ArrowDown className={cn(open && "rotate-180")} />
           </>
         )}
       </Listbox.Button>
@@ -187,7 +188,7 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
                 key={option.name}
                 value={option.value}
                 className={({ active }) =>
-                  clsx(
+                  cn(
                     "cursor-pointer px-4 py-2 text-gray-900 transition-colors",
                     active && "bg-gray-200"
                   )
@@ -227,7 +228,7 @@ function Radio<T>({
     >
       <RadioGroup.Label className="sr-only">{label}</RadioGroup.Label>
       <div
-        className={clsx(
+        className={cn(
           "flex w-full gap-0.5 rounded-lg border-2 border-gray-100 p-0.5",
           disabled && "opacity-50"
         )}
@@ -240,7 +241,7 @@ function Radio<T>({
           >
             {({ checked, disabled }) => (
               <RadioGroup.Label
-                className={clsx(
+                className={cn(
                   "flex justify-center py-3 font-semibold leading-none text-gray-100",
                   checked && "rounded-md bg-gray-100 text-gray-900",
                   !disabled && "cursor-pointer"

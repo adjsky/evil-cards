@@ -1,8 +1,7 @@
-import clsx from "clsx"
 import Image from "next/image"
 import React, { useState } from "react"
 
-import { getScoreLabel } from "@/lib/functions"
+import { cn, getScoreLabel } from "@/lib/functions"
 
 import CheckMark from "@/assets/check-mark.svg"
 import Close from "@/assets/close/rounded.svg"
@@ -105,7 +104,7 @@ const MobilePlayer: React.FC<{
           )}
           {(displayMark || displayKick) && (
             <div
-              className={clsx(
+              className={cn(
                 "absolute bottom-0 right-0",
                 displayKick && "rounded-full bg-gray-100 p-1"
               )}
@@ -177,7 +176,7 @@ const DesktopPlayer: React.FC<{
           <Question />
         )}
         <div
-          className={clsx(
+          className={cn(
             "flex min-w-0 flex-grow flex-col gap-1",
             player ? "text-gray-100" : "text-gray-600"
           )}

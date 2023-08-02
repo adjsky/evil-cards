@@ -1,5 +1,4 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react"
-import clsx from "clsx"
 import { Interweave } from "interweave"
 import { useAtom, useSetAtom } from "jotai"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
@@ -8,6 +7,7 @@ import raise from "@/core/raise"
 
 import { winnersAtom } from "@/lib/atoms/game"
 import { sessionAtom } from "@/lib/atoms/session"
+import { cn } from "@/lib/functions"
 import {
   useLeavePreventer,
   useScreenFactor,
@@ -233,7 +233,7 @@ const Board: React.FC<
   return (
     <div className="relative flex w-full flex-auto items-center justify-center">
       <div
-        className={clsx(
+        className={cn(
           "flex items-center justify-center",
           gameState.votes.length > 0 && "sm:justify-between",
           styles["board"]
@@ -242,7 +242,7 @@ const Board: React.FC<
         ref={boardRefCallback}
       >
         <div
-          className={clsx("bg-red-500", styles["red-card"])}
+          className={cn("bg-red-500", styles["red-card"])}
           data-testid="red-card"
         >
           <Interweave
@@ -258,7 +258,7 @@ const Board: React.FC<
             {gameState.votes.map(
               ({ text, playerId, visible, winner }, index) => (
                 <div
-                  className={clsx(
+                  className={cn(
                     styles["voted-card"],
                     styles[`card-${index + 1}`]
                   )}
@@ -307,7 +307,7 @@ const Deck: React.FC<{
 
   return (
     <div
-      className={clsx(
+      className={cn(
         "grid touch-pan-x grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
         "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
       )}

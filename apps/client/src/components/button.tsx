@@ -1,6 +1,6 @@
-import clsx from "clsx"
 import React from "react"
-import { twMerge } from "tailwind-merge"
+
+import { cn } from "@/lib/functions"
 
 type Variant = "filled" | "filledBorder" | "outlined" | "outlinedReverse"
 
@@ -36,7 +36,7 @@ const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
 }) => {
   return (
     <button
-      className={twMerge(
+      className={cn(
         "flex items-center justify-center",
         "rounded-lg text-xl leading-none transition-colors sm:leading-none",
         variantClasses[variant],
@@ -48,7 +48,7 @@ const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
     >
       {icon &&
         React.cloneElement(icon, {
-          className: clsx(icon.props.className, iconVariantClasses[variant])
+          className: cn(icon.props.className, iconVariantClasses[variant])
         })}
       {children}
     </button>
