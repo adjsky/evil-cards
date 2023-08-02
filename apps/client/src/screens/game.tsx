@@ -22,6 +22,7 @@ import BaseChat from "@/components/chat"
 import FadeIn from "@/components/fade-in"
 import Modal from "@/components/modal"
 import PlayerList from "@/components/player-list"
+import { updateSnackbar } from "@/components/snackbar/use"
 
 import ChatIcon from "../assets/chat.svg"
 import CloseIcon from "../assets/close/rounded.svg"
@@ -35,11 +36,23 @@ import type { Player } from "@evil-cards/server/src/lib/ws/send"
 const Game: React.FC = () => {
   useLeavePreventer()
   const { sendJsonMessage } = useSessionSocket({
-    onJsonMessage(message) {
-      if (message.type == "gameend") {
-        const sortedByScore = [...message.details.changedState.players].sort(
-          (a, b) => b.score - a.score
-        )
+    onJsonMessage({ type, details }) {
+      if (type == "gameend") {
+        const { players } = details.changedState
+
+        if (players.length < 3) {
+          updateSnackbar({
+            infinite: false,
+            message:
+              "Игра прекращена, поскольку в комнате осталось меньше 3 игроков",
+            open: true,
+            severity: "information"
+          })
+
+          return
+        }
+
+        const sortedByScore = [...players].sort((a, b) => b.score - a.score)
 
         setWinners([sortedByScore[0], sortedByScore[1], sortedByScore[2]])
       }
