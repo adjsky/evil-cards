@@ -59,8 +59,15 @@ html,
   -webkit-tap-highlight-color: transparent;
 }
 
-*:not(input) {
+* {
   user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
 }
 
 @supports (font: -apple-system-body) and (-webkit-appearance: none) {
