@@ -77,7 +77,7 @@ const MobilePlayer: React.FC<{
         data-testid="player-mobile"
       >
         <div
-          className="relative h-[44px] w-[44px] flex-none"
+          className="relative flex-none"
           onClick={() => {
             if (!displayKick) {
               return
@@ -88,11 +88,10 @@ const MobilePlayer: React.FC<{
         >
           {player ? (
             <Image
-              src={`/avatars/${player.avatarId}.svg`}
+              src={`/assets/avatars/${player.avatarId}.svg`}
               width={44}
               height={44}
-              alt="Avatar"
-              className="overflow-hidden rounded-full bg-gray-200"
+              alt={`Аватар ${player.avatarId}`}
             />
           ) : (
             <Question width={44} height={44} />
@@ -166,11 +165,11 @@ const DesktopPlayer: React.FC<{
         )}
         {player ? (
           <Image
-            src={`/avatars/${player.avatarId}.svg`}
+            src={`/assets/avatars/${player.avatarId}.svg`}
             width={48}
             height={48}
-            alt="Avatar"
-            className="flex-shrink-0 overflow-hidden rounded-full bg-gray-200"
+            alt={`Аватар ${player.avatarId}`}
+            className="flex-shrink-0"
           />
         ) : (
           <Question />

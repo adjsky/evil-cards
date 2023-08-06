@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { cn } from "@/lib/functions"
 
+import CatConfused from "../assets/cats/confused.svg"
 import Send from "../assets/send.svg"
 
 import type { ChatMessage } from "@/lib/atoms/session"
@@ -44,69 +45,77 @@ const Chat: React.FC<{
   }, [chat])
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col gap-2">
-      <ul
-        className="scrollable flex-auto text-left"
-        ref={listRef}
-        onScroll={(event) => {
-          const target = event.currentTarget
+    <div className="flex h-full min-h-0 w-full flex-col gap-2 text-[13px] text-gray-100">
+      {chat.length == 0 && (
+        <div className="flex flex-auto flex-col items-center justify-center gap-2">
+          <CatConfused />
+          <span className="text-sm">В чате ничего нет...</span>
+        </div>
+      )}
+      {chat.length != 0 && (
+        <ul
+          className="scrollable flex-auto text-left"
+          ref={listRef}
+          onScroll={(event) => {
+            const target = event.currentTarget
 
-          // Detect whether user scrolled to bottom of the chat
-          scrolledToBottomRef.current =
-            target.scrollHeight - target.offsetHeight - target.scrollTop < 10
+            // Detect whether user scrolled to bottom of the chat
+            scrolledToBottomRef.current =
+              target.scrollHeight - target.offsetHeight - target.scrollTop < 10
 
-          // Detect if any unread messages were scrolled.
-          // Start from end and break when any read message is found
-          // because there couldn't be any unread messages after read messages
-          // and unread messages appear only at the end.
-          for (let i = target.children.length - 1; i >= 0; i--) {
-            const element = target.children[i]
+            // Detect if any unread messages were scrolled.
+            // Start from end and break when any read message is found
+            // because there couldn't be any unread messages after read messages
+            // and unread messages appear only at the end.
+            for (let i = target.children.length - 1; i >= 0; i--) {
+              const element = target.children[i]
 
-            const read = element.getAttribute("data-read")
-            const id = element.getAttribute("data-id")
+              const read = element.getAttribute("data-read")
+              const id = element.getAttribute("data-id")
 
-            if (read == "true") {
-              break
-            }
+              if (read == "true") {
+                break
+              }
 
-            if (!id) {
-              throw new Error(
-                "Expected to have `data-id` property on child element"
-              )
-            }
-
-            if (!isElementVisible(element)) {
-              continue
-            }
-
-            onMessageRead(id)
-          }
-        }}
-      >
-        {chat.map(({ nickname, message, id, read }) => (
-          <li
-            key={id}
-            className="py-0.5 text-[13px] text-gray-100"
-            data-id={id}
-            data-read={read}
-            ref={(element) => {
-              if (!element || read) {
-                return
+              if (!id) {
+                throw new Error(
+                  "Expected to have `data-id` property on child element"
+                )
               }
 
               if (!isElementVisible(element)) {
-                return
+                continue
               }
 
               onMessageRead(id)
-            }}
-          >
-            <span className="font-medium text-gray-300">{nickname}:</span>
-            <span>&nbsp;</span>
-            <span className="break-words">{message}</span>
-          </li>
-        ))}
-      </ul>
+            }
+          }}
+        >
+          {chat.map(({ nickname, message, id, read }) => (
+            <li
+              key={id}
+              className="py-0.5"
+              data-id={id}
+              data-read={read}
+              ref={(element) => {
+                if (!element || read) {
+                  return
+                }
+
+                if (!isElementVisible(element)) {
+                  return
+                }
+
+                onMessageRead(id)
+              }}
+            >
+              <span className="font-medium text-gray-300">{nickname}:</span>
+              <span>&nbsp;</span>
+              <span className="break-words">{message}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="flex w-full flex-col">
@@ -114,7 +123,7 @@ const Chat: React.FC<{
               ref={textAreaRef}
               value={message}
               className={cn(
-                "peer w-full resize-none overflow-y-hidden text-[13px] outline-none",
+                "peer w-full resize-none overflow-y-hidden outline-none",
                 "bg-transparent text-gray-100 placeholder-gray-100 placeholder-opacity-60"
               )}
               rows={1}

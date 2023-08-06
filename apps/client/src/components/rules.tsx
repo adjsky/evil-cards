@@ -1,34 +1,14 @@
+import Image from "next/image"
 import React, { useState } from "react"
-
-import FirstRulePreview from "@/assets/rules/1.svg"
-import SecondRulePreview from "@/assets/rules/2.svg"
-import ThirdRulePreview from "@/assets/rules/3.svg"
-import FourthRulePreview from "@/assets/rules/4.svg"
-import FifthRulePreview from "@/assets/rules/5.svg"
 
 import styles from "./rules.module.css"
 
 const rules = [
-  {
-    preview: <FirstRulePreview />,
-    text: "Всем игрокам раздаётся по 10 белых карт. На экране появляется красная карта"
-  },
-  {
-    preview: <SecondRulePreview />,
-    text: "Игроки дополняют предложение своей белой картой"
-  },
-  {
-    preview: <ThirdRulePreview />,
-    text: "Ведущий зачитывает варианты и выбирает самую смешную карту"
-  },
-  {
-    preview: <FourthRulePreview />,
-    text: "Побеждает самый смешной вариант по мнению ведущего"
-  },
-  {
-    preview: <FifthRulePreview />,
-    text: "Игрок, заработавший 10 очков, побеждает!"
-  }
+  "Всем игрокам раздаётся по 10 белых карт. На экране появляется красная карта",
+  "Игроки дополняют предложение своей белой картой",
+  "Ведущий зачитывает варианты и выбирает самую смешную карту",
+  "Побеждает самый смешной вариант по мнению ведущего",
+  "Игрок, заработавший 10 очков, побеждает!"
 ]
 
 const Rules: React.FC = () => {
@@ -37,11 +17,16 @@ const Rules: React.FC = () => {
   return (
     <>
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <div className="flex h-[210px] items-center justify-center">
-          {rules[currentRuleIndex]?.preview}
+        <div className="relative flex max-h-[210px] w-full max-w-[210px] flex-auto items-center justify-center">
+          <Image
+            src={`/assets/rules/${currentRuleIndex + 1}.svg`}
+            alt={`Правило ${currentRuleIndex + 1}`}
+            className="object-contain"
+            fill
+          />
         </div>
         <p className="text-center text-base font-bold uppercase text-gray-100 sm:text-xl">
-          {currentRuleIndex + 1}. {rules[currentRuleIndex]?.text}
+          {currentRuleIndex + 1}. {rules[currentRuleIndex]}
         </p>
       </div>
       <NextButtons
