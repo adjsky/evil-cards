@@ -195,7 +195,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
         style={{ color: severityColor.fg }}
         className={cn(
           "ml-2 text-sm font-bold leading-tight sm:ml-5 sm:text-base",
-          !infinite && "mr-5 sm:mr-8"
+          !infinite && "mr-8 sm:mr-6"
         )}
       >
         {message}

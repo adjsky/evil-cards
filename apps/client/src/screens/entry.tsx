@@ -88,11 +88,10 @@ const UserCard: React.FC = () => {
             <Arrow className="rotate-180" />
           </button>
           <div
-            className="overflow-hidden rounded-full bg-gray-200"
             style={{
               width: 120,
               height: 120,
-              backgroundImage: `url(/avatars/${avatarId}.svg)`,
+              backgroundImage: `url(/assets/avatars/${avatarId}.svg)`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover"
             }}

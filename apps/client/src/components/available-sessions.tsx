@@ -6,6 +6,7 @@ import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
 import CatAdult from "@/assets/cats/adult.svg"
 import CatBaby from "@/assets/cats/baby.svg"
+import CatSad from "@/assets/cats/sad.svg"
 import ClockCold from "@/assets/clocks/cold.svg"
 import ClockHot from "@/assets/clocks/hot.svg"
 import ClockNormal from "@/assets/clocks/normal.svg"
@@ -89,8 +90,9 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
         </div>
       )}
       {!state.loading && state.sessions.length == 0 && (
-        <div className="flex flex-grow items-center justify-center text-base font-medium sm:text-xl">
-          Ой, сейчас нет доступных комнат
+        <div className="flex flex-grow flex-col items-center justify-center gap-2 pb-6 text-base font-medium sm:pb-8 sm:text-xl">
+          <CatSad className="h-[110px] w-[110px] sm:h-auto sm:w-auto" />
+          <span className="mx-2">Ой, сейчас нет доступных комнат</span>
         </div>
       )}
       {!state.loading && state.sessions.length > 0 && (
@@ -104,11 +106,11 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Image
-                  src={`/avatars/${session.hostAvatarId}.svg`}
+                  src={`/assets/avatars/${session.hostAvatarId}.svg`}
                   width={60}
                   height={60}
-                  alt="Avatar"
-                  className="w-9 flex-shrink-0 overflow-hidden rounded-full bg-gray-200 sm:w-14"
+                  alt={`Аватар ${session.hostAvatarId}`}
+                  className="w-9 flex-shrink-0 sm:w-14"
                 />
                 <span className="font-bold sm:text-xl">
                   {session.hostNickname}

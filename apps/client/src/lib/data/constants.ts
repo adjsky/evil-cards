@@ -1,1 +1,1 @@
-export const AVAILABLE_AVATARS = 19
+export const AVAILABLE_AVATARS = 21

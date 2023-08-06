@@ -39,7 +39,7 @@
     "@evil-cards/server": "workspace:^",
     "@next/bundle-analyzer": "^13.0.2",
     "@next/env": "^13.1.6",
-    "@svgr/webpack": "^6.5.0",
+    "@svgr/webpack": "^8.0.1",
     "@testing-library/dom": "^8.19.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
