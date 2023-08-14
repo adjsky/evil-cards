@@ -207,9 +207,14 @@ const useSocketEvents = () => {
               raise(`Expected session to be defined`)
             }
 
+            const { players } = message.details.changedState
+
             return {
               ...prev,
-              players: message.details.changedState.players
+              player:
+                players.find((player) => player.id == prev.player.id) ??
+                raise(`Expected to find player in the players list`),
+              players
             }
           })
 
