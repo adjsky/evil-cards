@@ -28,7 +28,7 @@ const Chat: React.FC<{
   }
 
   useLayoutEffect(() => {
-    if (!textAreaRef.current) {
+    if (!textAreaRef.current || textAreaRef.current.scrollHeight == 0) {
       return
     }
 
