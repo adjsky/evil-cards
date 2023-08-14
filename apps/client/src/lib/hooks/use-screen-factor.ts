@@ -28,7 +28,7 @@ type UseScreenFactorOptions = {
  * to match the screen width (and height).
  *
  * The `ref` element should have fixed width and height
- * to properly compute the ending styles.
+ * to properly compute the final styles.
  *
  * **NOTE** the element using the returned styles will have an absolute position.
  */
