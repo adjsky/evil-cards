@@ -412,6 +412,13 @@ const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
         onClose={() => setOpen(false)}
         className="relative flex h-full max-h-[450px] w-full max-w-sm flex-col rounded-xl bg-gray-900 p-6 text-gray-100 shadow-lg"
       >
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute right-4 top-4 p-1"
+        >
+          <CloseIcon className="h-6 w-6" />
+        </button>
+
         <Modal.Title
           as="h3"
           className="text-center text-xl font-bold uppercase leading-none"
@@ -424,13 +431,6 @@ const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
         <div className="flex-1">
           <BaseChat chat={chat} onChat={onChat} onMessageRead={onMessageRead} />
         </div>
-
-        <button
-          onClick={() => setOpen(false)}
-          className="absolute right-4 top-4 p-1"
-        >
-          <CloseIcon className="h-6 w-6" />
-        </button>
       </Modal>
     </>
   )
