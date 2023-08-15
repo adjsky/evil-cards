@@ -86,9 +86,18 @@ const useScreenFactor = <T extends HTMLElement>(
       setScaleFactor(computeScale(node))
     }
 
-    window.addEventListener("resize", updateScaleFactor)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateScaleFactor)
+    } else {
+      window.addEventListener("resize", updateScaleFactor)
+    }
+
     return () => {
-      window.removeEventListener("resize", updateScaleFactor)
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", updateScaleFactor)
+      } else {
+        window.removeEventListener("resize", updateScaleFactor)
+      }
     }
   }, [node, computeScale])
 
