@@ -52,6 +52,9 @@ module.exports = {
       },
       keyframes: {
         "fade-in": { from: { opacity: 0 }, to: { opacity: 1 } }
+      },
+      screens: {
+        short: { raw: "(max-height: 600px)" }
       }
     }
   },
