@@ -15,18 +15,22 @@ import Modal from "./modal"
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
 
 const PlayerList: React.FC<{
+  className?: string
   withKick?: boolean
   players: Player[]
   variant: "game" | "waiting"
   onKick?: (player: Player) => void
-}> = ({ withKick, players, variant, onKick }) => {
+}> = ({ className, withKick, players, variant, onKick }) => {
   const filteredPlayers = players.filter(
     (player) => player.disconnected == false
   )
 
   return (
     <div
-      className="sm:scrollable flex w-full touch-pan-x overflow-x-auto sm:h-full sm:w-auto sm:flex-col sm:gap-2"
+      className={cn(
+        "sm:scrollable flex w-full touch-pan-x overflow-x-auto sm:h-full sm:w-auto sm:flex-col sm:gap-2",
+        className
+      )}
       data-testid="player-list"
     >
       {filteredPlayers.map((player) => (

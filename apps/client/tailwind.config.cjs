@@ -54,6 +54,7 @@ module.exports = {
         "fade-in": { from: { opacity: 0 }, to: { opacity: 1 } }
       },
       screens: {
+        "ultra-short": { raw: "(max-height: 450px)" },
         short: { raw: "(max-height: 600px)" }
       }
     }

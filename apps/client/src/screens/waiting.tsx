@@ -191,6 +191,7 @@ const Waiting: React.FC = () => {
           </div>
           <div className="flex h-full w-full flex-col sm:h-[500px] sm:flex-row sm:gap-4">
             <PlayerList
+              className="ultra-short:hidden"
               players={players}
               variant="waiting"
               withKick={player?.host && status != "starting"}

@@ -47,7 +47,7 @@ const Chat: React.FC<{
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-2 text-[13px] text-gray-100">
       {chat.length == 0 && (
-        <div className="flex flex-auto flex-col items-center justify-center gap-2 overflow-y-auto">
+        <div className="flex flex-auto flex-col items-center justify-center gap-2">
           <CatConfused />
           <span className="text-sm">В чате ничего нет...</span>
         </div>
