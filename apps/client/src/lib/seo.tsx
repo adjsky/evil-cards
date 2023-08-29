@@ -2,7 +2,7 @@ import { env } from "./env/client.mjs"
 
 const title = "500 ЗЛОБНЫХ Карт Онлайн"
 const description =
-  "Онлайн версия игры «500 злобных карт»! Сыграй в эту весёлую игру бесплатно"
+  "Онлайн версия популярной настольной игры «500 злобных карт»! Сыграй с друзьями или найди здесь новых."
 
 function getMetaTags(route: string /* router.asPath */) {
   const path = route.split("?")[0]
