@@ -15,12 +15,12 @@ jobs:
           APP_PATH: /app
           SOURCE_DIR: source-services-start
           DEPLOY_ENV: prod
-          GITHUB_BRANCH: ${{ github.ref_name }}
+          VERSION: latest
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USERNAME }}
           password: ${{ secrets.PROD_PASSWORD }}
-          envs: REPOSITORY,APP_PATH,SOURCE_DIR,DEPLOY_ENV,GITHUB_BRANCH
+          envs: REPOSITORY,APP_PATH,SOURCE_DIR,DEPLOY_ENV,VERSION
           script: |
             git clone https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/scripts/start-services.sh

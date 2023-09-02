@@ -43,7 +43,7 @@ services:
           "-nv",
           "-t=1",
           "--spider",
-          "http://localhost:8001/api/health"
+          "http://127.0.0.1:8001/api/health"
         ]
       interval: 5s
       timeout: 10s
@@ -70,7 +70,7 @@ services:
           "-nv",
           "-t=1",
           "--spider",
-          "http://localhost:3100/ready"
+          "http://127.0.0.1:3100/ready"
         ]
       interval: 5s
       timeout: 10s
@@ -81,7 +81,7 @@ services:
     extends:
       file: docker-compose.common.yml
       service: server
-    image: ghcr.io/adjsky/evil-cards/server-prod:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/server-prod:${VERSION}
     deploy:
       replicas: 2
     depends_on:
@@ -97,7 +97,7 @@ services:
     extends:
       file: docker-compose.common.yml
       service: load-balancer
-    image: ghcr.io/adjsky/evil-cards/load-balancer-prod:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/load-balancer-prod:${VERSION}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -135,7 +135,7 @@ services:
     extends:
       file: docker-compose.common.yml
       service: client
-    image: ghcr.io/adjsky/evil-cards/client-prod:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/client-prod:${VERSION}
     depends_on:
       plausible:
         condition: service_healthy

@@ -13,6 +13,7 @@ export const envSchema = z.object({
   CORS_ORIGIN: z.string(),
   PATTERN: z.string(),
   TARGET: z.string(),
+  UPDATE_TOKEN: z.string().optional(),
   LOKI_HOST: z.string().optional(),
   LOKI_USERNAME: z.string().optional(),
   LOKI_PASSWORD: z.string().optional()

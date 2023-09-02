@@ -22,7 +22,7 @@ services:
           "-nv",
           "-t1",
           "--spider",
-          "http://localhost:8000/health"
+          "http://127.0.0.1:8000/health"
         ]
       interval: 5s
       timeout: 10s
@@ -41,7 +41,7 @@ services:
           "-nv",
           "-t=1",
           "--spider",
-          "http://localhost:1337/health"
+          "http://127.0.0.1:1337/health"
         ]
       interval: 5s
       timeout: 10s

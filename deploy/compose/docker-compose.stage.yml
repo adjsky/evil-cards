@@ -10,7 +10,7 @@ services:
     extends:
       file: docker-compose.common.yml
       service: server
-    image: ghcr.io/adjsky/evil-cards/server-stage:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/server-stage:${VERSION}
     depends_on:
       - keydb
 
@@ -18,7 +18,7 @@ services:
     extends:
       file: docker-compose.common.yml
       service: client
-    image: ghcr.io/adjsky/evil-cards/client-stage:${GITHUB_BRANCH:-master}
+    image: ghcr.io/adjsky/evil-cards/client-stage:${VERSION}
 
   nginx:
     extends:

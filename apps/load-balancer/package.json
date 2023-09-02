@@ -1,7 +1,7 @@
 {
   "name": "@evil-cards/load-balancer",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "src/app.ts",
   "type": "module",
   "license": "MIT",

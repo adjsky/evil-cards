@@ -43,13 +43,14 @@ services:
     environment:
       - KEYDB_URL=redis://keydb:6379
       - CORS_ORIGIN=*
-      - PATTERN=ws://localhost:8000
+      - PATTERN=ws://127.0.0.1:8000
       - TARGET=server
+      - UPDATE_TOKEN=hui
 
   client:
     image: tilt/client
     ports:
       - 3000:3000
     environment:
-      - NEXT_PUBLIC_BALANCER_PATH=http://localhost:1337
-      - NEXT_PUBLIC_SITE_HOST=http://localhost:3000
+      - NEXT_PUBLIC_BALANCER_PATH=http://127.0.0.1:1337
+      - NEXT_PUBLIC_SITE_HOST=http://127.0.0.1:3000

@@ -5,7 +5,7 @@ const errorMessages: Record<string, string | undefined> = {
   "Need more players": "Нельзя начать игру, пока не наберется хотя бы 3 игрока",
   "Too many players": "Комната заполнена",
   "Session and client version mismatch":
-    "Сессия создана на устаревшей версии клиента"
+    "Ваша версия клиента не поддерживается сервером"
 }
 
 function mapErrorMessage(message: string) {
