@@ -22,6 +22,6 @@ SCALE=$(($SERVERS_TO_START * 2 + ${#CURRENT_RUNNING_SERVERS[@]} - $SERVERS_TO_ST
 docker compose -f $COMPOSE_PATH pull server
 docker compose -f $COMPOSE_PATH up -d --no-deps --no-recreate --scale server=$SCALE server
 
-docker compose -f $COMPOSE_PATH exec load-balancer wget -qO- --post-data='{ "version": "'"$VERSION"'" }' --header="Authorization: Bearer $UPDATE_TOKEN" --header="Content-Type: application/json" http://localhost:1337
+docker compose -f $COMPOSE_PATH exec load-balancer wget -qO- --post-data='{ "version": "'"$VERSION"'" }' --header="Authorization: Bearer $UPDATE_TOKEN" --header="Content-Type: application/json" http://127.0.0.1:1337
 
 $APP_PATH/$SOURCE_DIR/deploy/scripts/cleanup.sh

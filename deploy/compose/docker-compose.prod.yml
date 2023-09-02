@@ -43,7 +43,7 @@ services:
           "-nv",
           "-t=1",
           "--spider",
-          "http://localhost:8001/api/health"
+          "http://127.0.0.1:8001/api/health"
         ]
       interval: 5s
       timeout: 10s
@@ -70,7 +70,7 @@ services:
           "-nv",
           "-t=1",
           "--spider",
-          "http://localhost:3100/ready"
+          "http://127.0.0.1:3100/ready"
         ]
       interval: 5s
       timeout: 10s

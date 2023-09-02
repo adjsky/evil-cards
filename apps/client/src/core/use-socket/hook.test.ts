@@ -3,7 +3,7 @@ import { Server } from "mock-socket"
 
 import useSocket from "./hook"
 
-const url = "ws://localhost:1234"
+const url = "ws://127.0.0.1:1234"
 let server: Server
 
 beforeEach(() => {
