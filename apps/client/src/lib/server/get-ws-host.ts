@@ -1,5 +1,5 @@
 import ky, { HTTPError } from "ky"
-import { fromPromise } from "neverthrow"
+import { fromPromise } from "resulto"
 
 import { env } from "../env/client.mjs"
 
@@ -18,8 +18,7 @@ function getWsHost(sessionId?: string) {
             }
           : undefined
       })
-      .json<SuccessLoadBalancerResponse>(),
-    (err) => err
+      .json<SuccessLoadBalancerResponse>()
   )
     .mapErr((err) => {
       console.error(err)

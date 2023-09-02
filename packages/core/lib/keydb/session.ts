@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 import { log } from "../fastify/index.ts"
-import { fromPromise, fromThrowable } from "../neverthrow.ts"
+import { fromPromise, fromThrowable } from "../resulto.ts"
 
 import type { RedisClient } from "./client.ts"
 
@@ -79,7 +79,7 @@ export class SessionCache {
           return
         }
 
-        return safeParseRawSession(rawSession).match(
+        return fromThrowable(() => parseRawSession(rawSession)).match(
           (session) => session,
           (err) => {
             log.error({ err, sessionId: id }, "Failed to parse cached session")
@@ -110,11 +110,9 @@ export class SessionCache {
   public async getAll() {
     return fromPromise(this.client.hGetAll(hashKey), (err) => err)
       .map((rawSessions) => {
-        const parse = fromThrowable(() =>
+        return fromThrowable(() =>
           Object.values(rawSessions).map(parseRawSession)
-        )
-
-        return parse().match(
+        ).match(
           (sessions) => sessions,
           (err) => {
             log.error(err, "Failed to parse all cached sessions")
@@ -186,5 +184,3 @@ export class SessionCache {
 function parseRawSession(rawSession: string) {
   return sessionSchema.parse(JSON.parse(rawSession))
 }
-
-const safeParseRawSession = fromThrowable(parseRawSession)
