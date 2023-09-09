@@ -18,7 +18,7 @@
     "fastify-healthcheck": "^4.4.0",
     "fastify-metrics": "^10.3.0",
     "fastify-plugin": "^4.5.0",
-    "resulto": "^0.1.0",
+    "resulto": "^0.4.3",
     "redis": "^4.6.5",
     "zod": "^3.20.6"
   },
