@@ -1,8 +1,4 @@
-import "@/styles/globals.css"
 import { useAtom, useAtomValue } from "jotai"
-import PlausibleProvider from "next-plausible"
-import Head from "next/head"
-import SingletonRouter, { useRouter } from "next/router"
 import { omit } from "ramda"
 import React, { useEffect } from "react"
 
@@ -11,25 +7,23 @@ import raise from "@/core/raise"
 import { soundsAtom } from "@/lib/atoms/game"
 import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
 import { processMessageAndPlaySound, processMessageAndSpeak } from "@/lib/audio"
-import { PreviousPathnameProvider } from "@/lib/contexts/previous-pathname"
-import { env } from "@/lib/env/client.mjs"
-import { mapErrorMessage } from "@/lib/functions"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
-import { useSessionSocket } from "@/lib/hooks"
-import getMetaTags from "@/lib/seo"
+import mapErrorMessage from "@/lib/functions/map-error-message"
+import useSessionSocket from "@/lib/hooks/use-session-socket"
 
-import ClientOnly from "@/components/client-only"
 import Modal from "@/components/modal"
 import { updateSnackbar, useSnackbar } from "@/components/snackbar/use"
 
-import packageJson from "../../package.json"
-import ExclamationTriangle from "../assets/exclamation-triangle.svg"
+import { ReactComponent as ExclamationTriangle } from "@/assets/exclamation-triangle.svg"
 
-import type { AppProps } from "next/app"
+import packageJson from "../package.json"
+import Entry from "./screens/entry"
+import Game from "./screens/game"
+import Waiting from "./screens/waiting"
 
-const MyApp = ({ Component, pageProps }: AppProps) => {
+const App = () => {
   const { Snackbar, reconnecting } = useSocketEvents()
-  const router = useRouter()
+  const [session] = useAtom(sessionAtom)
 
   useEffect(() => {
     const shouldNotify = isBrowserUnsupported()
@@ -45,26 +39,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     }
   }, [])
 
-  const domain = new URL(env.NEXT_PUBLIC_SITE_HOST).host
-
   return (
     <>
-      <Head>{getMetaTags(router.asPath)}</Head>
-      <PlausibleProvider
-        domain={domain}
-        enabled={env.NEXT_PUBLIC_WITH_ANALYTICS}
-        customDomain={`https://analytics.${domain}`}
-        selfHosted
-      >
-        <PreviousPathnameProvider>
-          <ClientOnly>
-            {Snackbar}
-            <Component {...pageProps} />
+      {Snackbar}
+      {session == null ? <Entry /> : session.playing ? <Game /> : <Waiting />}
 
-            <Reconnecting visible={reconnecting} />
-          </ClientOnly>
-        </PreviousPathnameProvider>
-      </PlausibleProvider>
+      <Reconnecting visible={reconnecting} />
     </>
   )
 }
@@ -159,7 +139,7 @@ const useSocketEvents = () => {
         return false
       }
 
-      return SingletonRouter.pathname != "/"
+      return session != null
     },
     onJsonMessage(message) {
       // ---------------------------- HANDLE ERRORS ----------------------------
@@ -356,4 +336,4 @@ function isInactiveCloseEvent(event: WebSocketEventMap["close"]) {
   return event.code == 4321 && event.reason == "inactive"
 }
 
-export default MyApp
+export default App

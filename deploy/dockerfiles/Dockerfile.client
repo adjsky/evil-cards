@@ -31,50 +31,6 @@ COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm --frozen-lockfile install
 
 ###################################################################
-# Stage 3: Build client                                           #
-###################################################################
-
-FROM node:18.16.0-alpine AS builder
-
-WORKDIR /evil-cards
-
-COPY tsconfig.json .
-COPY --from=deps /evil-cards .
-COPY --from=prune /evil-cards/out/full/ .
-
-WORKDIR /evil-cards/apps/client
-
-ENV BUILD_STANDALONE true
-
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-  export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
-  npm run build:production
-
-###################################################################
-# Stage 4: Run client (prod)                                      #
-###################################################################
-
-FROM node:18.16.0-alpine AS runner-prod
-
-WORKDIR /evil-cards
-
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /evil-cards/apps/client/public ./apps/client/public
-COPY --from=builder --chown=nextjs:nodejs /evil-cards/apps/client/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /evil-cards/apps/client/.next/static ./apps/client/.next/static
-
-USER nextjs
-
-EXPOSE 3000
-ENV PORT 3000
-
-CMD ["node", "apps/client/server.js"]
-
-###################################################################
 # Stage 4: Run client (dev)                                       #
 ###################################################################
 
@@ -83,11 +39,9 @@ FROM node:18.16.0-alpine AS runner-dev
 RUN corepack enable
 
 WORKDIR /evil-cards
-COPY . .
 
-RUN pnpm --frozen-lockfile install
-
-EXPOSE 3000
-ENV PORT 3000
+COPY tsconfig.json .
+COPY --from=deps /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
 
 CMD ["pnpm", "dev:client"]

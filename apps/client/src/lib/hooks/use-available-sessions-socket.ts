@@ -1,6 +1,6 @@
 import { useAtom } from "jotai"
 
-import getWsHost from "@/lib/server/get-ws-host"
+import getWsHost from "@/lib/functions/get-ws-host"
 
 import {
   availableSessionsSocketURLAtom,

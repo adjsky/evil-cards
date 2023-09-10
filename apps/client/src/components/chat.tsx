@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
-import { cn } from "@/lib/functions"
+import cn from "@/lib/functions/cn"
 
-import CatConfused from "../assets/cats/confused.svg"
-import Send from "../assets/send.svg"
+import { ReactComponent as CatConfused } from "../assets/cats/confused.svg"
+import { ReactComponent as Send } from "../assets/send.svg"
 
 import type { ChatMessage } from "@/lib/atoms/session"
 

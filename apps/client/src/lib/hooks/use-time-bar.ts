@@ -1,6 +1,4 @@
-import React, { useState } from "react"
-
-import useIsomorphicLayoutEffect from "./use-isomorphic-layout-effect"
+import React, { useEffect, useState } from "react"
 
 const easingFunctions = {
   linear: (time: number, begin: number, change: number, duration: number) => {
@@ -11,7 +9,7 @@ const easingFunctions = {
 const useTimeBar = (durationInSeconds: number, timestamp?: number | null) => {
   const [position, setPosition] = useState(0)
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (!timestamp) {
       return
     }

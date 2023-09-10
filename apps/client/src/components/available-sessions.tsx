@@ -1,16 +1,15 @@
-import Image from "next/image"
 import React, { useState } from "react"
 
 import useAvailableSessions from "@/lib/hooks/use-available-sessions-socket"
 import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
-import CatAdult from "@/assets/cats/adult.svg"
-import CatBaby from "@/assets/cats/baby.svg"
-import CatSad from "@/assets/cats/sad.svg"
-import ClockCold from "@/assets/clocks/cold.svg"
-import ClockHot from "@/assets/clocks/hot.svg"
-import ClockNormal from "@/assets/clocks/normal.svg"
-import Close from "@/assets/close/rounded.svg"
+import { ReactComponent as CatAdult } from "@/assets/cats/adult.svg"
+import { ReactComponent as CatBaby } from "@/assets/cats/baby.svg"
+import { ReactComponent as CatSad } from "@/assets/cats/sad.svg"
+import { ReactComponent as ClockCold } from "@/assets/clocks/cold.svg"
+import { ReactComponent as ClockHot } from "@/assets/clocks/hot.svg"
+import { ReactComponent as ClockNormal } from "@/assets/clocks/normal.svg"
+import { ReactComponent as Close } from "@/assets/close/rounded.svg"
 
 import Button from "./button"
 import Loader from "./loader"
@@ -105,12 +104,14 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
               disabled={connecting}
             >
               <div className="flex items-center gap-1 sm:gap-2">
-                <Image
+                <img
                   src={`/assets/avatars/${session.hostAvatarId}.svg`}
                   width={60}
                   height={60}
                   alt={`Аватар ${session.hostAvatarId}`}
                   className="w-9 flex-shrink-0 sm:w-14"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span className="font-bold sm:text-xl">
                   {session.hostNickname}

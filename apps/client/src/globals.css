@@ -50,7 +50,7 @@ body {
 
 body,
 html,
-#__next {
+#root {
   height: 100%;
 }
 

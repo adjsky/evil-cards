@@ -1,22 +1,20 @@
 import { Transition } from "@headlessui/react"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import Image from "next/image"
-import { useRouter } from "next/router"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import raise from "@/core/raise"
 
 import { soundsAtom, winnersAtom } from "@/lib/atoms/game"
 import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
-import { cn, copyText, getScoreLabel } from "@/lib/functions"
-import {
-  useCountdown,
-  useDebounce,
-  useLeavePreventer,
-  useScreenFactor,
-  useSessionSocket,
-  useToggle
-} from "@/lib/hooks"
+import cn from "@/lib/functions/cn"
+import copyText from "@/lib/functions/copy-text"
+import getScoreLabel from "@/lib/functions/get-score-label"
+import useCountdown from "@/lib/hooks/use-countdown"
+import useDebounce from "@/lib/hooks/use-debounce"
+import useLeavePreventer from "@/lib/hooks/use-leave-preventer"
+import useScreenFactor from "@/lib/hooks/use-screen-factor"
+import useSessionSocket from "@/lib/hooks/use-session-socket"
+import useToggle from "@/lib/hooks/use-toggle"
 
 import Authors from "@/components/authors"
 import BackButton from "@/components/back-button"
@@ -29,12 +27,12 @@ import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
 import { updateSnackbar } from "@/components/snackbar/use"
 
-import Author from "@/assets/author.svg"
-import ChatIcon from "@/assets/chat.svg"
-import Close from "@/assets/close/rounded.svg"
-import Gear from "@/assets/gear.svg"
-import SoundOff from "@/assets/sound-off.svg"
-import SoundOn from "@/assets/sound-on.svg"
+import { ReactComponent as Author } from "@/assets/author.svg"
+import { ReactComponent as ChatIcon } from "@/assets/chat.svg"
+import { ReactComponent as Close } from "@/assets/close/rounded.svg"
+import { ReactComponent as Gear } from "@/assets/gear.svg"
+import { ReactComponent as SoundOff } from "@/assets/sound-off.svg"
+import { ReactComponent as SoundOn } from "@/assets/sound-on.svg"
 
 import type { Player } from "@evil-cards/server/src/lib/ws/send"
 
@@ -150,21 +148,6 @@ const Waiting: React.FC = () => {
     })
   }
 
-  const router = useRouter()
-  useEffect(() => {
-    const handler = (path: string) => {
-      if (path == "/") {
-        onBack()
-      }
-    }
-
-    router.events.on("routeChangeStart", handler)
-
-    return () => {
-      router.events.off("routeChangeStart", handler)
-    }
-  }, [router, onBack])
-
   return (
     <FadeIn className="h-full" ref={screenRef}>
       {gameState.status == "end" && winners && <Winners winners={winners} />}
@@ -194,7 +177,7 @@ const Waiting: React.FC = () => {
               className="ultra-short:hidden"
               players={players}
               variant="waiting"
-              withKick={player?.host && status != "starting"}
+              withKick={player?.host && gameState.status != "starting"}
               onKick={(player) => {
                 sendJsonMessage({
                   type: "kickplayer",
@@ -421,11 +404,13 @@ const Winners: React.FC<{ winners: [Player, Player, Player] }> = ({
 
   const renderUserPlace = (player: Player, place: number) => (
     <div className="flex flex-col items-center gap-4">
-      <Image
+      <img
         width={120}
         height={120}
         src={`/assets/avatars/${player.avatarId}.svg`}
         alt={`Аватар ${player.avatarId}`}
+        loading="lazy"
+        decoding="async"
       />
       <div
         style={{ minHeight: 100, height: player.score * HEIGHT_PER_SCORE }}

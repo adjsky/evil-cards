@@ -3,9 +3,9 @@ import { Listbox, RadioGroup, Transition } from "@headlessui/react"
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 
-import { cn } from "@/lib/functions"
+import cn from "@/lib/functions/cn"
 
-import ArrowDown from "@/assets/arrows/down.svg"
+import { ReactComponent as ArrowDown } from "@/assets/arrows/down.svg"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/send"
 

@@ -1,14 +1,14 @@
-import Image from "next/image"
 import React, { useState } from "react"
 
-import { cn, getScoreLabel } from "@/lib/functions"
+import cn from "@/lib/functions/cn"
+import getScoreLabel from "@/lib/functions/get-score-label"
 
-import CheckMark from "@/assets/check-mark.svg"
-import Close from "@/assets/close/rounded.svg"
-import Crown from "@/assets/crown.svg"
-import Question from "@/assets/question.svg"
+import { ReactComponent as CheckMark } from "@/assets/check-mark.svg"
+import { ReactComponent as Close } from "@/assets/close/rounded.svg"
+import { ReactComponent as Crown } from "@/assets/crown.svg"
+import { ReactComponent as ExclamationTriangleIcon } from "@/assets/exclamation-triangle.svg"
+import { ReactComponent as Question } from "@/assets/question.svg"
 
-import ExclamationTriangleIcon from "../assets/exclamation-triangle.svg"
 import Button from "./button"
 import Modal from "./modal"
 
@@ -91,11 +91,13 @@ const MobilePlayer: React.FC<{
           }}
         >
           {player ? (
-            <Image
+            <img
               src={`/assets/avatars/${player.avatarId}.svg`}
               width={44}
               height={44}
               alt={`Аватар ${player.avatarId}`}
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <Question width={44} height={44} />
@@ -168,12 +170,14 @@ const DesktopPlayer: React.FC<{
           </div>
         )}
         {player ? (
-          <Image
+          <img
             src={`/assets/avatars/${player.avatarId}.svg`}
             width={48}
             height={48}
             alt={`Аватар ${player.avatarId}`}
             className="flex-shrink-0"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <Question />

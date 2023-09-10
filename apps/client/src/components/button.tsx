@@ -1,6 +1,6 @@
 import React from "react"
 
-import { cn } from "@/lib/functions"
+import cn from "@/lib/functions/cn"
 
 type Variant = "filled" | "filledBorder" | "outlined" | "outlinedReverse"
 

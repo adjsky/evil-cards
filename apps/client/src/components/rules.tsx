@@ -1,4 +1,3 @@
-import Image from "next/image"
 import React, { useState } from "react"
 
 import styles from "./rules.module.css"
@@ -18,11 +17,12 @@ const Rules: React.FC = () => {
     <>
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
         <div className="relative flex max-h-[210px] w-full max-w-[210px] flex-auto items-center justify-center">
-          <Image
+          <img
             src={`/assets/rules/${currentRuleIndex + 1}.svg`}
             alt={`Правило ${currentRuleIndex + 1}`}
-            className="object-contain"
-            fill
+            className="absolute h-full w-full object-contain text-transparent"
+            loading="lazy"
+            decoding="async"
           />
         </div>
         <p className="text-center text-base font-bold uppercase text-gray-100 sm:text-xl">

@@ -1,8 +1,6 @@
 import ky, { HTTPError } from "ky"
 import { fromPromise } from "resulto"
 
-import { env } from "../env/client.mjs"
-
 type SuccessLoadBalancerResponse = {
   message: "ok"
   host: string
@@ -11,7 +9,7 @@ type SuccessLoadBalancerResponse = {
 function getWsHost(sessionId?: string) {
   return fromPromise(
     ky
-      .get(env.NEXT_PUBLIC_BALANCER_PATH, {
+      .get(import.meta.env.VITE_LOAD_BALANCER_PATH, {
         searchParams: sessionId
           ? {
               sessionId

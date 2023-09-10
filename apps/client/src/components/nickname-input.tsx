@@ -1,8 +1,8 @@
 import React from "react"
 
-import { useToggle } from "@/lib/hooks"
+import useToggle from "@/lib/hooks/use-toggle"
 
-import Pencil from "@/assets/pencil.svg"
+import { ReactComponent as Pencil } from "@/assets/pencil.svg"
 
 const NicknameInput: React.FC<{
   value?: string

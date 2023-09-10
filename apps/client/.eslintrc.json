@@ -1,3 +1,19 @@
 {
-  "extends": ["next/core-web-vitals"]
+  "extends": [
+    "plugin:react-hooks/recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime"
+  ],
+  "env": { "browser": true, "es2022": true },
+  "parserOptions": {
+    "project": ["./tsconfig.json", "./tsconfig.node.json"]
+  },
+  "plugins": ["react-refresh"],
+  "rules": {
+    "react-refresh/only-export-components": [
+      "warn",
+      { "allowConstantExport": true }
+    ],
+    "react/prop-types": "off"
+  }
 }

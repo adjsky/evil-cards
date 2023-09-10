@@ -7,14 +7,12 @@ import raise from "@/core/raise"
 
 import { winnersAtom } from "@/lib/atoms/game"
 import { sessionAtom } from "@/lib/atoms/session"
-import { cn } from "@/lib/functions"
-import {
-  useLeavePreventer,
-  useScreenFactor,
-  useSessionSocket,
-  useTimeBar
-} from "@/lib/hooks"
+import cn from "@/lib/functions/cn"
 import useDebounce from "@/lib/hooks/use-debounce"
+import useLeavePreventer from "@/lib/hooks/use-leave-preventer"
+import useScreenFactor from "@/lib/hooks/use-screen-factor"
+import useSessionSocket from "@/lib/hooks/use-session-socket"
+import useTimeBar from "@/lib/hooks/use-time-bar"
 
 import Button from "@/components/button"
 import Card from "@/components/card"
@@ -24,10 +22,10 @@ import Modal from "@/components/modal"
 import PlayerList from "@/components/player-list"
 import { updateSnackbar } from "@/components/snackbar/use"
 
-import ChatIcon from "../assets/chat.svg"
-import CloseIcon from "../assets/close/rounded.svg"
-import DiscardIcon from "../assets/discard.svg"
-import ExclamationTriangleIcon from "../assets/exclamation-triangle.svg"
+import { ReactComponent as ChatIcon } from "../assets/chat.svg"
+import { ReactComponent as CloseIcon } from "../assets/close/rounded.svg"
+import { ReactComponent as DiscardIcon } from "../assets/discard.svg"
+import { ReactComponent as ExclamationTriangleIcon } from "../assets/exclamation-triangle.svg"
 import styles from "./game.module.css"
 
 import type { PlayingGameState } from "@/lib/atoms/session"

@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
-import { cn } from "@/lib/functions"
-import { useIsomorphicLayoutEffect } from "@/lib/hooks"
+import cn from "@/lib/functions/cn"
 
-import Close from "@/assets/close/square.svg"
-import CrossMark from "@/assets/cross-mark.svg"
-import ExclamationMark from "@/assets/exclamation-mark.svg"
+import { ReactComponent as Close } from "@/assets/close/square.svg"
+
+import getIcon from "./get-icon"
 
 import type { Colors, Severity, SnackbarProps } from "./types"
 
@@ -24,15 +23,6 @@ const getSeverityColor = (severity: Severity): Colors => {
         bg: "#555555",
         fg: "#FFFFFF"
       }
-  }
-}
-
-export const getIcon = (severity: Severity): JSX.Element => {
-  switch (severity) {
-    case "error":
-      return <CrossMark />
-    case "information":
-      return <ExclamationMark />
   }
 }
 
@@ -72,20 +62,11 @@ const Snackbar: React.FC<SnackbarProps> = ({
       .forEach((animation) => animation.cancel())
   }
 
-  const triggerAutoHide = (duration: number) => {
-    const timeout = setTimeout(() => {
-      close()
-
-      autoHideTimeout.current = null
-    }, duration)
-
-    autoHideTimeout.current = timeout
-  }
-
   const show = () => {
     if (state.openAnimation || state.closeAnimation) {
       cancelPreviousAnimations()
     }
+
     stopAutoHide()
 
     if (shouldAutoHide) {
@@ -103,9 +84,11 @@ const Snackbar: React.FC<SnackbarProps> = ({
     if (state.closeAnimation) {
       return
     }
+
     if (state.openAnimation) {
       cancelPreviousAnimations()
     }
+
     stopAutoHide()
 
     setState({
@@ -115,6 +98,16 @@ const Snackbar: React.FC<SnackbarProps> = ({
     })
   }
 
+  const triggerAutoHide = (duration: number) => {
+    const timeout = setTimeout(() => {
+      close()
+
+      autoHideTimeout.current = null
+    }, duration)
+
+    autoHideTimeout.current = timeout
+  }
+
   useEffect(() => {
     return () => {
       stopAutoHide()
@@ -122,7 +115,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
     }
   }, [])
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (
       !containerRef.current ||
       (!state.closeAnimation && !state.openAnimation)
@@ -155,7 +148,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
     }
   }, [state])
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (!open) {
       if (state.display) {
         close()
