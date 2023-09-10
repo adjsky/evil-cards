@@ -7,7 +7,7 @@ import cn from "@/lib/functions/cn"
 
 import { ReactComponent as ArrowDown } from "@/assets/arrows/down.svg"
 
-import type { Configuration as ConfigurationType } from "@evil-cards/server/src/lib/ws/send"
+import type { Configuration as ConfigurationType } from "@evil-cards/server/src/ws/send"
 
 const visibilityOptions = [
   { value: false, name: "НЕТ" },

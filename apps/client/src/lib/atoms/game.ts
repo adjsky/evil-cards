@@ -4,7 +4,7 @@ import { atomWithSafeStorage } from "@/core/atom-with-safe-storage"
 
 import getRandomInt from "../functions/get-random-int"
 
-import type { Player } from "@evil-cards/server/src/lib/ws/send"
+import type { Player } from "@evil-cards/server/src/ws/send"
 
 export const winnersAtom = atom<[Player, Player, Player] | null>(null)
 

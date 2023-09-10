@@ -34,17 +34,10 @@ import {
   TooManyPlayersError
 } from "./errors.ts"
 
+import type { Card, Configuration, Status, Vote } from "../ws/send.ts"
 import type { Card as StoredCard } from "./cards.ts"
 import type { ISession, ISessionFactory } from "./interfaces.ts"
-import type {
-  Card,
-  Configuration,
-  Player,
-  SessionEvents,
-  Status,
-  Timeouts,
-  Vote
-} from "./types.ts"
+import type { SessionEvents, SessionPlayer, Timeouts } from "./types.ts"
 
 class Session implements ISession {
   private _id: string
@@ -52,7 +45,7 @@ class Session implements ISession {
   private _availableWhiteCards: Card[] | null
   private _timeouts: Timeouts
   private _votes: Vote[]
-  private _players: Player[]
+  private _players: SessionPlayer[]
   private _redCard: string | null
   private _status: Status
   private _configuration: Configuration
@@ -145,7 +138,7 @@ class Session implements ISession {
       this._timeouts.endsesion = null
     }
 
-    const player: Player = {
+    const player: SessionPlayer = {
       id: nanoid(USER_ID_SIZE),
       avatarId,
       nickname,
@@ -576,7 +569,7 @@ class Session implements ISession {
     }, [] as Card[])
   }
 
-  private fillPlayerDeck(player: Player) {
+  private fillPlayerDeck(player: SessionPlayer) {
     if (!this._availableWhiteCards) {
       throw new Error("Received null availableWhiteCards")
     }

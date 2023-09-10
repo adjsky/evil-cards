@@ -1,9 +1,9 @@
 import semverValid from "semver/functions/valid.js"
 import z from "zod"
 
-import { implement } from "../zod-implements.ts"
+import { implement } from "../lib/zod-implements.ts"
 
-import type { Configuration } from "../../game/types.ts"
+import type { Configuration } from "./send.ts"
 
 const semverString = () =>
   z.string().refine((version) => semverValid(version) != null, {

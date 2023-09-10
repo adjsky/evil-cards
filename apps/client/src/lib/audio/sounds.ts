@@ -1,4 +1,4 @@
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
 
 const soundPaths: Partial<Record<ReceiveMessage["type"], string>> = {
   gamestart: "/sounds/countdown.wav",

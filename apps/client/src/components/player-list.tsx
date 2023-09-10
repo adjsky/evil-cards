@@ -12,7 +12,7 @@ import { ReactComponent as Question } from "@/assets/question.svg"
 import Button from "./button"
 import Modal from "./modal"
 
-import type { Player } from "@evil-cards/server/src/lib/ws/send"
+import type { Player } from "@evil-cards/server/src/ws/send"
 
 const PlayerList: React.FC<{
   className?: string

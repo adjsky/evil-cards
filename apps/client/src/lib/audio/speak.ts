@@ -1,6 +1,6 @@
 import EasySpeech from "easy-speech"
 
-import type { Message as ReceiveMessage } from "@evil-cards/server/src/lib/ws/send"
+import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
 
 const allowedNames = ["Google русский"]
 

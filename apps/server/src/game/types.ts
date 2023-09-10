@@ -1,19 +1,25 @@
 import type { DateTimeout } from "../lib/date-timeout.ts"
-import type { Message as ReceiveMessage } from "../lib/ws/receive.ts"
-import type { Message as SendMessage } from "../lib/ws/send.ts"
-import type { SendPlayer } from "../lib/ws/send.ts"
 import type {
   MapDiscriminatedUnion,
   UnwrapField,
   With
 } from "../types/utility.ts"
+import type { Message as ReceiveMessage } from "../ws/receive.ts"
+import type {
+  Card,
+  Configuration,
+  Player,
+  Message as SendMessage,
+  Status,
+  Vote
+} from "../ws/send.ts"
 import type { ISession } from "./interfaces.ts"
 import type Emittery from "emittery"
 import type { WebSocket } from "ws"
 
 export type ControllerWebSocket = WebSocket & {
   session?: ISession | null
-  player?: Player | null
+  player?: SessionPlayer | null
   alive?: boolean
   active?: boolean
 }
@@ -30,56 +36,19 @@ export type ControllerEvents = Emittery<
 
 export type SessionEvents = Emittery<{
   statuschange: Status
-  join: Player
-  leave: Player
+  join: SessionPlayer
+  leave: SessionPlayer
   sessionend: undefined
   configurationchange: Configuration
   vote: Vote
   choose: Vote
   choosewinner: Vote
-  cardsdiscard: Player
+  cardsdiscard: SessionPlayer
 }>
 
-export type Player = {
-  id: string
-  avatarId: number
-  nickname: string
-  score: number
-  host: boolean
-  master: boolean
-  voted: boolean
-  disconnected: boolean
-  deck: Card[]
+export type SessionPlayer = Player & {
   leaveTimeout: NodeJS.Timeout | null
-}
-
-export type Card = {
-  id: string
-  text: string
-}
-
-export type Status =
-  | "waiting"
-  | "starting"
-  | "voting"
-  | "choosing"
-  | "end"
-  | "choosingwinner"
-  | "winnercardview"
-
-export type Vote = {
-  text: string
-  playerId: string
-  visible: boolean
-  winner: boolean
-}
-
-export type Configuration = {
-  votingDurationSeconds: 30 | 60 | 90
-  reader: boolean
-  maxScore: 10 | 15 | 20
-  version18Plus: boolean
-  public: boolean
+  deck: Card[]
 }
 
 export type Timeouts = Record<
@@ -88,6 +57,6 @@ export type Timeouts = Record<
 >
 
 export type BroadcastCallback = (
-  players: SendPlayer[],
-  player: Player
+  players: Player[],
+  player: SessionPlayer
 ) => SendMessage | undefined

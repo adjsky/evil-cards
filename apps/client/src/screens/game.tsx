@@ -29,7 +29,7 @@ import { ReactComponent as ExclamationTriangleIcon } from "../assets/exclamation
 import styles from "./game.module.css"
 
 import type { PlayingGameState } from "@/lib/atoms/session"
-import type { Player } from "@evil-cards/server/src/lib/ws/send"
+import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Game: React.FC = () => {
   useLeavePreventer()

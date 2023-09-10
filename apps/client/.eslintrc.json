@@ -4,10 +4,7 @@
     "plugin:react/recommended",
     "plugin:react/jsx-runtime"
   ],
-  "env": { "browser": true, "es2022": true },
-  "parserOptions": {
-    "project": ["./tsconfig.json", "./tsconfig.node.json"]
-  },
+  "env": { "browser": true, "es2022": true, "node": true },
   "plugins": ["react-refresh"],
   "rules": {
     "react-refresh/only-export-components": [

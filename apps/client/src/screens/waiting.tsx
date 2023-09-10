@@ -34,7 +34,7 @@ import { ReactComponent as Gear } from "@/assets/gear.svg"
 import { ReactComponent as SoundOff } from "@/assets/sound-off.svg"
 import { ReactComponent as SoundOn } from "@/assets/sound-on.svg"
 
-import type { Player } from "@evil-cards/server/src/lib/ws/send"
+import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Waiting: React.FC = () => {
   useLeavePreventer()

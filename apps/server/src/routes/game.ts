@@ -1,5 +1,5 @@
 import type Controller from "../game/controller.ts"
-import type { AvailableSession } from "../lib/ws/send.ts"
+import type { AvailableSession } from "../ws/send.ts"
 import type { FastifyPluginCallback } from "@evil-cards/core/fastify"
 import type { Subscriber } from "@evil-cards/core/keydb"
 

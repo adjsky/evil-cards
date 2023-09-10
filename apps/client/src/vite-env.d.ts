@@ -3,7 +3,7 @@
 
 type ImportMetaEnvAugmented =
   import("@julr/vite-plugin-validate-env").ImportMetaEnvAugmented<
-    typeof import("../vite.config").envConfig
+    typeof import("../env").default
   >
 
 interface ImportMetaEnv extends ImportMetaEnvAugmented {
