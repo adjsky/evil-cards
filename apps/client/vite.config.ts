@@ -1,6 +1,7 @@
 import { ValidateEnv } from "@julr/vite-plugin-validate-env"
 import react from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vite"
+import { ViteEjsPlugin } from "vite-plugin-ejs"
 import svgr from "vite-plugin-svgr"
 import tsconfigPaths from "vite-tsconfig-paths"
 
@@ -22,6 +23,10 @@ export default defineConfig({
         }
       }
     }),
+    ViteEjsPlugin({
+      withAnalytics: process.env.WITH_ANALYTICS == "true"
+    }),
+
     ValidateEnv()
   ],
   server: {

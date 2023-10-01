@@ -24,6 +24,7 @@
     "react-dom": "18.2.0",
     "resulto": "^0.4.3",
     "tailwind-merge": "^1.12.0",
+    "vite-plugin-ejs": "^1.6.4",
     "zod": "^3.20.6"
   },
   "devDependencies": {

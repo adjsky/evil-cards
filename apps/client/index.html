@@ -27,11 +27,24 @@
       property="og:description"
       content="Онлайн версия популярной настольной игры «500 злобных карт»! Сыграй с друзьями или найди здесь новых."
     />
-    <meta property="og:url" content="%BASE_URL%" />
+    <meta property="og:url" content="https://evilcards.online" />
     <meta property="og:site_name" content="500 ЗЛОБНЫХ Карт Онлайн" />
     <meta property="og:title" content="500 ЗЛОБНЫХ Карт Онлайн" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="%BASE_URL%/icons/og-preview.png" />
+    <meta
+      property="og:image"
+      content="https://evilcards.online/icons/og-preview.png"
+    />
+
+    <% if (withAnalytics) { %>
+    <script
+      defer
+      data-api="/api/event"
+      data-domain="evilcards.online"
+      src="/js/script.js"
+    ></script>
+    <% } %>
+
     <title>500 ЗЛОБНЫХ Карт Онлайн</title>
 
     <script src="https://yandex.ru/ads/system/context.js" async></script>
