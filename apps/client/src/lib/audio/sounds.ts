@@ -12,21 +12,15 @@ export function preloadSounds() {
   for (const [key, value] of Object.entries(soundPaths)) {
     const audio = new Audio(value)
 
-    audio.oncanplaythrough = () => {
-      sounds[key as keyof typeof sounds] = audio
-    }
+    sounds[key as ReceiveMessage["type"]] = audio
   }
 }
 
 export async function processMessageAndPlaySound(message: ReceiveMessage) {
   const audio = sounds[message.type]
 
-  if (!audio) {
-    return
-  }
-
   try {
-    await audio.play()
+    await audio?.play()
   } catch (error) {
     console.error(error)
   }

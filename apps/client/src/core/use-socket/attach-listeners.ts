@@ -39,14 +39,19 @@ function attachListeners<T>({ connection, onReconnect }: Options<T>) {
     try {
       const parsedData = JSON.parse(data)
 
-      if ("type" in parsedData && parsedData.type == "ping") {
+      if (
+        typeof parsedData == "object" &&
+        parsedData != null &&
+        "type" in parsedData &&
+        parsedData.type == "ping"
+      ) {
         connection.instance?.send(JSON.stringify({ type: "pong" }))
         heartbeat()
         return
       }
 
       connection.listeners.forEach((listener) => {
-        listener.options.current?.onJsonMessage?.(parsedData)
+        listener.options.current?.onJsonMessage?.(parsedData as T)
       })
     } catch (error) {
       console.error(error)
