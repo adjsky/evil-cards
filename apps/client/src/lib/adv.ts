@@ -1,6 +1,6 @@
 export function renderAdv() {
   const yaWindow = window as unknown as {
-    Ya: {
+    Ya?: {
       Context: {
         AdvManager: {
           render(
@@ -21,9 +21,13 @@ export function renderAdv() {
     }
   }
 
-  const isDesktop = yaWindow.Ya.Context.AdvManager.getPlatform() == "desktop"
-
   return new Promise<boolean>((resolve) => {
+    if (!yaWindow.Ya) {
+      return resolve(false)
+    }
+
+    const isDesktop = yaWindow.Ya.Context.AdvManager.getPlatform() == "desktop"
+
     yaWindow.Ya.Context.AdvManager.render(
       {
         blockId: isDesktop ? "R-A-3676892-1" : "R-A-3676892-3",
