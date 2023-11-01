@@ -16,6 +16,8 @@ export default function Document() {
         />
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="theme-color" content="#2A2A2A" />
+
+        <script src="https://yandex.ru/ads/system/context.js" async></script>
       </Head>
       <body className="bg-gray-900">
         <Main />

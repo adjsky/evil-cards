@@ -12,6 +12,7 @@ import getWSHost from "@/lib/server/get-ws-host"
 import { updateSnackbar } from "@/components/snackbar/use"
 
 import packageJson from "../../../package.json"
+import { renderAdv } from "../adv"
 import { avatarAtom, nicknameAtom } from "../atoms/game"
 import useSessionSocket from "./use-session-socket"
 
@@ -136,6 +137,9 @@ const useCreateOrJoinSession = (options?: Options) => {
 
   const createOrJoinSession = async (sessionId?: string) => {
     setConnecting(true)
+
+    await renderAdv()
+
     setSessionId(sessionId ?? null)
 
     getWSHost(sessionId).match(
