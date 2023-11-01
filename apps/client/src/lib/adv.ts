@@ -29,7 +29,9 @@ export function renderAdv() {
         blockId: isDesktop ? "R-A-3676892-1" : "R-A-3676892-3",
         type: "fullscreen",
         platform: isDesktop ? "desktop" : "touch",
-        onError() {
+        onError(error) {
+          console.error(error)
+
           resolve(false)
         },
         onClose() {
