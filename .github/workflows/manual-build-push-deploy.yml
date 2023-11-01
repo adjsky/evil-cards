@@ -72,7 +72,7 @@ jobs:
       - name: Get package.json version
         id: pkgversion
         run: |
-          PKG_VERSION=$(jq -r ".version" "./apps/${{ matrix.service }}/package.json")
+          PKG_VERSION=$(jq -r ".version" "apps/${{ matrix.service }}/package.json")
           echo "$PKG_VERSION"
           echo "::set-output name=PKG_VERSION::$PKG_VERSION"
 
