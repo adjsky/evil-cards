@@ -113,6 +113,9 @@ jobs:
         service: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
