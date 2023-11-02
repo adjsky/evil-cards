@@ -138,7 +138,7 @@ const useCreateOrJoinSession = (options?: Options) => {
   const createOrJoinSession = async (sessionId?: string) => {
     setConnecting(true)
 
-    await renderAdv()
+    await renderAdv().catch(console.error)
 
     setSessionId(sessionId ?? null)
 
