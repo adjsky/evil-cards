@@ -58,4 +58,4 @@ jobs:
           username: ${{ secrets.PROD_USERNAME }}
           password: ${{ secrets.PROD_PASSWORD }}
           script: |
-            docker run -d --expose 80 --expose 443 ghcr.io/adjsky/evil-cards/nginx:latest
+            docker run -d -p 80:80 -p 443:443 ghcr.io/adjsky/evil-cards/nginx:latest
