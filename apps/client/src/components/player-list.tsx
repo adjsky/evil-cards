@@ -92,7 +92,7 @@ const MobilePlayer: React.FC<{
         >
           {player ? (
             <img
-              src={`/assets/avatars/${player.avatarId}.svg`}
+              src={`/static/avatars/${player.avatarId}.svg`}
               width={44}
               height={44}
               alt={`Аватар ${player.avatarId}`}
@@ -171,7 +171,7 @@ const DesktopPlayer: React.FC<{
         )}
         {player ? (
           <img
-            src={`/assets/avatars/${player.avatarId}.svg`}
+            src={`/static/avatars/${player.avatarId}.svg`}
             width={48}
             height={48}
             alt={`Аватар ${player.avatarId}`}

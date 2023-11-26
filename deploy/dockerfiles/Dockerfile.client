@@ -31,7 +31,31 @@ COPY --from=prune /evil-cards/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm --frozen-lockfile install
 
 ###################################################################
-# Stage 4: Run client (dev)                                       #
+# Stage 3: Build client                                           #
+###################################################################
+
+FROM node:18.16.0-alpine AS builder
+
+WORKDIR /evil-cards
+
+COPY tsconfig.json .
+COPY --from=deps /evil-cards .
+COPY --from=prune /evil-cards/out/full/ .
+
+WORKDIR /evil-cards/apps/client
+
+RUN npm run build
+
+###################################################################
+# Stage 4: Run client (prod)                                      #
+###################################################################
+
+FROM nginx:1.25.3-alpine AS runner-prod
+
+COPY ./deploy/nginx/default.client.conf /etc/nginx/conf.d/default.conf
+
+###################################################################
+# Stage 5: Run client (dev)                                       #
 ###################################################################
 
 FROM node:18.16.0-alpine AS runner-dev

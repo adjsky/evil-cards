@@ -88,7 +88,7 @@ const UserCard: React.FC = () => {
             style={{
               width: 120,
               height: 120,
-              backgroundImage: `url(/assets/avatars/${avatarId}.svg)`,
+              backgroundImage: `url(/static/avatars/${avatarId}.svg)`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover"
             }}

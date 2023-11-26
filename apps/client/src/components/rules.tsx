@@ -18,7 +18,7 @@ const Rules: React.FC = () => {
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
         <div className="relative flex max-h-[210px] w-full max-w-[210px] flex-auto items-center justify-center">
           <img
-            src={`/assets/rules/${currentRuleIndex + 1}.svg`}
+            src={`/static/rules/${currentRuleIndex + 1}.svg`}
             alt={`Правило ${currentRuleIndex + 1}`}
             className="absolute h-full w-full object-contain text-transparent"
             loading="lazy"

@@ -105,7 +105,7 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <img
-                  src={`/assets/avatars/${session.hostAvatarId}.svg`}
+                  src={`/static/avatars/${session.hostAvatarId}.svg`}
                   width={60}
                   height={60}
                   alt={`Аватар ${session.hostAvatarId}`}

@@ -94,9 +94,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           file: deploy/dockerfiles/Dockerfile.${{ matrix.service }}
           platforms: linux/amd64
-          secrets: |
-            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
-          target: runner-${{ inputs.deploy-env == 'stage' && 'prod' || inputs.deploy-env }}
+          target: runner-prod
 
   deploy:
     runs-on: ubuntu-latest

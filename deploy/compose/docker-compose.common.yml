@@ -56,7 +56,7 @@ services:
       - ../envs/client.env
 
   nginx:
-    image: nginx:1.23
+    image: nginx:1.25.3-alpine
     volumes:
       - /etc/ssl:/etc/ssl:ro
     ports:

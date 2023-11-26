@@ -407,7 +407,7 @@ const Winners: React.FC<{ winners: [Player, Player, Player] }> = ({
       <img
         width={120}
         height={120}
-        src={`/assets/avatars/${player.avatarId}.svg`}
+        src={`/static/avatars/${player.avatarId}.svg`}
         alt={`Аватар ${player.avatarId}`}
         loading="lazy"
         decoding="async"
