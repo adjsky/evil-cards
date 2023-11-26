@@ -95,7 +95,7 @@ jobs:
           file: deploy/dockerfiles/Dockerfile.${{ matrix.service }}
           platforms: linux/amd64
           target: runner-prod
-          args: |
+          build-args: |
             ENV=${{ inputs.deploy-env }}
 
   deploy:
