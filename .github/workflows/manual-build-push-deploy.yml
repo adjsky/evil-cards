@@ -16,8 +16,8 @@ on:
         description: Environment
         type: choice
         options:
-          - prod
           - stage
+          - prod
       build:
         description: Build services
         type: boolean
