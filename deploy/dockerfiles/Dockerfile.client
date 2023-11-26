@@ -34,6 +34,8 @@ RUN pnpm --frozen-lockfile install
 # Stage 3: Build client                                           #
 ###################################################################
 
+ARG ENV
+
 FROM node:18.16.0-alpine AS builder
 
 WORKDIR /evil-cards
@@ -44,7 +46,7 @@ COPY --from=prune /evil-cards/out/full/ .
 
 WORKDIR /evil-cards/apps/client
 
-RUN npm run build
+RUN npm run build -- --mode=${ENV}
 
 ###################################################################
 # Stage 4: Run client (prod)                                      #

@@ -52,8 +52,6 @@ services:
 
   client:
     restart: always
-    env_file:
-      - ../envs/client.env
 
   nginx:
     image: nginx:1.25.3-alpine
