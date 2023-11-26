@@ -140,22 +140,6 @@ services:
       plausible:
         condition: service_healthy
 
-  nginx:
-    extends:
-      file: docker-compose.common.yml
-      service: nginx
-    volumes:
-      - ../nginx/default.prod.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      plausible:
-        condition: service_healthy
-      client:
-        condition: service_started
-      server:
-        condition: service_healthy
-      load-balancer:
-        condition: service_healthy
-
 volumes:
   db-data:
     driver: local

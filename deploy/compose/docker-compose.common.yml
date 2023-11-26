@@ -52,12 +52,3 @@ services:
 
   client:
     restart: always
-
-  nginx:
-    image: nginx:1.25.3-alpine
-    volumes:
-      - /etc/ssl:/etc/ssl:ro
-    ports:
-      - 80:80
-      - 443:443
-    restart: always

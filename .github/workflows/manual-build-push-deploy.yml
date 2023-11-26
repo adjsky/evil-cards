@@ -143,9 +143,9 @@ jobs:
           VERSION: ${{ steps.pkgversion.outputs.PKG_VERSION }}
           UPDATE_TOKEN: ${{ secrets.UPDATE_TOKEN }}
         with:
-          host: ${{ inputs.deploy-env == 'prod' && secrets.PROD_HOST || secrets.STAGE_HOST }}
-          username: ${{ inputs.deploy-env == 'prod' && secrets.PROD_USERNAME || secrets.STAGE_USERNAME }}
-          password: ${{ inputs.deploy-env == 'prod' && secrets.PROD_PASSWORD || secrets.STAGE_PASSWORD }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR,SERVERS_TO_START,DEPLOY_ENV,VERSION,UPDATE_TOKEN
           script: |
             git clone --single-branch --branch ${{ github.ref_name }} https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
