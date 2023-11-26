@@ -137,7 +137,7 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
           APP_PATH: /app
-          SOURCE_DIR: source-${{ matrix.service }}
+          SOURCE_DIR: source-${{ matrix.service }}-${{ inputs.deploy-env }}
           SERVERS_TO_START: 2
           DEPLOY_ENV: ${{ inputs.deploy-env }}
           VERSION: ${{ steps.pkgversion.outputs.PKG_VERSION }}

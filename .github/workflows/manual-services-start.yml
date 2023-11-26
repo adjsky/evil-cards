@@ -21,7 +21,7 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
           APP_PATH: /app
-          SOURCE_DIR: source-services-start
+          SOURCE_DIR: source-services-start-${{ inputs.deploy-env }}
           DEPLOY_ENV: ${{ inputs.deploy-env }}
           VERSION: latest
         with:
