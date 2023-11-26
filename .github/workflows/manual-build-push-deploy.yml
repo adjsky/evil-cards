@@ -21,9 +21,11 @@ on:
       build:
         description: Build services
         type: boolean
+        default: true
       deploy:
         description: Deploy services
         type: boolean
+        default: true
 
 jobs:
   generate-matrix:
