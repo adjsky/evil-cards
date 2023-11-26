@@ -7,8 +7,8 @@ on:
         description: Environment
         type: choice
         options:
-          - prod
           - stage
+          - prod
 
 jobs:
   start-services:

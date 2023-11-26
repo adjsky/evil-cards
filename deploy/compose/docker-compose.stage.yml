@@ -14,7 +14,7 @@ services:
     depends_on:
       - keydb
     labels:
-      - balancer-target=server
+      - balancer-target=evil-cards-stage-server
 
   load-balancer:
     extends:

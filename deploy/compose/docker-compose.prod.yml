@@ -91,7 +91,7 @@ services:
         condition: service_healthy
     labels:
       - prometheus-job=server
-      - balancer-target=server
+      - balancer-target=evil-cards-prod-server
 
   load-balancer:
     extends:

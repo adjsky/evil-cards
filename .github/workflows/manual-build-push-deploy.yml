@@ -148,7 +148,7 @@ jobs:
           password: ${{ inputs.deploy-env == 'prod' && secrets.PROD_PASSWORD || secrets.STAGE_PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR,SERVERS_TO_START,DEPLOY_ENV,VERSION,UPDATE_TOKEN
           script: |
-            git clone https://github.com/$REPOSITORY $APP_PATH/$SOURCE_DIR
+            git clone --single-branch --branch ${{ github.ref_name }} https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/scripts/update-${{ matrix.service }}.sh
 
   purge-cache:
