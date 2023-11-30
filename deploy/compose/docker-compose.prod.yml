@@ -157,6 +157,8 @@ services:
         condition: service_healthy
       grafana:
         condition: service_healthy
+    ports:
+      - 1337:80
 
 volumes:
   db-data:
