@@ -51,4 +51,4 @@ jobs:
           username: ${{ secrets.PROD_USERNAME }}
           password: ${{ secrets.PROD_PASSWORD }}
           script: |
-            docker run --rm -d -p=80:80 -p=443:443 --pull=always --volume=/etc/ssl:/etc/ssl:ro --name=evil-cards-master-nginx ghcr.io/adjsky/evil-cards/nginx:master
+            docker run --rm -d --network=host --pull=always --volume=/etc/ssl:/etc/ssl:ro --name=evil-cards-master-nginx ghcr.io/adjsky/evil-cards/nginx:master
