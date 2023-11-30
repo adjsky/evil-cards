@@ -6,7 +6,7 @@ services:
     command: keydb-server /usr/local/etc/keydb/keydb.conf
     restart: always
     healthcheck:
-      test: [ "CMD", "keydb-cli", "ping" ]
+      test: ["CMD", "keydb-cli", "ping"]
       interval: 5s
       timeout: 10s
       retries: 3
@@ -54,10 +54,7 @@ services:
     restart: always
 
   nginx:
-    image: nginx:1.23
+    image: nginx:1.25.3
     volumes:
       - /etc/ssl:/etc/ssl:ro
-    ports:
-      - 80:80
-      - 443:443
     restart: always

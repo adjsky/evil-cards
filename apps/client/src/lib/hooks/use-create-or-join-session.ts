@@ -1,13 +1,12 @@
 import EasySpeech from "easy-speech"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useRouter } from "next/router"
 import { useState } from "react"
 
 import raise from "@/core/raise"
 
 import { sessionAtom } from "@/lib/atoms/session"
 import { preloadSounds } from "@/lib/audio"
-import getWSHost from "@/lib/server/get-ws-host"
+import getWSHost from "@/lib/functions/get-ws-host"
 
 import { updateSnackbar } from "@/components/snackbar/use"
 
@@ -15,8 +14,6 @@ import packageJson from "../../../package.json"
 import { renderAdv } from "../adv"
 import { avatarAtom, nicknameAtom } from "../atoms/game"
 import useSessionSocket from "./use-session-socket"
-
-const errorsToIgnore = ["Nickname is taken"]
 
 const startErrors = {
   nosession: "Комната не найдена",
@@ -33,8 +30,6 @@ const useCreateOrJoinSession = (options?: Options) => {
 
   const setSession = useSetAtom(sessionAtom)
 
-  const router = useRouter()
-
   const nickname = useAtomValue(nicknameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
@@ -50,17 +45,9 @@ const useCreateOrJoinSession = (options?: Options) => {
         resetUrl()
         close()
         options?.onFail?.()
+      }
 
-        let ignore = false
-
-        if (message.details && errorsToIgnore.includes(message.details)) {
-          ignore = true
-        }
-
-        if (!ignore) {
-          router.replace("/", undefined, { shallow: true })
-        }
-      } else if (message.type == "join" || message.type == "create") {
+      if (message.type == "join" || message.type == "create") {
         const { configuration, id, playerId, players, ...gameState } =
           message.details.changedState
 
@@ -94,8 +81,6 @@ const useCreateOrJoinSession = (options?: Options) => {
                 }
               })
         })
-
-        router.push("/room", undefined, { shallow: true })
 
         preloadSounds()
         EasySpeech.init().catch((error) => console.error(error))
@@ -155,7 +140,7 @@ const useCreateOrJoinSession = (options?: Options) => {
         setSessionId(null)
 
         if (err == "nosession") {
-          router.replace("/", undefined, { shallow: true })
+          // router.replace("/", undefined, { shallow: true })
         }
       }
     )

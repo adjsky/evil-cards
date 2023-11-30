@@ -1,11 +1,8 @@
 #!/bin/bash
 
-SERVICES=("plausible" "postgres" "load-balancer" "server")
+for FILLED_ENV_FILE in $APP_PATH/envs/$DEPLOY_ENV/*.env; do
+    SOURCE_ENV_FILE=$APP_PATH/$SOURCE_DIR/deploy/envs/$SERVICE.env
 
-for SERVICE in "${SERVICES[@]}"; do
-  SOURCE=$APP_PATH/$SOURCE_DIR/deploy/envs/$SERVICE.env
-  FILLED=$APP_PATH/envs/$SERVICE.env
-
-  rm $SOURCE
-  ln -s $FILLED $SOURCE
+    rm $SOURCE_ENV_FILE
+    ln -s $FILLED_ENV_FILE $SOURCE_ENV_FILE
 done

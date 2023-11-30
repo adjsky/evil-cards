@@ -9,8 +9,8 @@ import { getFastifyInstance } from "@evil-cards/core/fastify"
 import { SessionCache } from "@evil-cards/core/keydb"
 
 import packageJson from "../../package.json"
-import { messageSchema } from "../lib/ws/receive.ts"
-import stringify from "../lib/ws/stringify.ts"
+import { messageSchema } from "../ws/receive.ts"
+import stringify from "../ws/stringify.ts"
 import {
   ACTIVITY_CHECK_INTERVAL_MS,
   ALIVE_CHECK_INTERVAL_MS,
@@ -29,16 +29,14 @@ import {
   VersionMismatchError
 } from "./errors.ts"
 
+import type { Configuration, Player, Status, Vote } from "../ws/send.ts"
 import type { ISession, ISessionManager } from "./interfaces.ts"
 import type {
   BroadcastCallback,
-  Configuration,
   ControllerEvents,
   ControllerWebSocket,
-  Player,
   ServerEvent,
-  Status,
-  Vote
+  SessionPlayer
 } from "./types.ts"
 import type { RedisClient } from "@evil-cards/core/keydb"
 
@@ -643,7 +641,7 @@ class Controller {
       }))
     }
 
-    const handleCardsDiscard = (discardedCardsPlayer: Player) => {
+    const handleCardsDiscard = (discardedCardsPlayer: SessionPlayer) => {
       this.broadcast(session, (players, player) => ({
         type: "discardcards",
         details: {

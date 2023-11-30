@@ -51,7 +51,7 @@ WORKDIR /evil-cards/apps/load-balancer
 CMD ["pnpm", "start"]
 
 ###################################################################
-# Stage 3: Run load balancer (dev)                                #
+# Stage 4: Run load balancer (dev)                                #
 ###################################################################
 
 FROM node:18.16.0-alpine AS runner-dev

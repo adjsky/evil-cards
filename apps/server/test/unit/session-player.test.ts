@@ -8,7 +8,7 @@ import {
 } from "../../src/game/constants.ts"
 import Session from "../../src/game/session.ts"
 
-import type { Player } from "../../src/game/types.ts"
+import type { Player } from "../../src/ws/send.ts"
 
 let session: Session
 

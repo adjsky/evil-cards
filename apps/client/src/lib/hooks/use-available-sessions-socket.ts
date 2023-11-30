@@ -1,6 +1,6 @@
 import { useAtom } from "jotai"
 
-import getWsHost from "@/lib/server/get-ws-host"
+import getWsHost from "@/lib/functions/get-ws-host"
 
 import {
   availableSessionsSocketURLAtom,
@@ -8,7 +8,7 @@ import {
 } from "../atoms/session"
 import useSocketWithUrlAtom from "./use-socket-jotai"
 
-import type { AvailableSession } from "@evil-cards/server/src/lib/ws/send"
+import type { AvailableSession } from "@evil-cards/server/src/ws/send"
 
 const useAvailableSessions = () => {
   const [state, setState] = useAtom(availableSessionsStateAtom)

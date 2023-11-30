@@ -7,7 +7,7 @@ import type {
   Player,
   Status,
   Vote
-} from "@evil-cards/server/src/lib/ws/send"
+} from "@evil-cards/server/src/ws/send"
 
 export type WaitingGameState = {
   status: Extract<Status, "waiting" | "end" | "starting">

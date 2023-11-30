@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react"
 
-import { cn } from "@/lib/functions"
+import cn from "@/lib/functions/cn"
 
 const FadeIn = forwardRef<
   HTMLDivElement,

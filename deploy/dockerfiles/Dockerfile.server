@@ -53,7 +53,7 @@ COPY ./deploy/scripts/start-server-with-server-number.sh .
 CMD ["sh", "./start-server-with-server-number.sh"]
 
 ###################################################################
-# Stage 3: Run server (dev)                                       #
+# Stage 4: Run server (dev)                                       #
 ###################################################################
 
 FROM node:18.16.0-alpine AS runner-dev

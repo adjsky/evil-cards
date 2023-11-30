@@ -1,11 +1,5 @@
-import type {
-  Configuration,
-  Player,
-  SessionEvents,
-  Status,
-  Timeouts,
-  Vote
-} from "./types.ts"
+import type { Configuration, Status, Vote } from "../ws/send.ts"
+import type { SessionEvents, SessionPlayer, Timeouts } from "./types.ts"
 
 type PublicEvents = {
   on: SessionEvents["on"]
@@ -15,14 +9,14 @@ type PublicEvents = {
 
 export interface ISession {
   votes: Vote[]
-  players: Player[]
+  players: SessionPlayer[]
   id: string
   redCard: string | null
   status: Status
   events: PublicEvents
   configuration: Configuration
 
-  join(nickname: string, avatarId: number): Player
+  join(nickname: string, avatarId: number): SessionPlayer
   leave(playerId: string): void
   updateConfiguration(playerId: string, configuration: Configuration): void
   startGame(playerId: string): void

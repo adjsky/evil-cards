@@ -7,6 +7,7 @@ out
 # misc
 .DS_Store
 *.pem
+coverage
 
 # debug
 .pnpm-debug.log*

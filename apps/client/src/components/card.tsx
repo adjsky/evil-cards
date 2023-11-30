@@ -1,10 +1,10 @@
 import { Interweave } from "interweave"
 import React, { useEffect, useRef } from "react"
 
-import { cn } from "@/lib/functions"
-import { usePrevious } from "@/lib/hooks"
+import cn from "@/lib/functions/cn"
+import usePrevious from "@/lib/hooks/use-previous"
 
-import Cat from "@/assets/cats/regular.svg"
+import { ReactComponent as Cat } from "@/assets/cats/regular.svg"
 
 import styles from "./card.module.css"
 

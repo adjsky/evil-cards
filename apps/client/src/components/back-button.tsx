@@ -1,6 +1,6 @@
 import React from "react"
 
-import ArrowLeft from "@/assets/arrows/left-filled.svg"
+import { ReactComponent as ArrowLeft } from "@/assets/arrows/left-filled.svg"
 
 import Button from "./button"
 

@@ -1,6 +1,14 @@
 name: Start services
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-env:
+        description: Environment
+        type: choice
+        options:
+          - stage
+          - prod
 
 jobs:
   start-services:
@@ -13,8 +21,8 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
           APP_PATH: /app
-          SOURCE_DIR: source-services-start
-          DEPLOY_ENV: prod
+          SOURCE_DIR: source-services-start-${{ inputs.deploy-env }}
+          DEPLOY_ENV: ${{ inputs.deploy-env }}
           VERSION: latest
         with:
           host: ${{ secrets.PROD_HOST }}
@@ -22,5 +30,5 @@ jobs:
           password: ${{ secrets.PROD_PASSWORD }}
           envs: REPOSITORY,APP_PATH,SOURCE_DIR,DEPLOY_ENV,VERSION
           script: |
-            git clone https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
+            git clone --single-branch --branch ${{ github.ref_name }} https://github.com/$REPOSITORY.git $APP_PATH/$SOURCE_DIR
             $APP_PATH/$SOURCE_DIR/deploy/scripts/start-services.sh

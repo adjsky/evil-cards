@@ -1,0 +1,3 @@
+FROM nginx:1.25.3-alpine
+
+COPY ./deploy/nginx/master /etc/nginx

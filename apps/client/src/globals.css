@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
+  }
+
+  .scrollable::-webkit-scrollbar {
+    width: 0.75rem;
+  }
+
+  .scrollable::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 0.75rem 0.75rem transparent;
+    border: solid 0.25rem transparent;
+  }
+
+  .scrollable::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 0.75rem 0.75rem theme("colors.gray.200");
+    border: solid 0.25rem transparent;
+    border-radius: 0.5rem;
+  }
+
+  .scrollable::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  @supports (-moz-appearance: none) {
+    .scrollable {
+      scrollbar-width: none;
+      padding-right: 0;
+    }
+  }
+}
+
+:root {
+  color-scheme: only light;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  touch-action: none;
+}
+
+body,
+html,
+#root {
+  height: 100%;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}

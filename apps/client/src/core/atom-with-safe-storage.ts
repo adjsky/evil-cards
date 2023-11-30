@@ -56,7 +56,7 @@ export function createSafeStorage<Value>(
 
       const storageEventCallback = (e: StorageEvent) => {
         if (e.key === key && e.newValue) {
-          callback(JSON.parse(e.newValue))
+          callback(JSON.parse(e.newValue) as Value)
         }
       }
 

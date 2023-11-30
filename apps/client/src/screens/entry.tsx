@@ -2,11 +2,10 @@ import { useAtom } from "jotai"
 import React, { useRef } from "react"
 
 import { avatarAtom, nicknameAtom } from "@/lib/atoms/game"
-import { usePreviousPathname } from "@/lib/contexts/previous-pathname"
 import { AVAILABLE_AVATARS } from "@/lib/data/constants"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
-import { useScreenFactor } from "@/lib/hooks"
 import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
+import useScreenFactor from "@/lib/hooks/use-screen-factor"
 
 import AvailableSessions from "@/components/available-sessions"
 import Button from "@/components/button"
@@ -15,7 +14,7 @@ import Loader from "@/components/loader"
 import Logo from "@/components/logo"
 import NicknameInput from "@/components/nickname-input"
 
-import Arrow from "@/assets/arrows/left-line.svg"
+import { ReactComponent as Arrow } from "@/assets/arrows/left-line.svg"
 
 const Entry: React.FC = () => {
   const unsupported = useRef(isBrowserUnsupported())
@@ -24,7 +23,6 @@ const Entry: React.FC = () => {
     py: 40,
     disableOnMobile: true
   })
-  const previousPathname = usePreviousPathname()
   const { createOrJoinSession, connecting } = useCreateOrJoinSession()
 
   const searchParams = new URLSearchParams(window.location.search)
@@ -35,7 +33,6 @@ const Entry: React.FC = () => {
   return (
     <FadeIn
       className="flex h-full flex-row items-center justify-center"
-      disabled={previousPathname != "/room"}
       duration={100}
     >
       <div
@@ -91,7 +88,7 @@ const UserCard: React.FC = () => {
             style={{
               width: 120,
               height: 120,
-              backgroundImage: `url(/assets/avatars/${avatarId}.svg)`,
+              backgroundImage: `url(/static/avatars/${avatarId}.svg)`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover"
             }}

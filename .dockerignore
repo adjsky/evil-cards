@@ -18,7 +18,6 @@ LICENSE
 
 # Docker related
 .dockerignore
-deploy
 
 # IDE related
 **/.idea
