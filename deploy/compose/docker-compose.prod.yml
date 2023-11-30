@@ -156,7 +156,7 @@ services:
       load-balancer:
         condition: service_healthy
       grafana:
-        condition: service_healthy
+        condition: service_started
     ports:
       - 1337:80
 
