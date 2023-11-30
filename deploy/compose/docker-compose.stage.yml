@@ -40,7 +40,7 @@ services:
       file: docker-compose.common.yml
       service: nginx
     volumes:
-      - ../nginx/stage:/etc/nginx:ro
+      - ../nginx/stage/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       client:
         condition: service_started

@@ -145,7 +145,7 @@ services:
       file: docker-compose.common.yml
       service: nginx
     volumes:
-      - ../nginx/prod:/etc/nginx:ro
+      - ../nginx/prod/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       plausible:
         condition: service_healthy
