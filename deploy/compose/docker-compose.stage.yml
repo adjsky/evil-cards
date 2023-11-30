@@ -34,3 +34,17 @@ services:
       file: docker-compose.common.yml
       service: client
     image: ghcr.io/adjsky/evil-cards/client-stage:${VERSION}
+
+  nginx:
+    extends:
+      file: docker-compose.common.yml
+      service: nginx
+    volumes:
+      - ../nginx/stage:/etc/nginx:ro
+    depends_on:
+      client:
+        condition: service_started
+      server:
+        condition: service_healthy
+      load-balancer:
+        condition: service_healthy
