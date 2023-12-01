@@ -49,4 +49,4 @@ services:
       load-balancer:
         condition: service_healthy
     ports:
-      - 1235:1235
+      - 1235:80
