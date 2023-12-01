@@ -19,7 +19,7 @@ jobs:
           password: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Copy NGINX config
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USERNAME }}
