@@ -5,7 +5,7 @@ on: [workflow_dispatch]
 jobs:
   update:
     runs-on: ubuntu-latest
-    name: Build and push NGINX
+    name: Update master NGINX
 
     steps:
       - name: Checkout repo
@@ -25,7 +25,7 @@ jobs:
           username: ${{ secrets.PROD_USERNAME }}
           password: ${{ secrets.PROD_PASSWORD }}
           source: deploy/nginx/master/conf.d/default.conf
-          target: /etc/nginx/conf.d/default.conf
+          target: /etc/nginx/conf.d
           debug: true
           rm: true
 
