@@ -24,7 +24,7 @@ jobs:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USERNAME }}
           password: ${{ secrets.PROD_PASSWORD }}
-          source: ./deploy/nginx/master/conf.d/default.conf
+          source: deploy/nginx/master/conf.d/default.conf
           target: /etc/nginx
           debug: true
           rm: true
