@@ -61,12 +61,12 @@
 
   .card-6 {
     top: calc(50% + var(--card-width) * 2);
-    left: calc(50% - var(--card-width) / 2 - var(--cards-gap));
+    left: calc(50% + var(--card-width) / 2 + var(--cards-gap));
   }
 
   .card-7 {
     top: calc(50% + var(--card-width) * 2);
-    left: calc(50% + var(--card-width) / 2 + var(--cards-gap));
+    left: calc(50% - var(--card-width) / 2 - var(--cards-gap));
   }
 
   .card-8 {
