@@ -32,6 +32,7 @@ export default defineConfig({
       devOptions: {
         enabled: false
       },
+      includeManifestIcons: false,
       includeAssets: ["sounds/*", "avatars/*"],
       manifest: {
         name: "500 ЗЛОБНЫХ Карт Онлайн",
