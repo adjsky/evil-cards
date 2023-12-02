@@ -16,7 +16,7 @@ import Loader from "./loader"
 import Modal from "./modal"
 
 const AvailableSessions: React.FC = () => {
-  const { connect, close, resetUrl } = useAvailableSessions()
+  const { connect, closeSocket, resetSocketUrl } = useAvailableSessions()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleOpen = () => {
@@ -26,8 +26,8 @@ const AvailableSessions: React.FC = () => {
 
   const handleClose = () => {
     setIsOpen(false)
-    resetUrl()
-    close()
+    resetSocketUrl()
+    closeSocket()
   }
 
   return (
@@ -50,7 +50,7 @@ type SessionModalProps = {
 }
 
 const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
-  const { state, connect, close, resetUrl } = useAvailableSessions()
+  const { state, connect, closeSocket, resetSocketUrl } = useAvailableSessions()
   const { createOrJoinSession, connecting, sessionId } = useCreateOrJoinSession(
     {
       onFail() {
@@ -61,8 +61,8 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
 
   const handleJoin = (id: string) => {
     createOrJoinSession(id)
-    resetUrl()
-    close()
+    resetSocketUrl()
+    closeSocket()
   }
 
   return (

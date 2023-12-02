@@ -8,7 +8,7 @@ import { sessionAtom } from "@/lib/atoms/session"
 import { preloadSounds } from "@/lib/audio"
 import getWSHost from "@/lib/functions/get-ws-host"
 
-import { updateSnackbar } from "@/components/snackbar/use"
+import { hideNotifications, notify } from "@/components/snackbar"
 
 import packageJson from "../../../package.json"
 import { renderAdv } from "../adv"
@@ -33,92 +33,93 @@ const useCreateOrJoinSession = (options?: Options) => {
   const nickname = useAtomValue(nicknameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
-  const { sendJsonMessage, setUrl, close, resetUrl } = useSessionSocket({
-    onJsonMessage(message) {
-      if (!connecting) {
-        return
-      }
+  const { sendJsonMessage, setUrl, closeSocket, resetSocketUrl } =
+    useSessionSocket({
+      onJsonMessage(message) {
+        if (!connecting) {
+          return
+        }
 
-      if (message.type == "error" && connecting) {
+        if (message.type == "error" && connecting) {
+          setConnecting(false)
+          setSessionId(null)
+          resetSocketUrl()
+          closeSocket()
+          options?.onFail?.()
+        }
+
+        if (message.type == "join" || message.type == "create") {
+          const { configuration, id, playerId, players, ...gameState } =
+            message.details.changedState
+
+          const player = players.find((player) => player.id == playerId)
+
+          setSession({
+            configuration,
+            id,
+            players,
+            player:
+              player ?? raise(`Expected to find player in the players list`),
+            chat: [],
+            ...(gameState.status == "voting" ||
+            gameState.status == "choosing" ||
+            gameState.status == "choosingwinner" ||
+            gameState.status == "winnercardview"
+              ? {
+                  playing: true,
+                  gameState: {
+                    status: gameState.status,
+                    deck: gameState.deck,
+                    redCard: gameState.redCard,
+                    votes: gameState.votes,
+                    votingEndsAt: gameState.votingEndsAt
+                  }
+                }
+              : {
+                  playing: false,
+                  gameState: {
+                    status: gameState.status
+                  }
+                })
+          })
+
+          preloadSounds()
+          EasySpeech.init().catch((error) => console.error(error))
+        }
+      },
+      onOpen() {
+        if (!connecting) {
+          return
+        }
+
+        hideNotifications()
+
+        if (sessionId) {
+          sendJsonMessage({
+            type: "joinsession",
+            details: {
+              nickname,
+              sessionId,
+              avatarId,
+              appVersion: packageJson.version
+            }
+          })
+        } else {
+          sendJsonMessage({
+            type: "createsession",
+            details: {
+              nickname,
+              avatarId,
+              appVersion: packageJson.version
+            }
+          })
+        }
+      },
+      onClose() {
         setConnecting(false)
         setSessionId(null)
-        resetUrl()
-        close()
-        options?.onFail?.()
       }
-
-      if (message.type == "join" || message.type == "create") {
-        const { configuration, id, playerId, players, ...gameState } =
-          message.details.changedState
-
-        const player = players.find((player) => player.id == playerId)
-
-        setSession({
-          configuration,
-          id,
-          players,
-          player:
-            player ?? raise(`Expected to find player in the players list`),
-          chat: [],
-          ...(gameState.status == "voting" ||
-          gameState.status == "choosing" ||
-          gameState.status == "choosingwinner" ||
-          gameState.status == "winnercardview"
-            ? {
-                playing: true,
-                gameState: {
-                  status: gameState.status,
-                  deck: gameState.deck,
-                  redCard: gameState.redCard,
-                  votes: gameState.votes,
-                  votingEndsAt: gameState.votingEndsAt
-                }
-              }
-            : {
-                playing: false,
-                gameState: {
-                  status: gameState.status
-                }
-              })
-        })
-
-        preloadSounds()
-        EasySpeech.init().catch((error) => console.error(error))
-      }
-    },
-    onOpen() {
-      if (!connecting) {
-        return
-      }
-
-      updateSnackbar({ open: false })
-
-      if (sessionId) {
-        sendJsonMessage({
-          type: "joinsession",
-          details: {
-            nickname,
-            sessionId,
-            avatarId,
-            appVersion: packageJson.version
-          }
-        })
-      } else {
-        sendJsonMessage({
-          type: "createsession",
-          details: {
-            nickname,
-            avatarId,
-            appVersion: packageJson.version
-          }
-        })
-      }
-    },
-    onClose() {
-      setConnecting(false)
-      setSessionId(null)
-    }
-  })
+    })
 
   const createOrJoinSession = async (sessionId?: string) => {
     setConnecting(true)
@@ -130,9 +131,8 @@ const useCreateOrJoinSession = (options?: Options) => {
     getWSHost(sessionId).match(
       (wsHost) => setUrl(`${wsHost}/ws/session`),
       (err) => {
-        updateSnackbar({
+        notify({
           message: startErrors[err],
-          open: true,
           severity: err == "nosession" ? "information" : "error",
           infinite: false
         })
@@ -140,10 +140,12 @@ const useCreateOrJoinSession = (options?: Options) => {
         setSessionId(null)
 
         if (err == "nosession") {
-          // router.replace("/", undefined, { shallow: true })
+          history.replaceState("", "", "/")
         }
       }
     )
+
+    history.pushState("", "", "/")
   }
 
   return { createOrJoinSession, connecting, sessionId }

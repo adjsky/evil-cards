@@ -26,7 +26,7 @@ describe("connection", () => {
     await waitFor(() => expect(onOpenFn).toHaveBeenCalledOnce())
     expect(result.current.getInstance()).not.toBe(null)
 
-    result.current.close()
+    result.current.closeSocket()
 
     await waitFor(() => {
       expect(result.current.getInstance()?.readyState).toBe(WebSocket.CLOSED)

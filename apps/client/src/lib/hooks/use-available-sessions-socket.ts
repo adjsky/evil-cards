@@ -13,7 +13,7 @@ import type { AvailableSession } from "@evil-cards/server/src/ws/send"
 const useAvailableSessions = () => {
   const [state, setState] = useAtom(availableSessionsStateAtom)
 
-  const { close, setUrl, resetUrl } = useSocketWithUrlAtom<
+  const { closeSocket, setUrl, resetSocketUrl } = useSocketWithUrlAtom<
     unknown,
     AvailableSession[]
   >(availableSessionsSocketURLAtom, {
@@ -45,9 +45,9 @@ const useAvailableSessions = () => {
           })
       )
     },
-    close,
+    closeSocket,
     state,
-    resetUrl
+    resetSocketUrl
   }
 }
 

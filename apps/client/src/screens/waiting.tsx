@@ -1,17 +1,17 @@
 import { Transition } from "@headlessui/react"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useAtom, useAtomValue } from "jotai"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 
 import raise from "@/core/raise"
 
 import { soundsAtom, winnersAtom } from "@/lib/atoms/game"
-import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
+import { sessionAtom } from "@/lib/atoms/session"
 import cn from "@/lib/functions/cn"
 import copyText from "@/lib/functions/copy-text"
 import getScoreLabel from "@/lib/functions/get-score-label"
 import useCountdown from "@/lib/hooks/use-countdown"
 import useDebounce from "@/lib/hooks/use-debounce"
-import useLeavePreventer from "@/lib/hooks/use-leave-preventer"
+import useLeaveSession from "@/lib/hooks/use-leave-session"
 import useScreenFactor from "@/lib/hooks/use-screen-factor"
 import useSessionSocket from "@/lib/hooks/use-session-socket"
 import useToggle from "@/lib/hooks/use-toggle"
@@ -25,7 +25,6 @@ import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
-import { updateSnackbar } from "@/components/snackbar/use"
 
 import { ReactComponent as Author } from "@/assets/author.svg"
 import { ReactComponent as ChatIcon } from "@/assets/chat.svg"
@@ -37,9 +36,7 @@ import { ReactComponent as SoundOn } from "@/assets/sound-on.svg"
 import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Waiting: React.FC = () => {
-  useLeavePreventer()
   const [sounds, setSounds] = useAtom(soundsAtom)
-  const setReconnectingSession = useSetAtom(reconnectingSessionAtom)
   const winners = useAtomValue(winnersAtom)
 
   const [session, setSession] = useAtom(sessionAtom)
@@ -65,7 +62,6 @@ const Waiting: React.FC = () => {
   >("rules")
 
   const screenRef = useRef<HTMLDivElement>(null)
-  const leaving = useRef(false)
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
@@ -74,7 +70,7 @@ const Waiting: React.FC = () => {
   })
 
   const { start, secondsLeft } = useCountdown()
-  const { sendJsonMessage, close, resetUrl } = useSessionSocket({
+  const { sendJsonMessage, closeSocket, resetSocketUrl } = useSessionSocket({
     onJsonMessage(data) {
       if (data.type == "gamestart") {
         start(3)
@@ -84,41 +80,11 @@ const Waiting: React.FC = () => {
     }
   })
 
+  const { leaveSession } = useLeaveSession()
+
   const onStart = () => {
     sendJsonMessage({ type: "startgame" })
   }
-
-  const onBack = useCallback(() => {
-    if (leaving.current) {
-      return
-    }
-
-    const handleAnimationFinish = () => {
-      setSession(null)
-      updateSnackbar({ open: false })
-      setReconnectingSession(false)
-
-      close()
-      resetUrl()
-    }
-
-    leaving.current = true
-
-    const animation = screenRef.current?.animate(
-      [{ opacity: 1 }, { opacity: 0 }],
-      {
-        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-        duration: 100,
-        fill: "forwards"
-      }
-    )
-
-    if (animation) {
-      animation.onfinish = handleAnimationFinish
-    } else {
-      handleAnimationFinish()
-    }
-  }, [close, resetUrl, setReconnectingSession, setSession])
 
   const onChat = (message: string) => {
     sendJsonMessage({
@@ -147,6 +113,26 @@ const Waiting: React.FC = () => {
       }
     })
   }
+
+  const onBack = () => {
+    if (!screenRef.current) {
+      raise("Waiting screen is not mounted")
+    }
+
+    leaveSession({
+      screen: screenRef.current,
+      closeSocket,
+      resetSocketUrl
+    })
+  }
+
+  useEffect(() => {
+    window.addEventListener("popstate", onBack)
+
+    return () => {
+      window.removeEventListener("popstate", onBack)
+    }
+  })
 
   return (
     <FadeIn className="h-full" ref={screenRef}>

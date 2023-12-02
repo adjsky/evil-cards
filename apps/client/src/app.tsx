@@ -12,7 +12,7 @@ import mapErrorMessage from "@/lib/functions/map-error-message"
 import useSessionSocket from "@/lib/hooks/use-session-socket"
 
 import Modal from "@/components/modal"
-import { updateSnackbar, useSnackbar } from "@/components/snackbar/use"
+import { notify, Snackbar } from "@/components/snackbar"
 
 import { ReactComponent as ExclamationTriangle } from "@/assets/exclamation-triangle.svg"
 
@@ -22,17 +22,16 @@ import Game from "./screens/game"
 import Waiting from "./screens/waiting"
 
 const App = () => {
-  const { Snackbar, reconnecting } = useSocketEvents()
+  const { reconnecting } = useSocketEvents()
   const [session] = useAtom(sessionAtom)
 
   useEffect(() => {
     const shouldNotify = isBrowserUnsupported()
 
     if (shouldNotify) {
-      updateSnackbar({
+      notify({
         message:
           "Похоже, что вы используете неподдерживаемый браузер. Вы не сможете начать игру",
-        open: true,
         severity: "information",
         infinite: true
       })
@@ -41,10 +40,10 @@ const App = () => {
 
   return (
     <>
-      {Snackbar}
       {session == null ? <Entry /> : session.playing ? <Game /> : <Waiting />}
 
       <Reconnecting visible={reconnecting} />
+      <Snackbar />
     </>
   )
 }
@@ -63,8 +62,6 @@ const Reconnecting: React.FC<{ visible?: boolean }> = ({ visible }) => {
 }
 
 const useSocketEvents = () => {
-  const Snackbar = useSnackbar()
-
   const [session, setSession] = useAtom(sessionAtom)
   const sounds = useAtomValue(soundsAtom)
 
@@ -72,33 +69,30 @@ const useSocketEvents = () => {
     reconnectingSessionAtom
   )
 
-  const { sendJsonMessage, close, resetUrl } = useSessionSocket({
+  const { sendJsonMessage, closeSocket, resetSocketUrl } = useSessionSocket({
     onClose(event, { gracefully, reconnecting }) {
       if (!reconnecting) {
         setSession(null)
       }
 
       if (!gracefully && !reconnecting) {
-        resetUrl()
+        resetSocketUrl()
 
         if (isKickCloseEvent(event)) {
-          updateSnackbar({
+          notify({
             message: "Вас выгнали из комнаты",
             severity: "information",
-            open: true,
             infinite: false
           })
         } else if (isInactiveCloseEvent(event)) {
-          updateSnackbar({
+          notify({
             message: "Вы были отключены, так как долго не проявляли активность",
             severity: "information",
-            open: true,
             infinite: false
           })
         } else {
-          updateSnackbar({
+          notify({
             message: "Не удалось подключиться к серверу",
-            open: true,
             severity: "error",
             infinite: false
           })
@@ -145,10 +139,9 @@ const useSocketEvents = () => {
       // ---------------------------- HANDLE ERRORS ----------------------------
 
       if (message.type == "error" && message.details) {
-        updateSnackbar({
+        notify({
           message: mapErrorMessage(message.details),
           severity: "information",
-          open: true,
           infinite: false
         })
       }
@@ -160,8 +153,8 @@ const useSocketEvents = () => {
 
         if (message.type == "error") {
           setSession(null)
-          resetUrl()
-          close()
+          resetSocketUrl()
+          closeSocket()
 
           return
         }
@@ -325,7 +318,7 @@ const useSocketEvents = () => {
     }
   })
 
-  return { Snackbar, reconnecting: reconnectingSession }
+  return { reconnecting: reconnectingSession }
 }
 
 function isKickCloseEvent(event: WebSocketEventMap["close"]) {
