@@ -1,7 +1,7 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react"
 import { Interweave } from "interweave"
 import { useAtom, useSetAtom } from "jotai"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import raise from "@/core/raise"
 
@@ -9,7 +9,7 @@ import { winnersAtom } from "@/lib/atoms/game"
 import { sessionAtom } from "@/lib/atoms/session"
 import cn from "@/lib/functions/cn"
 import useDebounce from "@/lib/hooks/use-debounce"
-import useLeavePreventer from "@/lib/hooks/use-leave-preventer"
+import useLeaveSession from "@/lib/hooks/use-leave-session"
 import useScreenFactor from "@/lib/hooks/use-screen-factor"
 import useSessionSocket from "@/lib/hooks/use-session-socket"
 import useTimeBar from "@/lib/hooks/use-time-bar"
@@ -20,7 +20,7 @@ import BaseChat from "@/components/chat"
 import FadeIn from "@/components/fade-in"
 import Modal from "@/components/modal"
 import PlayerList from "@/components/player-list"
-import { updateSnackbar } from "@/components/snackbar/use"
+import { notify } from "@/components/snackbar"
 
 import { ReactComponent as ChatIcon } from "../assets/chat.svg"
 import { ReactComponent as CloseIcon } from "../assets/close/rounded.svg"
@@ -32,18 +32,18 @@ import type { PlayingGameState } from "@/lib/atoms/session"
 import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Game: React.FC = () => {
-  useLeavePreventer()
-  const { sendJsonMessage } = useSessionSocket({
+  const screenRef = useRef<HTMLDivElement>(null)
+
+  const { sendJsonMessage, resetSocketUrl, closeSocket } = useSessionSocket({
     onJsonMessage({ type, details }) {
       if (type == "gameend") {
         const { players } = details.changedState
 
         if (players.length < 3) {
-          updateSnackbar({
+          notify({
             infinite: false,
             message:
               "Игра прекращена, поскольку в комнате осталось меньше 3 игроков",
-            open: true,
             severity: "information"
           })
 
@@ -77,6 +77,8 @@ const Game: React.FC = () => {
     gameState.votingEndsAt
   )
 
+  const { leaveSession } = useLeaveSession()
+
   const onBoardCardClick = (playerId: string) => {
     if (gameState.status == "choosing") {
       sendJsonMessage({ type: "choose", details: { playerId } })
@@ -85,8 +87,37 @@ const Game: React.FC = () => {
     }
   }
 
+  const onBack = () => {
+    if (!screenRef.current) {
+      raise("Game screen is not mounted")
+    }
+
+    const isConfirmed = confirm("Вы уверены, что хотите покинуть игру?")
+
+    if (!isConfirmed) {
+      return
+    }
+
+    leaveSession({
+      screen: screenRef.current,
+      closeSocket,
+      resetSocketUrl
+    })
+  }
+
+  useEffect(() => {
+    window.addEventListener("popstate", onBack)
+
+    return () => {
+      window.removeEventListener("popstate", onBack)
+    }
+  })
+
   return (
-    <FadeIn className="mx-auto h-full sm:relative sm:flex sm:items-center sm:justify-center">
+    <FadeIn
+      className="mx-auto h-full sm:relative sm:flex sm:items-center sm:justify-center"
+      ref={screenRef}
+    >
       <div
         className="flex h-full flex-col items-center sm:h-auto sm:justify-center sm:gap-3"
         style={screenStyles}

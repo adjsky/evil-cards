@@ -3,7 +3,7 @@ import { ReactComponent as ExclamationMark } from "@/assets/exclamation-mark.svg
 
 import type { Severity } from "./types"
 
-const getIcon = (severity: Severity) => {
+export function getIcon(severity: Severity) {
   switch (severity) {
     case "error":
       return <CrossMark />
@@ -11,5 +11,3 @@ const getIcon = (severity: Severity) => {
       return <ExclamationMark />
   }
 }
-
-export default getIcon

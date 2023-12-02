@@ -108,7 +108,7 @@ const useSocket = <S = JsonLike, R = JsonLike>(options?: SocketOptions<R>) => {
   return {
     getInstance,
     sendJsonMessage,
-    close() {
+    closeSocket() {
       if (!connectionRef.current) {
         console.error("No connection found to close")
 
