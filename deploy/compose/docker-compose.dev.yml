@@ -51,5 +51,3 @@ services:
     image: tilt/client
     ports:
       - 3000:3000
-    environment:
-      - VITE_LOAD_BALANCER_PATH=http://127.0.0.1:1337
