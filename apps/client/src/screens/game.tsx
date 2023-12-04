@@ -8,8 +8,8 @@ import raise from "@/core/raise"
 import { winnersAtom } from "@/lib/atoms/game"
 import { sessionAtom } from "@/lib/atoms/session"
 import cn from "@/lib/functions/cn"
+import useCloseTabPreventer from "@/lib/hooks/use-close-tab-preventer"
 import useDebounce from "@/lib/hooks/use-debounce"
-import useLeaveSession from "@/lib/hooks/use-leave-session"
 import useScreenFactor from "@/lib/hooks/use-screen-factor"
 import useSessionSocket from "@/lib/hooks/use-session-socket"
 import useTimeBar from "@/lib/hooks/use-time-bar"
@@ -32,9 +32,11 @@ import type { PlayingGameState } from "@/lib/atoms/session"
 import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Game: React.FC = () => {
+  useCloseTabPreventer()
+
   const screenRef = useRef<HTMLDivElement>(null)
 
-  const { sendJsonMessage, resetSocketUrl, closeSocket } = useSessionSocket({
+  const { sendJsonMessage } = useSessionSocket({
     onJsonMessage({ type, details }) {
       if (type == "gameend") {
         const { players } = details.changedState
@@ -77,8 +79,6 @@ const Game: React.FC = () => {
     gameState.votingEndsAt
   )
 
-  const { leaveSession } = useLeaveSession()
-
   const onBoardCardClick = (playerId: string) => {
     if (gameState.status == "choosing") {
       sendJsonMessage({ type: "choose", details: { playerId } })
@@ -86,32 +86,6 @@ const Game: React.FC = () => {
       sendJsonMessage({ type: "choosewinner", details: { playerId } })
     }
   }
-
-  const onBack = () => {
-    if (!screenRef.current) {
-      raise("Game screen is not mounted")
-    }
-
-    const isConfirmed = confirm("Вы уверены, что хотите покинуть игру?")
-
-    if (!isConfirmed) {
-      return
-    }
-
-    leaveSession({
-      screen: screenRef.current,
-      closeSocket,
-      resetSocketUrl
-    })
-  }
-
-  useEffect(() => {
-    window.addEventListener("popstate", onBack)
-
-    return () => {
-      window.removeEventListener("popstate", onBack)
-    }
-  })
 
   return (
     <FadeIn

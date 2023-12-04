@@ -83,6 +83,8 @@ const useCreateOrJoinSession = (options?: Options) => {
                 })
           })
 
+          history.replaceState("", "", "/")
+
           preloadSounds()
           EasySpeech.init().catch((error) => console.error(error))
         }
@@ -129,7 +131,9 @@ const useCreateOrJoinSession = (options?: Options) => {
     setSessionId(sessionId ?? null)
 
     getWSHost(sessionId).match(
-      (wsHost) => setUrl(`${wsHost}/ws/session`),
+      (wsHost) => {
+        setUrl(`${wsHost}/ws/session`)
+      },
       (err) => {
         notify({
           message: startErrors[err],
@@ -144,8 +148,6 @@ const useCreateOrJoinSession = (options?: Options) => {
         }
       }
     )
-
-    history.pushState("", "", "/")
   }
 
   return { createOrJoinSession, connecting, sessionId }

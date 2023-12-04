@@ -9,6 +9,7 @@ import { sessionAtom } from "@/lib/atoms/session"
 import cn from "@/lib/functions/cn"
 import copyText from "@/lib/functions/copy-text"
 import getScoreLabel from "@/lib/functions/get-score-label"
+import useCloseTabPreventer from "@/lib/hooks/use-close-tab-preventer"
 import useCountdown from "@/lib/hooks/use-countdown"
 import useDebounce from "@/lib/hooks/use-debounce"
 import useLeaveSession from "@/lib/hooks/use-leave-session"
@@ -36,6 +37,8 @@ import { ReactComponent as SoundOn } from "@/assets/sound-on.svg"
 import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Waiting: React.FC = () => {
+  useCloseTabPreventer()
+
   const [sounds, setSounds] = useAtom(soundsAtom)
   const winners = useAtomValue(winnersAtom)
 
