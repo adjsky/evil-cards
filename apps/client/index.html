@@ -35,12 +35,12 @@
       content="https://evilcards.online/icons/og-preview.png"
     />
 
-    <% if (withAnalytics) { %>
+    <% if (VITE_WITH_ANALYTICS == "true") { %>
     <script
       defer
       data-api="/api/event"
       data-domain="evilcards.online"
-      src="/js/script.js"
+      src="https://analytics.evilcards.online/js/script.js"
     ></script>
     <% } %>
 
