@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 
 import raise from "@/core/raise"
 
-import { soundsAtom, winnersAtom } from "@/lib/atoms/game"
+import { winnersAtom } from "@/lib/atoms/game"
 import { sessionAtom } from "@/lib/atoms/session"
 import cn from "@/lib/functions/cn"
 import copyText from "@/lib/functions/copy-text"
@@ -26,20 +26,18 @@ import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
+import SoundsButton from "@/components/sounds-button"
 
 import { ReactComponent as Author } from "@/assets/author.svg"
 import { ReactComponent as ChatIcon } from "@/assets/chat.svg"
 import { ReactComponent as Close } from "@/assets/close/rounded.svg"
 import { ReactComponent as Gear } from "@/assets/gear.svg"
-import { ReactComponent as SoundOff } from "@/assets/sound-off.svg"
-import { ReactComponent as SoundOn } from "@/assets/sound-on.svg"
 
 import type { Player } from "@evil-cards/server/src/ws/send"
 
 const Waiting: React.FC = () => {
   useCloseTabPreventer()
 
-  const [sounds, setSounds] = useAtom(soundsAtom)
   const winners = useAtomValue(winnersAtom)
 
   const [session, setSession] = useAtom(sessionAtom)
@@ -154,12 +152,7 @@ const Waiting: React.FC = () => {
             <div className="invisible">
               <Logo />
             </div>
-            <button
-              onClick={() => setSounds(!sounds)}
-              data-testid={sounds ? "disable-sounds" : "enable-sounds"}
-            >
-              {sounds ? <SoundOn /> : <SoundOff />}
-            </button>
+            <SoundsButton />
           </div>
           <div className="flex h-full w-full flex-col sm:h-[500px] sm:flex-row sm:gap-4">
             <PlayerList

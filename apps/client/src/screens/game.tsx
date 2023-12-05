@@ -21,6 +21,7 @@ import FadeIn from "@/components/fade-in"
 import Modal from "@/components/modal"
 import PlayerList from "@/components/player-list"
 import { notify } from "@/components/snackbar"
+import SoundsButton from "@/components/sounds-button"
 
 import { ReactComponent as ChatIcon } from "../assets/chat.svg"
 import { ReactComponent as CloseIcon } from "../assets/close/rounded.svg"
@@ -130,7 +131,7 @@ const Game: React.FC = () => {
           }}
         />
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
-          <div className="hidden sm:block">
+          <div className="hidden max-h-[420px] sm:block">
             <PlayerList players={players} variant="game" />
           </div>
           <div className="flex w-full flex-col gap-2 sm:gap-3">
@@ -291,6 +292,11 @@ const Board: React.FC<
           </div>
         )}
       </div>
+      <SoundsButton
+        width={32}
+        height={32}
+        className="absolute right-2 top-2 sm:bottom-0 sm:left-[163px] sm:right-auto sm:top-auto"
+      />
       <Discard score={player?.score ?? 0} onDiscard={onDiscard} />
       <Chat chat={chat} onChat={onChat} onMessageRead={onMessageRead} />
     </div>
@@ -402,7 +408,7 @@ const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
   return (
     <>
       <button
-        className="absolute bottom-2 left-2 sm:bottom-0 sm:left-[210px]"
+        className="absolute bottom-2 left-2 sm:bottom-0 sm:left-0"
         onClick={() => setOpen(true)}
       >
         <ChatIcon />
