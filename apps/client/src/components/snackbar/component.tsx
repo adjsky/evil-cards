@@ -124,6 +124,7 @@ export const Snackbar: React.FC<SnackbarProps> = ({
       return
     }
 
+    stopAutoHide()
     close()
   })
 
