@@ -173,6 +173,45 @@ const useSocketEvents = () => {
       // --------------------------- SYNC GAME STATE ---------------------------
 
       switch (message.type) {
+        case "join":
+        case "create": {
+          const { configuration, id, playerId, players, ...gameState } =
+            message.details.changedState
+
+          const player = players.find((player) => player.id == playerId)
+
+          setSession({
+            configuration,
+            id,
+            players,
+            player:
+              player ?? raise(`Expected to find player in the players list`),
+            chat: [],
+            ...(gameState.status == "voting" ||
+            gameState.status == "choosing" ||
+            gameState.status == "choosingwinner" ||
+            gameState.status == "winnercardview"
+              ? {
+                  playing: true,
+                  gameState: {
+                    status: gameState.status,
+                    deck: gameState.deck,
+                    redCard: gameState.redCard,
+                    votes: gameState.votes,
+                    votingEndsAt: gameState.votingEndsAt
+                  }
+                }
+              : {
+                  playing: false,
+                  gameState: {
+                    status: gameState.status
+                  }
+                })
+          })
+
+          break
+        }
+
         case "playerjoin":
         case "playerleave": {
           setSession((prev) => {

@@ -1,10 +1,7 @@
 import EasySpeech from "easy-speech"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtomValue } from "jotai"
 import { useState } from "react"
 
-import raise from "@/core/raise"
-
-import { sessionAtom } from "@/lib/atoms/session"
 import { preloadSounds } from "@/lib/audio"
 import getWSHost from "@/lib/functions/get-ws-host"
 
@@ -28,8 +25,6 @@ const useCreateOrJoinSession = (options?: Options) => {
   const [connecting, setConnecting] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
 
-  const setSession = useSetAtom(sessionAtom)
-
   const nickname = useAtomValue(nicknameAtom)
   const avatarId = useAtomValue(avatarAtom)
 
@@ -40,7 +35,7 @@ const useCreateOrJoinSession = (options?: Options) => {
           return
         }
 
-        if (message.type == "error" && connecting) {
+        if (message.type == "error") {
           setConnecting(false)
           setSessionId(null)
           resetSocketUrl()
@@ -49,40 +44,6 @@ const useCreateOrJoinSession = (options?: Options) => {
         }
 
         if (message.type == "join" || message.type == "create") {
-          const { configuration, id, playerId, players, ...gameState } =
-            message.details.changedState
-
-          const player = players.find((player) => player.id == playerId)
-
-          setSession({
-            configuration,
-            id,
-            players,
-            player:
-              player ?? raise(`Expected to find player in the players list`),
-            chat: [],
-            ...(gameState.status == "voting" ||
-            gameState.status == "choosing" ||
-            gameState.status == "choosingwinner" ||
-            gameState.status == "winnercardview"
-              ? {
-                  playing: true,
-                  gameState: {
-                    status: gameState.status,
-                    deck: gameState.deck,
-                    redCard: gameState.redCard,
-                    votes: gameState.votes,
-                    votingEndsAt: gameState.votingEndsAt
-                  }
-                }
-              : {
-                  playing: false,
-                  gameState: {
-                    status: gameState.status
-                  }
-                })
-          })
-
           history.replaceState("", "", "/")
 
           preloadSounds()
