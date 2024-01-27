@@ -22,6 +22,7 @@ import BackButton from "@/components/back-button"
 import Button from "@/components/button"
 import Chat from "@/components/chat"
 import Configuration from "@/components/configuration"
+import DonationDetails from "@/components/donation-details"
 import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import PlayerList from "@/components/player-list"
@@ -31,6 +32,7 @@ import SoundsButton from "@/components/sounds-button"
 import { ReactComponent as Author } from "@/assets/author.svg"
 import { ReactComponent as ChatIcon } from "@/assets/chat.svg"
 import { ReactComponent as Close } from "@/assets/close/rounded.svg"
+import { ReactComponent as Donation } from "@/assets/donation.svg"
 import { ReactComponent as Gear } from "@/assets/gear.svg"
 
 import type { Player } from "@evil-cards/server/src/ws/send"
@@ -59,7 +61,7 @@ const Waiting: React.FC = () => {
   const [isStarting, setIsStarting] = useState(false)
 
   const [visibleMainScreen, setVisibleMainScreen] = useState<
-    "configuration" | "rules" | "authors" | "chat"
+    "configuration" | "rules" | "authors" | "chat" | "donation"
   >("rules")
 
   const screenRef = useRef<HTMLDivElement>(null)
@@ -181,6 +183,11 @@ const Waiting: React.FC = () => {
                     <Authors />
                   </MainScreen>
                 )}
+                {visibleMainScreen == "donation" && (
+                  <MainScreen title="Реквизиты">
+                    <DonationDetails />
+                  </MainScreen>
+                )}
                 {visibleMainScreen == "chat" && (
                   <MainScreen title="Чат комнаты" className="min-h-0">
                     <Chat
@@ -238,6 +245,18 @@ const Waiting: React.FC = () => {
                     >
                       <Author />
                     </button>
+
+                    <button
+                      className="absolute bottom-3 left-3 p-1"
+                      onClick={() => {
+                        setVisibleMainScreen("donation")
+                      }}
+                      aria-label="Показать реквизиты для пожертвований"
+                      data-testid="show-donation"
+                    >
+                      <Donation />
+                    </button>
+
                     <button
                       className="absolute left-3 top-3 p-1 sm:hidden"
                       onClick={() => {
