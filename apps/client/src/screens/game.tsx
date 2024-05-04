@@ -437,7 +437,7 @@ const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
 
         <hr className="border-none py-1.5" />
 
-        <div className="flex-1">
+        <div className="min-h-0 flex-1">
           <BaseChat chat={chat} onChat={onChat} onMessageRead={onMessageRead} />
         </div>
       </Modal>
