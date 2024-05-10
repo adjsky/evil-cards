@@ -49,7 +49,7 @@ export const chatSchema = z.object({
 export const configurationSchema = implement<Configuration>().with({
   votingDurationSeconds: z.literal(30).or(z.literal(60)).or(z.literal(90)),
   reader: z.boolean(),
-  maxScore: z.literal(10).or(z.literal(15)).or(z.literal(20)),
+  maxScore: z.literal(7).or(z.literal(10).or(z.literal(15)).or(z.literal(20))),
   deck: z.enum([...availableDecks, "custom"]),
   public: z.boolean()
 })

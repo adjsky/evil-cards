@@ -27,6 +27,7 @@ const votingPeriodOptions = [
 ] as const
 
 const maxScoreOptions = [
+  { value: 7, name: "7" },
   { value: 10, name: "10" },
   { value: 15, name: "15" },
   { value: 20, name: "20" }
