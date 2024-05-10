@@ -46,6 +46,9 @@ class Session implements ISession {
   private _redDeck: Map<string, string> | null
   private _whiteDeck: Map<string, string> | null
 
+  private _discardedRedCards: Map<string, string>
+  private _discardedWhiteCards: Map<string, string>
+
   private _decks: PreCollectedDecks & { custom: UploadedDeck | null }
 
   public get votes() {
@@ -85,6 +88,8 @@ class Session implements ISession {
     }
     this._redDeck = null
     this._whiteDeck = null
+    this._discardedRedCards = new Map()
+    this._discardedWhiteCards = new Map()
     this._timeouts = {
       choosebest: null,
       starting: null,
@@ -409,12 +414,8 @@ class Session implements ISession {
       throw new GameError("ScoreIsTooLowToDiscardCards")
     }
 
-    if (!this._whiteDeck) {
-      throw new GameError("DeckNotInitialized")
-    }
-
     player.hand.forEach(([id, text]) => {
-      this._whiteDeck!.set(id, text)
+      this._discardedWhiteCards.set(id, text)
     })
     player.hand.clear()
     player.score -= 1
@@ -430,6 +431,8 @@ class Session implements ISession {
     this._votes = []
     this._redDeck = null
     this._whiteDeck = null
+    this._discardedRedCards.clear()
+    this._discardedWhiteCards.clear()
 
     this.clearTimeouts()
 
@@ -462,10 +465,15 @@ class Session implements ISession {
     }
 
     if (this._redDeck.size == 0) {
-      return this.endGame()
+      this._redDeck = new Map(this._discardedRedCards)
+      this._discardedRedCards.clear()
     }
 
+    this._votes.forEach((vote) => {
+      this._discardedWhiteCards.set(vote.card.id, vote.card.text)
+    })
     this._votes = []
+
     this._players.forEach((player) => {
       player.voted = false
     })
@@ -478,6 +486,7 @@ class Session implements ISession {
     ]
     this._redCard = redCard
     this._redDeck.delete(id)
+    this._discardedRedCards.set(id, redCard)
 
     for (const player of this._players) {
       this.fillPlayerDeck(player)
@@ -595,7 +604,8 @@ class Session implements ISession {
 
     for (let i = 0; i < 10 - handSize; i++) {
       if (this._whiteDeck.size == 0) {
-        break
+        this._whiteDeck = new Map(this._discardedWhiteCards)
+        this._discardedWhiteCards.clear()
       }
 
       const cards = Array.from(this._whiteDeck.entries())
