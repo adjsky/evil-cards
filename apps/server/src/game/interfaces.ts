@@ -1,5 +1,12 @@
-import type { Configuration, Status, Vote } from "../ws/send.ts"
-import type { SessionEvents, SessionPlayer, Timeouts } from "./types.ts"
+import type {
+  Configuration,
+  SessionEvents,
+  SessionPlayer,
+  Status,
+  Timeouts,
+  Vote
+} from "./types.ts"
+import type { UploadedDeck } from "@evil-cards/core/deck-parser"
 
 type PublicEvents = {
   on: SessionEvents["on"]
@@ -19,6 +26,7 @@ export interface ISession {
   join(nickname: string, avatarId: number): SessionPlayer
   leave(playerId: string): void
   updateConfiguration(playerId: string, configuration: Configuration): void
+  addCustomDeck(playerId: string, deck: UploadedDeck): void
   startGame(playerId: string): void
   vote(playerId: string, cardId: string): void
   choose(playerId: string, choosedPlayerId: string): void
@@ -31,6 +39,7 @@ export interface ISession {
 }
 
 export interface ISessionFactory {
+  init(): Promise<void>
   create(): ISession
 }
 

@@ -6,14 +6,17 @@ import {
   LEAVE_TIMEOUT_MS,
   SESSION_END_TIMEOUT_MS
 } from "../../src/game/constants.ts"
-import Session from "../../src/game/session.ts"
+import Session, { SessionFactory } from "../../src/game/session.ts"
 
 import type { Player } from "../../src/ws/send.ts"
+
+const sessionFct = new SessionFactory()
+await sessionFct.init()
 
 let session: Session
 
 beforeEach(() => {
-  session = new Session()
+  session = sessionFct.create()
 })
 
 describe("join", () => {

@@ -1,11 +1,16 @@
 import dayjs from "dayjs"
 import Emittery from "emittery"
-import { nanoid } from "nanoid"
+
+import {
+  preCollectDecks,
+  type PreCollectedDecks,
+  type UploadedDeck
+} from "@evil-cards/core/deck-parser"
 
 import getRandomInt from "../functions/get-random-int.ts"
 import shuffleArray from "../functions/shuffle-array.ts"
 import { setDateTimeout } from "../lib/date-timeout.ts"
-import { redCards, whiteCards } from "./cards.ts"
+import { nanoid } from "../lib/nanoid-alphanumeric.ts"
 import {
   BEST_CARD_VIEW_DURATION_MS,
   GAME_START_DELAY_MS,
@@ -16,33 +21,20 @@ import {
   SESSION_ID_SIZE,
   USER_ID_SIZE
 } from "./constants.ts"
-import {
-  DiscardCardsError,
-  DisconnectedError,
-  ForbiddenNicknameError,
-  ForbiddenToChooseError,
-  ForbiddenToChooseWinnerError,
-  ForbiddenToVoteError,
-  GameStartedError,
-  HostError,
-  InvalidCardError,
-  InvalidChoosedPlayerIdError,
-  InvalidPlayerIdError,
-  NoPlayerError,
-  NotEnoughPlayersError,
-  NotPlayingError,
-  TooManyPlayersError
-} from "./errors.ts"
+import { GameError } from "./errors.ts"
 
-import type { Card, Configuration, Status, Vote } from "../ws/send.ts"
-import type { Card as StoredCard } from "./cards.ts"
 import type { ISession, ISessionFactory } from "./interfaces.ts"
-import type { SessionEvents, SessionPlayer, Timeouts } from "./types.ts"
+import type {
+  Configuration,
+  SessionEvents,
+  SessionPlayer,
+  Status,
+  Timeouts,
+  Vote
+} from "./types.ts"
 
 class Session implements ISession {
   private _id: string
-  private _availableRedCards: Card[] | null
-  private _availableWhiteCards: Card[] | null
   private _timeouts: Timeouts
   private _votes: Vote[]
   private _players: SessionPlayer[]
@@ -50,6 +42,11 @@ class Session implements ISession {
   private _status: Status
   private _configuration: Configuration
   private _events: SessionEvents
+
+  private _redDeck: Map<string, string> | null
+  private _whiteDeck: Map<string, string> | null
+
+  private _decks: PreCollectedDecks & { custom: UploadedDeck | null }
 
   public get votes() {
     return this._votes
@@ -77,17 +74,17 @@ class Session implements ISession {
     return this._configuration
   }
 
-  public constructor() {
+  public constructor(precollectedDecks: PreCollectedDecks) {
     this._id = nanoid(SESSION_ID_SIZE)
     this._configuration = {
       maxScore: 10,
       reader: true,
       votingDurationSeconds: 60,
-      version18Plus: true,
+      deck: "normal",
       public: true
     }
-    this._availableRedCards = null
-    this._availableWhiteCards = null
+    this._redDeck = null
+    this._whiteDeck = null
     this._timeouts = {
       choosebest: null,
       starting: null,
@@ -99,6 +96,10 @@ class Session implements ISession {
     this._redCard = null
     this._status = "waiting"
     this._events = new Emittery()
+    this._decks = {
+      ...precollectedDecks,
+      custom: null
+    }
   }
 
   public join(nickname: string, avatarId: number) {
@@ -108,7 +109,7 @@ class Session implements ISession {
 
     if (existingPlayer) {
       if (!existingPlayer.disconnected && !existingPlayer.leaveTimeout) {
-        throw new ForbiddenNicknameError()
+        throw new GameError("ForbiddenNickname")
       }
 
       if (existingPlayer.leaveTimeout) {
@@ -125,12 +126,12 @@ class Session implements ISession {
     }
 
     if (this._players.length >= MAX_PLAYERS_IN_SESSSION) {
-      throw new TooManyPlayersError()
+      throw new GameError("TooManyPlayers")
     }
 
     const isWaiting = this.isWaiting()
     if (!isWaiting) {
-      throw new GameStartedError()
+      throw new GameError("GameAlreadyStarted")
     }
 
     if (this._timeouts.endsesion != null) {
@@ -147,7 +148,7 @@ class Session implements ISession {
       master: false,
       voted: false,
       disconnected: false,
-      deck: [],
+      hand: new Map(),
       leaveTimeout: null
     }
 
@@ -160,14 +161,14 @@ class Session implements ISession {
   public leave(playerId: string) {
     const player = this._players.find((player) => player.id == playerId)
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     if (player.disconnected) {
-      throw new DisconnectedError()
+      throw new GameError("Disconnected")
     }
 
-    const makeWork = () => {
+    const doWork = () => {
       const isPlaying = this.isPlaying()
 
       if (isPlaying) {
@@ -222,10 +223,10 @@ class Session implements ISession {
     if (this.isPlaying()) {
       player.leaveTimeout = setTimeout(() => {
         player.leaveTimeout = null
-        makeWork()
+        doWork()
       }, LEAVE_TIMEOUT_MS)
     } else {
-      makeWork()
+      doWork()
     }
   }
 
@@ -233,11 +234,11 @@ class Session implements ISession {
     const player = this._players.find((p) => p.id == playerId)
 
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     if (!player.host) {
-      throw new HostError()
+      throw new GameError("Host")
     }
 
     this._configuration = configuration
@@ -245,29 +246,43 @@ class Session implements ISession {
     this._events.emit("configurationchange", configuration)
   }
 
+  public addCustomDeck(playerId: string, deck: UploadedDeck) {
+    const player = this._players.find((p) => p.id == playerId)
+
+    if (!player) {
+      throw new GameError("NoPlayer")
+    }
+
+    if (!player.host) {
+      throw new GameError("Host")
+    }
+
+    this._decks.custom = deck
+  }
+
   public startGame(playerId: string) {
     const player = this._players.find((p) => p.id == playerId)
 
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     if (!player.host) {
-      throw new HostError()
+      throw new GameError("Host")
     }
 
     if (this.isPlaying()) {
-      throw new GameStartedError()
+      throw new GameError("GameAlreadyStarted")
     }
 
     if (this._players.length < MIN_PLAYERS_TO_START_GAME) {
-      throw new NotEnoughPlayersError()
+      throw new GameError("NotEnoughPlayers")
     }
 
     this._status = "starting"
 
-    this._availableRedCards = this.reduceCards(redCards)
-    this._availableWhiteCards = this.reduceCards(whiteCards)
+    this._redDeck = this.buildDeck("red")
+    this._whiteDeck = this.buildDeck("white")
 
     this.players.forEach((p) => {
       p.score = 0
@@ -283,25 +298,29 @@ class Session implements ISession {
 
   public vote(playerId: string, cardId: string) {
     const player = this._players.find((p) => p.id == playerId)
-    const card = player?.deck.find((deckCard) => deckCard.id == cardId)
 
     if (!player) {
-      throw new InvalidPlayerIdError()
+      throw new GameError("InvalidPlayerId")
     }
 
+    const card = player.hand.get(cardId)
+
     if (!card) {
-      throw new InvalidCardError()
+      throw new GameError("InvalidCard")
     }
 
     if (this._status != "voting" || player.master || player.voted) {
-      throw new ForbiddenToVoteError()
+      throw new GameError("ForbbidenToVote")
     }
 
     player.voted = true
-    player.deck = player.deck.filter((deckCard) => deckCard.id != cardId)
+    player.hand.delete(cardId)
 
     const vote: Vote = {
-      text: card.text,
+      card: {
+        id: cardId,
+        text: card
+      },
       playerId: player.id,
       visible: false,
       winner: false
@@ -326,15 +345,15 @@ class Session implements ISession {
     )
 
     if (!player) {
-      throw new InvalidPlayerIdError()
+      throw new GameError("InvalidPlayerId")
     }
 
     if (!choosedVote) {
-      throw new InvalidChoosedPlayerIdError()
+      throw new GameError("InvalidChoosedPlayerId")
     }
 
     if (this._status != "choosing" || !player.master) {
-      throw new ForbiddenToChooseError()
+      throw new GameError("ForbiddenToChoose")
     }
 
     choosedVote.visible = true
@@ -355,15 +374,15 @@ class Session implements ISession {
     const choosedPlayer = this._players.find((p) => p.id == choosedPlayerId)
 
     if (!player) {
-      throw new InvalidPlayerIdError()
+      throw new GameError("InvalidPlayerId")
     }
 
     if (!choosedPlayer || !choosedVote) {
-      throw new InvalidChoosedPlayerIdError()
+      throw new GameError("InvalidChoosedPlayerId")
     }
 
     if (!player.master || this._status != "choosingwinner") {
-      throw new ForbiddenToChooseWinnerError()
+      throw new GameError("ForbiddenToChooseWinner")
     }
 
     choosedPlayer.score += 1
@@ -377,25 +396,27 @@ class Session implements ISession {
 
   public discardCards(playerId: string) {
     if (this.isWaiting()) {
-      throw new NotPlayingError()
+      throw new GameError("NotPlaying")
     }
 
     const player = this._players.find((p) => p.id == playerId)
 
     if (!player) {
-      throw new InvalidPlayerIdError()
+      throw new GameError("InvalidPlayerId")
     }
 
     if (player.score == 0) {
-      throw new DiscardCardsError()
+      throw new GameError("ScoreIsTooLowToDiscardCards")
     }
 
-    if (!this._availableWhiteCards) {
-      throw new Error("Received null availableWhiteCards")
+    if (!this._whiteDeck) {
+      throw new GameError("DeckNotInitialized")
     }
 
-    this._availableWhiteCards = this._availableWhiteCards.concat(player.deck)
-    player.deck = []
+    player.hand.forEach(([id, text]) => {
+      this._whiteDeck!.set(id, text)
+    })
+    player.hand.clear()
     player.score -= 1
 
     this.fillPlayerDeck(player)
@@ -407,15 +428,15 @@ class Session implements ISession {
     this._status = "end"
     this._redCard = null
     this._votes = []
-    this._availableRedCards = null
-    this._availableWhiteCards = null
+    this._redDeck = null
+    this._whiteDeck = null
 
     this.clearTimeouts()
 
     this._players = this.players.filter((p) => !p.disconnected)
 
     for (const player of this._players) {
-      player.deck.length = 0
+      player.hand.clear()
       player.master = false
       player.voted = false
     }
@@ -436,11 +457,11 @@ class Session implements ISession {
   }
 
   private startVoting() {
-    if (!this._availableRedCards) {
-      throw new Error("Received null availableRedCards")
+    if (!this._redDeck) {
+      throw new GameError("DeckNotInitialized")
     }
 
-    if (this._availableRedCards.length == 0) {
+    if (this._redDeck.size == 0) {
       return this.endGame()
     }
 
@@ -452,9 +473,11 @@ class Session implements ISession {
 
     this.passMaster()
 
-    const redCardIndex = getRandomInt(0, this._availableRedCards.length - 1)
-    this._redCard = this._availableRedCards[redCardIndex].text
-    this._availableRedCards.splice(redCardIndex, 1)
+    const [id, redCard] = Array.from(this._redDeck.entries())[
+      getRandomInt(0, this._redDeck.size - 1)
+    ]
+    this._redCard = redCard
+    this._redDeck.delete(id)
 
     for (const player of this._players) {
       this.fillPlayerDeck(player)
@@ -481,23 +504,26 @@ class Session implements ISession {
         return
       }
 
-      if (player.deck.length == 0) {
+      if (player.hand.size == 0) {
         return
       }
 
-      const randomIndex = getRandomInt(0, player.deck.length - 1)
-      const whiteCard = player.deck[randomIndex]
+      const cards = Array.from(player.hand.entries())
+      const [id, text] = cards[getRandomInt(0, player.hand.size - 1)]
 
       player.voted = true
 
       this._votes.push({
-        text: whiteCard.text,
+        card: {
+          id,
+          text
+        },
         playerId: player.id,
         visible: false,
         winner: false
       })
 
-      player.deck.splice(randomIndex, 1)
+      player.hand.delete(id)
     })
 
     this._votes = shuffleArray(this._votes)
@@ -550,43 +576,34 @@ class Session implements ISession {
     this._players[nextMasterPlayerIndex].master = true
   }
 
-  private reduceCards(cards: StoredCard[]) {
-    return cards.reduce((acc, current, index) => {
-      let card = this._configuration.version18Plus
-        ? current.adult
-        : current.baby
+  private buildDeck(variant: "red" | "white") {
+    const deck = this._decks[this._configuration.deck]
 
-      if (!card) {
-        card = current.adult
-      }
+    if (deck == null) {
+      throw new GameError("DeckNotInitialized")
+    }
 
-      acc.push({
-        id: index.toString(),
-        text: card
-      })
-
-      return acc
-    }, [] as Card[])
+    return new Map(Object.entries(deck[variant]))
   }
 
   private fillPlayerDeck(player: SessionPlayer) {
-    if (!this._availableWhiteCards) {
-      throw new Error("Received null availableWhiteCards")
+    if (!this._whiteDeck) {
+      throw new GameError("DeckNotInitialized")
     }
 
-    const deckLength = player.deck.length
+    const handSize = player.hand.size
 
-    for (let i = 0; i < 10 - deckLength; i++) {
-      if (this._availableWhiteCards.length == 0) {
+    for (let i = 0; i < 10 - handSize; i++) {
+      if (this._whiteDeck.size == 0) {
         break
       }
 
-      const randomIndex = getRandomInt(0, this._availableWhiteCards.length - 1)
+      const cards = Array.from(this._whiteDeck.entries())
+      const [id, text] = cards[getRandomInt(0, this._whiteDeck.size - 1)]
 
-      const whiteCard = this._availableWhiteCards[randomIndex]
-      player.deck.push(whiteCard)
+      player.hand.set(id, text)
 
-      this._availableWhiteCards.splice(randomIndex, 1)
+      this._whiteDeck.delete(id)
     }
   }
 
@@ -603,8 +620,18 @@ class Session implements ISession {
 }
 
 export class SessionFactory implements ISessionFactory {
+  private _precollectedDecks: PreCollectedDecks | null = null
+
+  public async init() {
+    this._precollectedDecks = await preCollectDecks()
+  }
+
   public create() {
-    return new Session()
+    if (this._precollectedDecks == null) {
+      throw new Error("You have to call `init` before calling `create`")
+    }
+
+    return new Session(this._precollectedDecks)
   }
 }
 

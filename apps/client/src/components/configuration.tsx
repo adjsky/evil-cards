@@ -1,11 +1,17 @@
 import { autoUpdate, useFloating } from "@floating-ui/react-dom"
 import { Listbox, RadioGroup, Transition } from "@headlessui/react"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useId, useState } from "react"
 import { createPortal } from "react-dom"
+import { Tooltip } from "react-tooltip"
 
 import cn from "@/lib/functions/cn"
 
 import { ReactComponent as ArrowDown } from "@/assets/arrows/down.svg"
+import { ReactComponent as TooltipIcon } from "@/assets/tooltip.svg"
+
+import ExternalUnderlineLink from "./external-underline-link"
+import Loader from "./loader"
+import { notify } from "./snackbar"
 
 import type { Configuration as ConfigurationType } from "@evil-cards/server/src/ws/send"
 
@@ -15,9 +21,9 @@ const visibilityOptions = [
 ] as const
 
 const votingPeriodOptions = [
-  { value: 60, name: "НОРМАЛЬНАЯ" },
-  { value: 30, name: "БЫСТРАЯ" },
-  { value: 90, name: "МЕДЛЕННАЯ" }
+  { value: 60, name: "Нормальная" },
+  { value: 30, name: "Быстрая" },
+  { value: 90, name: "Медленная" }
 ] as const
 
 const maxScoreOptions = [
@@ -27,26 +33,32 @@ const maxScoreOptions = [
 ] as const
 
 const readerOptions = [
-  { value: false, name: "НЕТ" },
-  { value: true, name: "ЕСТЬ" }
+  { value: false, name: "Нет" },
+  { value: true, name: "Есть" }
 ] as const
 
-const version18PlusOptions = [
-  { value: false, name: "НЕТ" },
-  { value: true, name: "ДА" }
+const deckOptions = [
+  { value: "normal", name: "Обычный" },
+  { value: "twitchfriendly", name: "Twitch-friendly" },
+  { value: "custom", name: "Кастомный" }
 ] as const
+
+const MAX_UPLOADED_FILE_SIZE_IN_BYTES = 1 * 1024 * 1024 // 1mb
 
 const Configuration: React.FC<{
   configuration: ConfigurationType
   host?: boolean
-  onSave?: (configuration: ConfigurationType) => void
-}> = ({ configuration, host, onSave }) => {
+  onSave: (configuration: ConfigurationType) => void
+  onDeckUpload: (base64: string, onFinish: (ok: boolean) => void) => void
+}> = ({ configuration, host, onSave, onDeckUpload }) => {
   const [configurationCopy, setConfigurationCopy] = useState({
     ...configuration
   })
   useEffect(() => {
     setConfigurationCopy(configuration)
   }, [configuration])
+
+  const [isUploadingDeck, setIsUploadingDeck] = useState(false)
 
   const handleChange = (configuration: Partial<ConfigurationType>) => {
     setConfigurationCopy((prev) => {
@@ -55,10 +67,62 @@ const Configuration: React.FC<{
         ...configuration
       }
 
-      onSave && onSave(updated)
+      onSave(updated)
 
       return updated
     })
+  }
+
+  const handleDeckChange = (deck: (typeof deckOptions)[number]["value"]) => {
+    if (deck == "custom") {
+      setIsUploadingDeck(true)
+
+      const input = document.createElement("input")
+      input.type = "file"
+      input.accept = ".tsv"
+
+      input.addEventListener("change", (event) => {
+        const file = (event.currentTarget as HTMLInputElement).files?.[0]
+
+        if (!file) {
+          return
+        }
+
+        if (file.size > MAX_UPLOADED_FILE_SIZE_IN_BYTES) {
+          notify({
+            message: "Файл слишком большой",
+            infinite: false,
+            severity: "error"
+          })
+
+          return
+        }
+
+        const reader = new FileReader()
+
+        reader.addEventListener("load", () => {
+          onDeckUpload(reader.result as string, (ok) => {
+            setIsUploadingDeck(false)
+
+            if (ok) {
+              handleChange({ deck })
+            }
+          })
+        })
+
+        reader.readAsDataURL(file)
+      })
+
+      input.addEventListener("cancel", () => {
+        setIsUploadingDeck(false)
+      })
+
+      input.click()
+
+      return
+    }
+
+    handleChange({ deck })
   }
 
   return (
@@ -70,6 +134,15 @@ const Configuration: React.FC<{
           value={configurationCopy["public"]}
           disabled={!host}
           onChange={(_public) => handleChange({ public: _public })}
+        />
+      </Row>
+      <Row label="Набор карт" tooltip={<DeckTooltip />}>
+        <Select
+          options={deckOptions}
+          value={configurationCopy["deck"]}
+          disabled={!host}
+          loading={isUploadingDeck}
+          onChange={handleDeckChange}
         />
       </Row>
       <Row label="Скорость игры">
@@ -99,30 +172,54 @@ const Configuration: React.FC<{
           onChange={(maxScore) => handleChange({ maxScore })}
         />
       </Row>
-      <Row label="Версия 18+">
-        <Radio
-          label="Версия 18+"
-          options={version18PlusOptions}
-          value={configurationCopy["version18Plus"]}
-          disabled={!host}
-          onChange={(version18Plus) => handleChange({ version18Plus })}
-        />
-      </Row>
     </div>
+  )
+}
+
+function DeckTooltip() {
+  return (
+    <>
+      Информацию об использовании кастомных наборов карт можно найти на{" "}
+      <ExternalUnderlineLink
+        href="https://github.com/adjsky/evil-cards/blob/master/decks"
+        target="_blank"
+        rel="noreferrer"
+      >
+        GitHub
+      </ExternalUnderlineLink>
+      .
+    </>
   )
 }
 
 function Row({
   label,
+  tooltip,
   children
 }: {
   label: string
+  tooltip?: React.ReactNode | string
   children: React.ReactNode
 }) {
+  const id = useId()
+
   return (
     <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-      <span className="text-center font-bold uppercase text-gray-100 sm:text-left">
-        {label}
+      <span className="flex items-center gap-2 text-center font-bold uppercase text-gray-100 sm:text-left">
+        <span>{label}</span>
+        {tooltip ? (
+          <>
+            <TooltipIcon data-tooltip-id={id} className="fill-gray-100" />
+            <Tooltip
+              className="max-w-xs !rounded-lg !px-3 !py-2 !text-sm font-normal normal-case !transition-opacity"
+              clickable
+              id={id}
+              opacity={1}
+            >
+              {tooltip}
+            </Tooltip>
+          </>
+        ) : null}
       </span>
       {children}
     </div>
@@ -138,16 +235,23 @@ type SelectProps<T> = {
   options: readonly Option<T>[]
   value: T extends (infer U)[] ? U : T
   disabled?: boolean
+  loading?: boolean
   onChange?: (value: T extends (infer U)[] ? U : T) => void
 }
 
-function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
+function Select<T>({
+  options,
+  value,
+  disabled,
+  loading,
+  onChange
+}: SelectProps<T>) {
   const { x, y, strategy, refs } = useFloating({
     whileElementsMounted: autoUpdate
   })
 
   return (
-    <Listbox value={value} onChange={onChange} disabled={disabled}>
+    <Listbox value={value} onChange={onChange} disabled={disabled || loading}>
       <Listbox.Button
         className={({ disabled }) =>
           cn(
@@ -157,13 +261,17 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
         }
         ref={refs.setReference}
       >
-        {({ open }) => (
-          <>
-            <span className="text-base font-semibold leading-none text-gray-900">
-              {options.find((option) => option.value == value)?.name}
-            </span>
-            <ArrowDown className={cn(open && "rotate-180")} />
-          </>
+        {loading ? (
+          <Loader className="mx-auto fill-gray-900" width={16} height={16} />
+        ) : (
+          ({ open }) => (
+            <>
+              <span className="text-base font-semibold uppercase leading-none text-gray-900">
+                {options.find((option) => option.value == value)?.name}
+              </span>
+              <ArrowDown className={cn(open && "rotate-180")} />
+            </>
+          )
         )}
       </Listbox.Button>
       <Portal>
@@ -189,7 +297,7 @@ function Select<T>({ options, value, disabled, onChange }: SelectProps<T>) {
                 value={option.value}
                 className={({ active }) =>
                   cn(
-                    "cursor-pointer px-4 py-2 text-gray-900 transition-colors",
+                    "cursor-pointer px-4 py-2 uppercase text-gray-900 transition-colors",
                     active && "bg-gray-200"
                   )
                 }
@@ -242,7 +350,7 @@ function Radio<T>({
             {({ checked, disabled }) => (
               <RadioGroup.Label
                 className={cn(
-                  "flex justify-center py-3 font-semibold leading-none text-gray-100",
+                  "flex justify-center py-3 font-semibold uppercase leading-none text-gray-100",
                   checked && "rounded-md bg-gray-100 text-gray-900",
                   !disabled && "cursor-pointer"
                 )}

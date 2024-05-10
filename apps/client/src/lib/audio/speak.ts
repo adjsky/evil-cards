@@ -1,8 +1,12 @@
 import EasySpeech from "easy-speech"
 
+import { notify } from "@/components/snackbar"
+
 import type { Message as ReceiveMessage } from "@evil-cards/server/src/ws/send"
 
 const allowedNames = ["Google русский"]
+
+let voice: SpeechSynthesisVoice | undefined
 
 export function processMessageAndSpeak(message: ReceiveMessage) {
   switch (message.type) {
@@ -12,7 +16,7 @@ export function processMessageAndSpeak(message: ReceiveMessage) {
     case "choose": {
       const voteText = message.details.changedState.votes.find(
         (vote) => vote.playerId == message.details.choosedPlayerId
-      )?.text
+      )?.card.text
 
       if (voteText) {
         speak(voteText)
@@ -23,16 +27,33 @@ export function processMessageAndSpeak(message: ReceiveMessage) {
   }
 }
 
-export function speak(text: string) {
-  const status = EasySpeech.status()
+export async function initSpeaker() {
+  try {
+    await EasySpeech.init()
 
-  if (!status.initialized) {
-    return
+    const voices = EasySpeech.voices()
+    voice = voices.find((voice) => allowedNames.includes(voice.name))
+
+    if (!voice) {
+      notify({
+        infinite: false,
+        message:
+          "Ваш браузер не поддерживает необходимые голоса озвучки. Озвучка текста будет недоступна",
+        severity: "information"
+      })
+    }
+  } catch (error) {
+    notify({
+      infinite: false,
+      message:
+        "Ваш браузер не поддерживает озвучку голосом. Озвучка текста будет недоступна",
+      severity: "information"
+    })
+    console.error(error)
   }
+}
 
-  const voices = EasySpeech.voices()
-  const voice = voices.find((voice) => allowedNames.includes(voice.name))
-
+export function speak(text: string) {
   if (!voice) {
     return
   }

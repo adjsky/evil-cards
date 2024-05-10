@@ -1,3 +1,10 @@
+import type { GameErrorKind } from "../game/errors"
+import type { Configuration, Status, Vote } from "../game/types"
+import type {
+  AvailableDeckNames,
+  CustomDeckName
+} from "@evil-cards/core/deck-parser"
+
 export type Player = {
   id: string
   avatarId: number
@@ -14,30 +21,6 @@ export type Card = {
   text: string
 }
 
-export type Status =
-  | "waiting"
-  | "starting"
-  | "voting"
-  | "choosing"
-  | "end"
-  | "choosingwinner"
-  | "winnercardview"
-
-export type Vote = {
-  text: string
-  playerId: string
-  visible: boolean
-  winner: boolean
-}
-
-export type Configuration = {
-  votingDurationSeconds: 30 | 60 | 90
-  reader: boolean
-  maxScore: 10 | 15 | 20
-  version18Plus: boolean
-  public: boolean
-}
-
 export type AvailableSession = {
   id: string
   server: number
@@ -45,7 +28,7 @@ export type AvailableSession = {
   players: number
   hostNickname: string
   hostAvatarId: number
-  adultOnly: boolean
+  deck: AvailableDeckNames | CustomDeckName
   speed: "normal" | "fast" | "slow"
   public: boolean
 }
@@ -75,7 +58,7 @@ export type Joined = {
       | { status: Extract<Status, "waiting" | "end" | "starting"> }
       | {
           status: Exclude<Status, "waiting" | "end" | "starting">
-          deck: Card[]
+          hand: Card[]
           redCard: string
           votingEndsAt: number | null
           votes: Vote[]
@@ -101,7 +84,11 @@ export type PlayerLeaved = {
 export type Voted = {
   type: "vote"
   details: {
-    changedState: { players: Player[]; votes: Vote[]; deck: Card[] }
+    changedState: {
+      players: Player[]
+      votes: Vote[]
+      hand: Card[]
+    }
   }
 }
 
@@ -115,7 +102,7 @@ export type VotingStarted = {
   details: {
     changedState: {
       status: "voting"
-      deck: Card[]
+      hand: Card[]
       redCard: string
       players: Player[]
       votes: Vote[]
@@ -127,7 +114,11 @@ export type VotingStarted = {
 export type ChoosingStarted = {
   type: "choosingstart"
   details: {
-    changedState: { status: "choosing"; votes: Vote[]; deck: Card[] }
+    changedState: {
+      status: "choosing"
+      votes: Vote[]
+      hand: Card[]
+    }
   }
 }
 
@@ -168,7 +159,7 @@ export type DiscardCards = {
   details: {
     changedState: {
       players: Player[]
-      deck?: Card[]
+      hand?: Card[]
     }
   }
 }
@@ -176,6 +167,7 @@ export type DiscardCards = {
 export type Error = {
   type: "error"
   details?: string
+  kind?: GameErrorKind
 }
 
 export type Ping = {
@@ -193,6 +185,11 @@ export type Chat = {
     message: string
     id: string
   } & Pick<Player, "avatarId" | "nickname">
+}
+
+export type CustomDeckUploadResult = {
+  type: "customdeckuploadresult"
+  details: { ok: true } | { ok: false; message?: string }
 }
 
 export type Message =
@@ -214,3 +211,6 @@ export type Message =
   | WinnerCardView
   | DiscardCards
   | Chat
+  | CustomDeckUploadResult
+
+export type { Configuration, Status, Vote } from "../game/types"

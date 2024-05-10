@@ -8,7 +8,6 @@ import { soundsAtom } from "@/lib/atoms/game"
 import { reconnectingSessionAtom, sessionAtom } from "@/lib/atoms/session"
 import { processMessageAndPlaySound, processMessageAndSpeak } from "@/lib/audio"
 import isBrowserUnsupported from "@/lib/functions/is-browser-unsupported"
-import mapErrorMessage from "@/lib/functions/map-error-message"
 import useSessionSocket from "@/lib/hooks/use-session-socket"
 
 import Modal from "@/components/modal"
@@ -17,6 +16,7 @@ import { notify, Snackbar } from "@/components/snackbar"
 import { ReactComponent as ExclamationTriangle } from "@/assets/exclamation-triangle.svg"
 
 import packageJson from "../package.json"
+import parseGameError from "./lib/functions/parse-game-error"
 import Entry from "./screens/entry"
 import Game from "./screens/game"
 import Waiting from "./screens/waiting"
@@ -138,9 +138,9 @@ const useSocketEvents = () => {
     onJsonMessage(message) {
       // ---------------------------- HANDLE ERRORS ----------------------------
 
-      if (message.type == "error" && message.details) {
+      if (message.type == "error" && message.kind) {
         notify({
-          message: mapErrorMessage(message.details),
+          message: parseGameError(message.kind),
           severity: "information",
           infinite: false
         })
@@ -195,7 +195,7 @@ const useSocketEvents = () => {
                   playing: true,
                   gameState: {
                     status: gameState.status,
-                    deck: gameState.deck,
+                    hand: gameState.hand,
                     redCard: gameState.redCard,
                     votes: gameState.votes,
                     votingEndsAt: gameState.votingEndsAt

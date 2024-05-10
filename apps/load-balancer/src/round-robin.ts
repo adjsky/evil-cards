@@ -28,7 +28,9 @@ async function getAvailableServers(docker: Docker, version?: string) {
     .filter(
       (container) =>
         container.Labels["balancer-target"] == env.TARGET &&
-        (version ? container.Labels["version"] == version : true) &&
+        (version
+          ? container.Labels["org.opencontainers.image.version"] == version
+          : true) &&
         container.State == "running"
     )
     .map((container) =>

@@ -3,9 +3,10 @@ import React, { useState } from "react"
 import useAvailableSessions from "@/lib/hooks/use-available-sessions-socket"
 import useCreateOrJoinSession from "@/lib/hooks/use-create-or-join-session"
 
-import { ReactComponent as CatAdult } from "@/assets/cats/adult.svg"
-import { ReactComponent as CatBaby } from "@/assets/cats/baby.svg"
+import { ReactComponent as CatDealer } from "@/assets/cats/dealer.svg"
+import { ReactComponent as CatDevil } from "@/assets/cats/devil.svg"
 import { ReactComponent as CatSad } from "@/assets/cats/sad.svg"
+import { ReactComponent as CatTwitch } from "@/assets/cats/twitch.svg"
 import { ReactComponent as ClockCold } from "@/assets/clocks/cold.svg"
 import { ReactComponent as ClockHot } from "@/assets/clocks/hot.svg"
 import { ReactComponent as ClockNormal } from "@/assets/clocks/normal.svg"
@@ -123,17 +124,19 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
                 )}
                 <div className="flex items-center sm:gap-1">
                   {session.speed == "fast" ? (
-                    <ClockHot className="sm:h-11 sm:w-11" />
+                    <ClockHot className="h-[1.875rem] w-[1.875rem] sm:h-11 sm:w-11" />
                   ) : session.speed == "normal" ? (
-                    <ClockNormal className="sm:h-11 sm:w-11" />
+                    <ClockNormal className="h-[1.875rem] w-[1.875rem] sm:h-11 sm:w-11" />
                   ) : (
-                    <ClockCold className="sm:h-11 sm:w-11" />
+                    <ClockCold className="h-[1.875rem] w-[1.875rem] sm:h-11 sm:w-11" />
                   )}
-                  {session.adultOnly ? (
-                    <CatAdult className="sm:h-11 sm:w-11" />
-                  ) : (
-                    <CatBaby className="sm:h-11 sm:w-11" />
-                  )}
+                  {session.deck == "normal" ? (
+                    <CatDevil className="h-[1.875rem] w-[1.875rem] sm:h-11 sm:w-11" />
+                  ) : session.deck == "twitchfriendly" ? (
+                    <CatTwitch className="h-[1.875rem] w-[1.875rem] sm:h-11 sm:w-11" />
+                  ) : session.deck == "custom" ? (
+                    <CatDealer className="h-[1.875rem] w-[1.875rem] sm:h-11 sm:w-11" />
+                  ) : null}
                 </div>
                 <span className="text-lg font-bold sm:text-2xl">
                   {session.players}/10

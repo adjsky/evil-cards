@@ -3,6 +3,7 @@
   "private": true,
   "exports": {
     "./resulto": "./lib/resulto.ts",
+    "./deck-parser": "./lib/deck-parser.ts",
     "./*": "./lib/*/index.ts"
   },
   "type": "module",
@@ -14,12 +15,13 @@
     "@fastify/compress": "^6.3.0",
     "@fastify/cors": "^8.2.1",
     "@fastify/request-context": "^5.0.0",
+    "csv-parse": "^5.5.5",
     "fastify": "^4.17.0",
     "fastify-healthcheck": "^4.4.0",
     "fastify-metrics": "^10.3.0",
     "fastify-plugin": "^4.5.0",
-    "resulto": "^0.4.3",
     "redis": "^4.6.5",
+    "resulto": "^0.4.3",
     "zod": "^3.20.6"
   },
   "devDependencies": {
