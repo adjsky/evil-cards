@@ -1,22 +1,27 @@
 {
   "folders": [
     {
-      "path": "..",
-      "name": "root"
+      "name": "root",
+      "path": ".."
     },
     {
+      "name": "client",
       "path": "../apps/client"
     },
     {
+      "name": "e2e",
       "path": "../apps/e2e"
     },
     {
+      "name": "server",
       "path": "../apps/server"
     },
     {
+      "name": "load-balancer",
       "path": "../apps/load-balancer"
     },
     {
+      "name": "core",
       "path": "../packages/core"
     }
   ],

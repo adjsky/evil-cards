@@ -1,19 +1,18 @@
-import { nanoid } from "nanoid"
 import { expect, test, vi } from "vitest"
 
-import Session from "../../src/game/session.ts"
-
-const plannedId = "fakeId"
+import { SessionFactory } from "../../src/game/session.ts"
 
 vi.mock("nanoid", () => {
   return {
-    nanoid: vi.fn(() => plannedId)
+    customAlphabet: vi.fn(() => () => "fakeId")
   }
 })
 
-test("session creates with random id provided by nanoid", async () => {
-  const newSession = new Session()
+const sessionFct = new SessionFactory()
+await sessionFct.init()
 
-  expect(newSession.id).toBe(plannedId)
-  expect(nanoid).toBeCalledTimes(1)
+test("session creates with random id provided by nanoid", async () => {
+  const session = sessionFct.create()
+
+  expect(session.id).toBe("fakeId")
 })

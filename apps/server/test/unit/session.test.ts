@@ -7,12 +7,15 @@ import {
   GAME_START_DELAY_MS,
   LEAVE_TIMEOUT_MS
 } from "../../src/game/constants.ts"
-import Session from "../../src/game/session.ts"
+import Session, { SessionFactory } from "../../src/game/session.ts"
+
+const sessionFct = new SessionFactory()
+await sessionFct.init()
 
 let session: Session
 
 beforeEach(() => {
-  session = new Session()
+  session = sessionFct.create()
   vi.useFakeTimers()
 })
 afterEach(() => {
@@ -35,27 +38,29 @@ describe("regular gameplay", () => {
     expect(session.status).toBe("voting")
 
     session.players.forEach((player) => {
-      expect(player.deck.length).toBe(10)
+      expect(player.hand.size).toBe(10)
     })
 
     expect(session.redCard).not.toBe(null)
     expect(firstPlayer.master).toBeTruthy()
 
     const secondPlayer = session.players[1]
-    const secondPlayerWhiteCard = secondPlayer.deck[0]
-    session.vote(secondPlayer.id, secondPlayerWhiteCard.id)
+    const [secondPlayerWhiteCardId, secondPlayerWhiteCardText] = Array.from(
+      secondPlayer.hand.entries()
+    )[0]
+    session.vote(secondPlayer.id, secondPlayerWhiteCardId)
 
     expect(session.votes.length).toBe(1)
-    expect(session.votes[0].text).toBe(secondPlayerWhiteCard.text)
+    expect(session.votes[0].card.text).toBe(secondPlayerWhiteCardText)
     expect(session.votes[0].playerId).toBe(secondPlayer.id)
     expect(session.votes[0].visible).toBeFalsy()
 
     const thirdPlayer = session.players[2]
     const fourthPlayer = session.players[3]
 
-    session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
+    session.vote(thirdPlayer.id, Array.from(thirdPlayer.hand.keys())[0])
     expect(session.votes.length).toBe(2)
-    session.vote(fourthPlayer.id, fourthPlayer.deck[0].id)
+    session.vote(fourthPlayer.id, Array.from(fourthPlayer.hand.keys())[0])
     expect(session.votes.length).toBe(3)
 
     expect(session.status).toBe("choosing")
@@ -80,7 +85,7 @@ describe("regular gameplay", () => {
 
     session.players.forEach((player) => {
       expect(player.voted).toBeFalsy()
-      expect(player.deck.length).toBe(10)
+      expect(player.hand.size).toBe(10)
     })
 
     expect(session.status).toBe("voting")
@@ -89,9 +94,9 @@ describe("regular gameplay", () => {
 
     firstPlayer.score = 9
 
-    session.vote(firstPlayer.id, firstPlayer.deck[0].id)
-    session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
-    session.vote(fourthPlayer.id, fourthPlayer.deck[0].id)
+    session.vote(firstPlayer.id, Array.from(firstPlayer.hand.keys())[0])
+    session.vote(thirdPlayer.id, Array.from(thirdPlayer.hand.keys())[0])
+    session.vote(fourthPlayer.id, Array.from(fourthPlayer.hand.keys())[0])
 
     session.choose(secondPlayer.id, firstPlayer.id)
     session.choose(secondPlayer.id, thirdPlayer.id)
@@ -153,9 +158,9 @@ describe("regular gameplay", () => {
 
     vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.vote(secondPlayer.id, secondPlayer.deck[0].id)
-    session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
-    session.vote(fourthPlayer.id, fourthPlayer.deck[0].id)
+    session.vote(secondPlayer.id, Array.from(secondPlayer.hand.keys())[0])
+    session.vote(thirdPlayer.id, Array.from(thirdPlayer.hand.keys())[0])
+    session.vote(fourthPlayer.id, Array.from(fourthPlayer.hand.keys())[0])
 
     session.choose(firstPlayer.id, secondPlayer.id)
     session.choose(firstPlayer.id, thirdPlayer.id)
@@ -205,8 +210,8 @@ describe("regular gameplay", () => {
     vi.advanceTimersByTime(GAME_START_DELAY_MS)
     vi.advanceTimersByTime(session.configuration.votingDurationSeconds * 1000)
 
-    expect(session.players[1].deck.length).toBe(9)
-    expect(session.players[2].deck.length).toBe(9)
+    expect(session.players[1].hand.size).toBe(9)
+    expect(session.players[2].hand.size).toBe(9)
     expect(session.votes.length).toBe(2)
 
     session.endGame()
@@ -246,7 +251,8 @@ describe("regular gameplay", () => {
       maxScore: 10,
       reader: false,
       version18Plus: true,
-      public: true
+      public: true,
+      deck: "normal"
     } as const
     session.updateConfiguration(firstPlayer.id, configuration)
     expect(session.configuration).toEqual(configuration)
@@ -260,8 +266,8 @@ describe("regular gameplay", () => {
 
     secondPlayer.score = configuration.maxScore - 1
 
-    session.vote(secondPlayer.id, secondPlayer.deck[0].id)
-    session.vote(thirdPlayer.id, thirdPlayer.deck[0].id)
+    session.vote(secondPlayer.id, Array.from(secondPlayer.hand.keys())[0])
+    session.vote(thirdPlayer.id, Array.from(thirdPlayer.hand.keys())[0])
 
     session.choose(firstPlayer.id, secondPlayer.id)
     session.choose(firstPlayer.id, thirdPlayer.id)
@@ -300,19 +306,25 @@ describe("cards discarding", () => {
 
     player2.score = 3
 
-    const prevDeckId = player2.deck.reduce((id, card) => (id += card.id), "")
+    const prevDeck = Array.from(player2.hand.values()).reduce(
+      (acc, c) => acc + c,
+      ""
+    )
 
     session.discardCards(player2.id)
 
-    const newDeckId = player2.deck.reduce((id, card) => (id += card.id), "")
+    const newDeck = Array.from(player2.hand.values()).reduce(
+      (acc, c) => acc + c,
+      ""
+    )
 
     expect(player2.score).toBe(2)
-    expect(player2.deck.length).toBe(10)
-    expect(prevDeckId).not.toBe(newDeckId)
+    expect(player2.hand.size).toBe(10)
+    expect(prevDeck).not.toBe(newDeck)
 
-    session.vote(player2.id, player2.deck[0].id)
+    session.vote(player2.id, Array.from(player2.hand.keys())[0])
 
     session.discardCards(player2.id)
-    expect(player2.deck.length).toBe(10)
+    expect(player2.hand.size).toBe(10)
   })
 })

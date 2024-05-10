@@ -42,7 +42,7 @@ function getLogWithMeta() {
   const log = getFastifyInstance()?.log
 
   if (!log) {
-    throw new Error("Trying to log when no fastify instance instantiated")
+    return
   }
 
   return log.child(meta)

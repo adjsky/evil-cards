@@ -27,6 +27,7 @@ import FadeIn from "@/components/fade-in"
 import Logo from "@/components/logo"
 import PlayerList from "@/components/player-list"
 import Rules from "@/components/rules"
+import { notify } from "@/components/snackbar"
 import SoundsButton from "@/components/sounds-button"
 
 import { ReactComponent as Author } from "@/assets/author.svg"
@@ -40,13 +41,14 @@ import type { Player } from "@evil-cards/server/src/ws/send"
 const Waiting: React.FC = () => {
   useCloseTabPreventer()
 
-  const winners = useAtomValue(winnersAtom)
-
   const [session, setSession] = useAtom(sessionAtom)
-
   const { player, configuration, id, players, gameState, playing, chat } =
     session ??
     raise("Trying to render 'Waiting' screen with no session created")
+
+  if (playing) {
+    raise(`Trying to render 'Waiting' screen when session is in playing state`)
+  }
 
   const hasUnreadMessages = useMemo(
     () => chat.some((message) => !message.read),
@@ -54,17 +56,15 @@ const Waiting: React.FC = () => {
   )
   const debouncedHasUnreadMessages = useDebounce(hasUnreadMessages, 100)
 
-  if (playing) {
-    raise(`Trying to render 'Waiting' screen when session is in playing state`)
-  }
+  const winners = useAtomValue(winnersAtom)
 
   const [isStarting, setIsStarting] = useState(false)
-
   const [visibleMainScreen, setVisibleMainScreen] = useState<
     "configuration" | "rules" | "authors" | "chat" | "donation"
   >("rules")
 
   const screenRef = useRef<HTMLDivElement>(null)
+  const onDeckUploadResultRef = useRef<(ok: boolean) => void>()
 
   const [screenStyles, containerRef] = useScreenFactor({
     px: 40,
@@ -75,11 +75,35 @@ const Waiting: React.FC = () => {
   const { start, secondsLeft } = useCountdown()
   const { sendJsonMessage, closeSocket, resetSocketUrl } = useSessionSocket({
     onJsonMessage(data) {
-      if (data.type == "gamestart") {
-        start(3)
-      }
+      switch (data.type) {
+        case "customdeckuploadresult":
+          if (data.details.ok) {
+            notify({
+              infinite: false,
+              message: "Набор карт успешно загружен",
+              severity: "information"
+            })
+          } else {
+            notify({
+              infinite: false,
+              message:
+                "Не удалось загрузить набор карт. Детали ошибки можно посмотреть в консоли",
+              severity: "error"
+            })
 
-      setIsStarting(data.type == "gamestart")
+            console.error(data.details.message)
+          }
+
+          onDeckUploadResultRef.current?.(data.details.ok)
+
+          break
+
+        case "gamestart":
+          start(3)
+          setIsStarting(true)
+
+          break
+      }
     }
   })
 
@@ -207,6 +231,16 @@ const Waiting: React.FC = () => {
                           type: "updateconfiguration",
                           details: configuration
                         })
+                      }}
+                      onDeckUpload={(base64, onFinish) => {
+                        sendJsonMessage({
+                          type: "uploaddeck",
+                          details: {
+                            base64
+                          }
+                        })
+
+                        onDeckUploadResultRef.current = onFinish
                       }}
                     />
                   </MainScreen>

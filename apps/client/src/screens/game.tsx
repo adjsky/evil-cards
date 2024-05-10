@@ -142,7 +142,7 @@ const Game: React.FC = () => {
                 data-testid="timebar"
               />
             </div>
-            <Deck
+            <Hand
               player={player}
               gameState={gameState}
               onCardClick={(cardId) =>
@@ -260,16 +260,16 @@ const Board: React.FC<
             data-testid="votes"
           >
             {gameState.votes.map(
-              ({ text, playerId, visible, winner }, index) => (
+              ({ card, playerId, visible, winner }, index) => (
                 <div
                   className={cn(
                     styles["voted-card"],
                     styles[`card-${index + 1}`]
                   )}
-                  key={text}
+                  key={card.id}
                 >
                   <Card
-                    text={visible ? text : undefined}
+                    text={visible ? card.text : undefined}
                     author={
                       winner
                         ? players.find((player) => player.id == playerId)
@@ -303,7 +303,7 @@ const Board: React.FC<
   )
 }
 
-const Deck: React.FC<{
+const Hand: React.FC<{
   gameState: PlayingGameState
   player: Player
   onCardClick?: (cardId: string) => void
@@ -322,7 +322,7 @@ const Deck: React.FC<{
       )}
       data-testid="deck"
     >
-      {gameState.deck.map((card) => (
+      {gameState.hand.map((card) => (
         <Card
           key={card.id}
           text={card.text}

@@ -1,9 +1,11 @@
 import { z } from "zod"
 
-import { log } from "../fastify/index.ts"
-import { fromPromise, fromThrowable } from "../resulto.ts"
+import { fromPromise, fromThrowable } from "@evil-cards/core/resulto"
 
-import type { RedisClient } from "./client.ts"
+import { availableDecks } from "../deck-parser"
+import { log } from "../fastify"
+
+import type { RedisClient } from "@evil-cards/core/keydb"
 
 export type CachedSession = z.infer<typeof sessionSchema>
 
@@ -22,7 +24,7 @@ const sessionSchema = z.object({
   players: z.number(),
   hostNickname: z.string(),
   hostAvatarId: z.number(),
-  adultOnly: z.boolean(),
+  deck: z.enum([...availableDecks, "custom"]),
   speed: z.enum(["fast", "normal", "slow"]),
   public: z.boolean()
 })

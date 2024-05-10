@@ -1,8 +1,7 @@
-import EasySpeech from "easy-speech"
 import { useAtomValue } from "jotai"
 import { useState } from "react"
 
-import { preloadSounds } from "@/lib/audio"
+import { initSpeaker, preloadSounds } from "@/lib/audio"
 import getWSHost from "@/lib/functions/get-ws-host"
 
 import { hideNotifications, notify } from "@/components/snackbar"
@@ -47,7 +46,7 @@ const useCreateOrJoinSession = (options?: Options) => {
           history.replaceState("", "", "/")
 
           preloadSounds()
-          EasySpeech.init().catch((error) => console.error(error))
+          initSpeaker()
         }
       },
       onOpen() {

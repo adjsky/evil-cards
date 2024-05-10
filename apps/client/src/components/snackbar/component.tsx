@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal, flushSync } from "react-dom"
 
-import raise from "@/core/raise"
-
 import cn from "@/lib/functions/cn"
 
 import { ReactComponent as Close } from "@/assets/close/square.svg"
@@ -68,7 +66,16 @@ export const Snackbar: React.FC<SnackbarProps> = ({
 
   const close = useCallback(() => {
     if (!containerRef.current) {
-      raise("Can't close hidden snackbar")
+      console.error("Can't close hidden snackbar")
+      return
+    }
+
+    const playingAnimations = containerRef.current
+      .getAnimations()
+      .filter(({ playState }) => playState == "running")
+
+    if (playingAnimations.length > 0) {
+      return
     }
 
     const animation = animate(containerRef.current, "close")
@@ -94,7 +101,8 @@ export const Snackbar: React.FC<SnackbarProps> = ({
   const show = useCallback(
     (state: SnackbarState) => {
       if (!containerRef.current) {
-        raise("Container is not mounted")
+        console.error("Container is not mounted")
+        return
       }
 
       cancelAnimations()

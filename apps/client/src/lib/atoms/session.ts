@@ -15,7 +15,7 @@ export type WaitingGameState = {
 
 export type PlayingGameState = {
   status: Exclude<Status, WaitingGameState["status"]>
-  deck: Card[]
+  hand: Card[]
   votes: Vote[]
   redCard: string
   votingEndsAt: number | null

@@ -48,6 +48,9 @@ await redisClient.connect()
 
 const sessionFactory = new SessionFactory()
 const sessionManager = new SessionManager(sessionFactory)
+
+await sessionManager.init()
+
 const controller = new Controller(sessionManager, redisClient, {
   serverNumber: env.SERVER_NUMBER
 })

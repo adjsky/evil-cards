@@ -13,6 +13,10 @@ class SessionManager implements ISessionManager {
     this.sessionFactory = sessionFactory
   }
 
+  public async init() {
+    await this.sessionFactory.init()
+  }
+
   public create() {
     const session = this.sessionFactory.create()
 

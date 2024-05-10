@@ -4,6 +4,7 @@ import { omit } from "ramda"
 import semverSatisfies from "semver/functions/satisfies.js"
 import { serializeError } from "serialize-error"
 
+import { parseBase64Deck } from "@evil-cards/core/deck-parser"
 import { log } from "@evil-cards/core/fastify"
 import { getFastifyInstance } from "@evil-cards/core/fastify"
 import { SessionCache } from "@evil-cards/core/keydb"
@@ -18,25 +19,19 @@ import {
   CUSTOM_WS_CLOSE_CODE,
   CUSTOM_WS_CLOSE_REASON
 } from "./constants.ts"
-import {
-  GameError,
-  InSessionError,
-  InvalidSessionStateError,
-  NoPlayerError,
-  NoSessionError,
-  SessionCacheSynchronizeError,
-  SessionNotFoundError,
-  VersionMismatchError
-} from "./errors.ts"
+import { GameError } from "./errors.ts"
 
-import type { Configuration, Player, Status, Vote } from "../ws/send.ts"
+import type { Card, Player } from "../ws/send.ts"
 import type { ISession, ISessionManager } from "./interfaces.ts"
 import type {
   BroadcastCallback,
+  Configuration,
   ControllerEvents,
   ControllerWebSocket,
   ServerEvent,
-  SessionPlayer
+  SessionPlayer,
+  Status,
+  Vote
 } from "./types.ts"
 import type { RedisClient } from "@evil-cards/core/keydb"
 
@@ -63,8 +58,9 @@ class Controller {
   ) {
     this.events = new Emittery()
     this.sessionManager = sessionManager
-    this._sessionCache = new SessionCache(redisClient)
     this.config = config
+
+    this._sessionCache = new SessionCache(redisClient)
 
     this.socketMap = new Map()
 
@@ -72,6 +68,7 @@ class Controller {
     this.events.on("joinsession", this.joinSession.bind(this))
 
     this.events.on("updateconfiguration", this.updateConfiguration.bind(this))
+    this.events.on("uploaddeck", this.uploadDeck.bind(this))
     this.events.on("choose", this.choose.bind(this))
     this.events.on("choosewinner", this.chooseWinner.bind(this))
     this.events.on("startgame", this.startGame.bind(this))
@@ -81,12 +78,12 @@ class Controller {
     this.events.on("chat", this.chat.bind(this))
     this.events.on("close", ({ socket }) => {
       /**
-       * Here we have to check if the server is shutting down
-       * to prevent UB (trying to sync cache or writing to a closed redis instance)
-       * because when shutting down the following things happen:
-       * 1) the server is being closed (all connections terminate)
-       * 2) the cleanSessionCache method is called (all sessions are cleared)
-       * 3) the redis instance is being closed
+       * Because when shutting down the following things happen:
+       * 1) The server is being closed (all connections terminate).
+       * 2) The cleanSessionCache method is called (all sessions are cleared).
+       * 3) The redis instance is being closed.
+       * we have to check if the server is shutting down to prevent UB (trying
+       * to sync cache or writing to a closed redis nstance).
        */
       if (getFastifyInstance()?.isShuttingDown()) {
         return
@@ -151,7 +148,8 @@ class Controller {
         socket.send(
           stringify({
             type: "error",
-            details: serializeError(error).message
+            details: serializeError(error).message,
+            kind: error instanceof GameError ? error.kind : undefined
           })
         )
       }
@@ -174,35 +172,39 @@ class Controller {
     appVersion
   }: ServerEvent["createsession"]) {
     if (!semverSatisfies(appVersion, `^${packageJson.version}`)) {
-      throw new VersionMismatchError()
+      throw new GameError(
+        "VersionMismatch",
+        "Session and client version mismatch"
+      )
     }
 
     if (socket.session) {
-      throw new InSessionError()
+      throw new GameError("InSession")
     }
 
     const session = this.sessionManager.create()
     if (session.status != "waiting") {
-      throw new InvalidSessionStateError()
+      throw new GameError("InvalidSessionState")
     }
     socket.session = session
 
     const player = session.join(nickname, avatarId)
     socket.player = player
 
+    const isSynchronized = await this.syncSessionCache(session)
+
     /**
      * Here we have to check whether sync was successful or not
      * because if a newly created session stays out of sync with the cache
-     * nobody won't be able to connect to this session
+     * nobody won't be able to connect to this session.
      */
-    const isSynchronized = await this.syncSessionCache(session)
     if (!isSynchronized) {
       socket.session = null
       socket.player = null
 
       this.handleSessionEnd(session)
 
-      throw new SessionCacheSynchronizeError()
+      throw new GameError("FailedToSyncronizeCache")
     }
 
     this.socketMap.set(player.id, socket)
@@ -238,16 +240,19 @@ class Controller {
     appVersion
   }: ServerEvent["joinsession"]) {
     if (!semverSatisfies(appVersion, `^${packageJson.version}`)) {
-      throw new VersionMismatchError()
+      throw new GameError(
+        "VersionMismatch",
+        "Session and client version mismatch"
+      )
     }
 
     if (socket.session) {
-      throw new InSessionError()
+      throw new GameError("InSession")
     }
 
     const session = this.sessionManager.get(sessionId)
     if (!session) {
-      throw new SessionNotFoundError()
+      throw new GameError("SessionNotFound")
     }
 
     const player = session.join(nickname, avatarId)
@@ -284,7 +289,7 @@ class Controller {
       const votingEndsAt = session.getTimeoutDate("voting")?.getTime() ?? null
 
       if (!session.redCard) {
-        throw new InvalidSessionStateError()
+        throw new GameError("InvalidSessionState")
       }
 
       socket.send(
@@ -296,7 +301,7 @@ class Controller {
               status: session.status,
               playerId: player.id,
               players: this.getNormalizedPlayers(session.players),
-              deck: player.deck,
+              hand: this.getNormalizedCards(player.hand),
               redCard: session.redCard,
               votingEndsAt,
               configuration: session.configuration,
@@ -311,12 +316,12 @@ class Controller {
   private kick({ playerId, socket }: ServerEvent["kickplayer"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = session.players.find((player) => player.id == playerId)
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     const kickSocket = this.socketMap.get(player.id)
@@ -326,12 +331,12 @@ class Controller {
   private disconnect(socket: ControllerWebSocket) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     session.leave(player.id)
@@ -348,26 +353,62 @@ class Controller {
   }: ServerEvent["updateconfiguration"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     session.updateConfiguration(player.id, configuration)
   }
 
-  private startGame({ socket }: ServerEvent["startgame"]) {
+  private uploadDeck({ base64, socket }: ServerEvent["uploaddeck"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
+    }
+
+    let deck
+
+    try {
+      deck = parseBase64Deck(base64)
+    } catch (error) {
+      socket.send(
+        stringify({
+          type: "customdeckuploadresult",
+          details: { ok: false, message: serializeError(error).message }
+        })
+      )
+
+      return
+    }
+
+    session.addCustomDeck(player.id, deck)
+
+    socket.send(
+      stringify({
+        type: "customdeckuploadresult",
+        details: { ok: true }
+      })
+    )
+  }
+
+  private startGame({ socket }: ServerEvent["startgame"]) {
+    const session = socket.session
+    if (!session) {
+      throw new GameError("NoSession")
+    }
+
+    const player = socket.player
+    if (!player) {
+      throw new GameError("NoPlayer")
     }
 
     session.startGame(player.id)
@@ -376,12 +417,12 @@ class Controller {
   private vote({ socket, cardId }: ServerEvent["vote"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     session.vote(player.id, cardId)
@@ -390,12 +431,12 @@ class Controller {
   private choose({ socket, playerId }: ServerEvent["choose"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     session.choose(player.id, playerId)
@@ -404,12 +445,12 @@ class Controller {
   private chooseWinner({ socket, playerId }: ServerEvent["choosewinner"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     session.chooseWinner(player.id, playerId)
@@ -418,12 +459,12 @@ class Controller {
   private discardCards({ socket }: ServerEvent["discardcards"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     session.discardCards(player.id)
@@ -432,12 +473,12 @@ class Controller {
   private chat({ socket, message }: ServerEvent["chat"]) {
     const session = socket.session
     if (!session) {
-      throw new NoSessionError()
+      throw new GameError("NoSession")
     }
 
     const player = socket.player
     if (!player) {
-      throw new NoPlayerError()
+      throw new GameError("NoPlayer")
     }
 
     this.broadcast(session, () => ({
@@ -478,9 +519,12 @@ class Controller {
             const votingEndsAt = session.getTimeoutDate("voting")?.getTime()
 
             if (!votingEndsAt) {
+              const error = new GameError("InvalidSessionState")
+
               return {
                 type: "error",
-                details: new InvalidSessionStateError().message
+                details: error.message,
+                kind: error.kind
               }
             }
 
@@ -488,7 +532,7 @@ class Controller {
               type: "votingstart",
               details: {
                 changedState: {
-                  deck: player.deck,
+                  hand: this.getNormalizedCards(player.hand),
                   players,
                   redCard: session.redCard,
                   status,
@@ -509,7 +553,7 @@ class Controller {
               changedState: {
                 status,
                 votes: session.votes,
-                deck: player.deck
+                hand: this.getNormalizedCards(player.hand)
               }
             }
           }))
@@ -586,7 +630,7 @@ class Controller {
           changedState: {
             votes: session.votes,
             players,
-            deck: player.deck
+            hand: this.getNormalizedCards(player.hand)
           }
         }
       }))
@@ -647,9 +691,9 @@ class Controller {
         details: {
           changedState: {
             players,
-            deck:
+            hand:
               discardedCardsPlayer.id == player.id
-                ? discardedCardsPlayer.deck
+                ? this.getNormalizedCards(discardedCardsPlayer.hand)
                 : undefined
           }
         }
@@ -683,8 +727,18 @@ class Controller {
     })
   }
 
-  private getNormalizedPlayers(players: Player[]) {
-    return players.map((player) => omit(["leaveTimeout", "deck"], player))
+  private getNormalizedPlayers(players: SessionPlayer[]) {
+    return players.map((player) => omit(["leaveTimeout", "hand"], player))
+  }
+
+  private getNormalizedCards(sessionCards: Map<string, string>) {
+    const cards: Card[] = []
+
+    for (const [id, text] of sessionCards.entries()) {
+      cards.push({ id, text })
+    }
+
+    return cards
   }
 
   private async syncSessionCache(session: ISession) {
@@ -709,7 +763,7 @@ class Controller {
       players: session.players.length,
       playing: session.isPlaying(),
       server: this.config.serverNumber,
-      adultOnly: session.configuration.version18Plus,
+      deck: session.configuration.deck,
       hostNickname,
       hostAvatarId,
       speed:
@@ -728,7 +782,6 @@ class Controller {
     session.events.clearListeners()
 
     this._sessionCache.del(session.id)
-
     this.sessionManager.delete(session.id)
   }
 

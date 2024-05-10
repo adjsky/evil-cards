@@ -29,6 +29,16 @@ const Authors: React.FC = () => {
           </ExternalUnderlineLink>
         </li>
         <li>
+          Отдельный респект -{" "}
+          <ExternalUnderlineLink
+            href="https://t.me/gurenyuu"
+            target="_blank"
+            rel="noreferrer"
+          >
+            hechaha
+          </ExternalUnderlineLink>
+        </li>
+        <li>
           Обратная связь -{" "}
           <ExternalUnderlineLink
             href="mailto:igorlfmartins@mail.ru"

@@ -1,9 +1,11 @@
 import semverValid from "semver/functions/valid.js"
 import z from "zod"
 
+import { availableDecks } from "@evil-cards/core/deck-parser"
+
 import { implement } from "../lib/zod-implements.ts"
 
-import type { Configuration } from "./send.ts"
+import type { Configuration } from "../game/types.ts"
 
 const semverString = () =>
   z.string().refine((version) => semverValid(version) != null, {
@@ -48,8 +50,12 @@ export const configurationSchema = implement<Configuration>().with({
   votingDurationSeconds: z.literal(30).or(z.literal(60)).or(z.literal(90)),
   reader: z.boolean(),
   maxScore: z.literal(10).or(z.literal(15)).or(z.literal(20)),
-  version18Plus: z.boolean(),
+  deck: z.enum([...availableDecks, "custom"]),
   public: z.boolean()
+})
+
+export const uploadDeckSchema = z.object({
+  base64: z.string()
 })
 
 export const messageSchema = z.discriminatedUnion("type", [
@@ -93,6 +99,10 @@ export const messageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     details: chatSchema
+  }),
+  z.object({
+    type: z.literal("uploaddeck"),
+    details: uploadDeckSchema
   })
 ])
 export type Message = z.TypeOf<typeof messageSchema>

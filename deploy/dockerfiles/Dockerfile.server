@@ -41,6 +41,7 @@ RUN corepack enable
 
 WORKDIR /evil-cards
 COPY tsconfig.json .
+COPY decks/*.tsv decks/
 COPY --from=deps-prod /evil-cards .
 COPY --from=prune /evil-cards/out/full/ .
 

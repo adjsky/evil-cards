@@ -8,6 +8,7 @@ out
 .DS_Store
 *.pem
 coverage
+*.~lock*
 
 # debug
 .pnpm-debug.log*
