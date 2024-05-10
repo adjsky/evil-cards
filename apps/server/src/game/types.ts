@@ -46,7 +46,7 @@ export type SessionEvents = Emittery<{
 export type Configuration = {
   votingDurationSeconds: 30 | 60 | 90
   reader: boolean
-  maxScore: 10 | 15 | 20
+  maxScore: 7 | 10 | 15 | 20
   deck: AvailableDeckNames | CustomDeckName
   public: boolean
 }
