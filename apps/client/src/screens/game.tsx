@@ -99,7 +99,19 @@ const Game: React.FC = () => {
         ref={containerRef}
       >
         <div className="w-full sm:hidden">
-          <PlayerList players={players} variant="game" />
+          <PlayerList
+            players={players}
+            variant="game"
+            withKick={player.host}
+            onKick={(player) => {
+              sendJsonMessage({
+                type: "kickplayer",
+                details: {
+                  playerId: player.id
+                }
+              })
+            }}
+          />
         </div>
         <Board
           player={player}
@@ -132,7 +144,19 @@ const Game: React.FC = () => {
         />
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden max-h-[420px] sm:block">
-            <PlayerList players={players} variant="game" />
+            <PlayerList
+              players={players}
+              variant="game"
+              withKick={player.host}
+              onKick={(player) => {
+                sendJsonMessage({
+                  type: "kickplayer",
+                  details: {
+                    playerId: player.id
+                  }
+                })
+              }}
+            />
           </div>
           <div className="flex w-full flex-col gap-2 sm:gap-3">
             <div className="relative h-[10px] w-full rounded-lg bg-gray-200">

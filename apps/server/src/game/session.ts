@@ -163,7 +163,7 @@ class Session implements ISession {
     return player
   }
 
-  public leave(playerId: string) {
+  public leave(playerId: string, isKick: boolean) {
     const player = this._players.find((player) => player.id == playerId)
     if (!player) {
       throw new GameError("NoPlayer")
@@ -225,7 +225,7 @@ class Session implements ISession {
       }
     }
 
-    if (this.isPlaying()) {
+    if (this.isPlaying() && !isKick) {
       player.leaveTimeout = setTimeout(() => {
         player.leaveTimeout = null
         doWork()

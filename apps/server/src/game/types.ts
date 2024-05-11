@@ -28,7 +28,10 @@ export type ServerEvent = WithHelperData<
 >
 
 export type ControllerEvents = Emittery<
-  ServerEvent & WithHelperData<{ close: undefined }>
+  ServerEvent &
+    WithHelperData<{
+      close: { code: number; reason: Buffer }
+    }>
 >
 
 export type SessionEvents = Emittery<{

@@ -185,7 +185,7 @@ const Waiting: React.FC = () => {
               className="ultra-short:hidden"
               players={players}
               variant="waiting"
-              withKick={player?.host && gameState.status != "starting"}
+              withKick={player.host}
               onKick={(player) => {
                 sendJsonMessage({
                   type: "kickplayer",

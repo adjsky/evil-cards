@@ -78,7 +78,7 @@ class Controller {
     this.events.on("discardcards", this.discardCards.bind(this))
     this.events.on("kickplayer", this.kick.bind(this))
     this.events.on("chat", this.chat.bind(this))
-    this.events.on("close", ({ socket }) => {
+    this.events.on("close", ({ socket, code, reason }) => {
       /**
        * Because when shutting down the following things happen:
        * 1) The server is being closed (all connections terminate).
@@ -91,8 +91,12 @@ class Controller {
         return
       }
 
+      const isKick =
+        code == CUSTOM_WS_CLOSE_CODE &&
+        reason.toString() == CUSTOM_WS_CLOSE_REASON.KICK
+
       try {
-        this.disconnect(socket)
+        this.disconnect(socket, isKick)
       } catch (error) {
         if (error instanceof GameError) {
           return
@@ -214,8 +218,8 @@ class Controller {
     this.setupSessionListeners(session)
     session.events.on("sessionend", () => this.handleSessionEnd(session))
 
-    socket.on("close", () => {
-      this.events.emit("close", { socket })
+    socket.on("close", (code, reason) => {
+      this.events.emit("close", { socket, code, reason })
     })
 
     socket.send(
@@ -264,8 +268,8 @@ class Controller {
 
     this.socketMap.set(player.id, socket)
 
-    socket.on("close", () => {
-      this.events.emit("close", { socket })
+    socket.on("close", (code, reason) => {
+      this.events.emit("close", { socket, code, reason })
     })
 
     if (
@@ -330,7 +334,7 @@ class Controller {
     kickSocket?.close(CUSTOM_WS_CLOSE_CODE, CUSTOM_WS_CLOSE_REASON.KICK)
   }
 
-  private disconnect(socket: ControllerWebSocket) {
+  private disconnect(socket: ControllerWebSocket, isKick: boolean) {
     const session = socket.session
     if (!session) {
       throw new GameError("NoSession")
@@ -341,7 +345,7 @@ class Controller {
       throw new GameError("NoPlayer")
     }
 
-    session.leave(player.id)
+    session.leave(player.id, isKick)
 
     socket.session = null
     socket.player = null

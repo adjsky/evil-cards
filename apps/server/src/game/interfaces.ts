@@ -24,7 +24,7 @@ export interface ISession {
   configuration: Configuration
 
   join(nickname: string, avatarId: number): SessionPlayer
-  leave(playerId: string): void
+  leave(playerId: string, isKick: boolean): void
   updateConfiguration(playerId: string, configuration: Configuration): void
   addCustomDeck(playerId: string, deck: UploadedDeck): void
   startGame(playerId: string): void

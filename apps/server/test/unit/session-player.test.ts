@@ -47,7 +47,7 @@ describe("join", () => {
 
     expect(player4.avatarId).toBe(0)
 
-    session.leave(player4.id)
+    session.leave(player4.id, false)
     const reconnectedPlayer4 = session.join("4", 4)
 
     expect(reconnectedPlayer4.avatarId).toBe(4)
@@ -64,7 +64,7 @@ describe("join", () => {
     session.startGame(session.players[0].id)
     vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.leave(session.players[0].id)
+    session.leave(session.players[0].id, false)
     vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[0].disconnected).toBeTruthy()
@@ -88,7 +88,7 @@ describe("leave", () => {
     session.join("qweqwe", 1)
     session.join("asdssd", 1)
 
-    session.leave(session.players[0].id)
+    session.leave(session.players[0].id, false)
 
     await waitForExpect(() => {
       expect(fnMock).toBeCalled()
@@ -99,7 +99,7 @@ describe("leave", () => {
     session.join("asd", 1)
     session.join("wqe", 1)
 
-    session.leave(session.players[0].id)
+    session.leave(session.players[0].id, false)
 
     expect(session.players.length).toBe(1)
   })
@@ -115,7 +115,7 @@ describe("leave", () => {
     session.startGame(session.players[0].id)
     vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.leave(session.players[1].id)
+    session.leave(session.players[1].id, false)
     vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     vi.useRealTimers()
@@ -129,7 +129,7 @@ describe("leave", () => {
     session.join("wqe", 1)
     session.join("asd", 1)
 
-    session.leave(session.players[0].id)
+    session.leave(session.players[0].id, false)
 
     expect(session.players[0].host).toBeTruthy()
   })
@@ -150,8 +150,8 @@ describe("leave", () => {
     session.join("qweqwe", 1)
     session.join("asdssd", 1)
 
-    session.leave(session.players[0].id)
-    session.leave(session.players[0].id)
+    session.leave(session.players[0].id, false)
+    session.leave(session.players[0].id, false)
 
     vi.advanceTimersByTime(SESSION_END_TIMEOUT_MS)
 
@@ -176,13 +176,13 @@ describe("leave", () => {
     session.startGame(session.players[0].id)
     vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.leave(session.players[0].id)
+    session.leave(session.players[0].id, false)
     vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[1].master).toBeTruthy()
 
-    session.leave(session.players[1].id)
-    session.leave(session.players[2].id)
+    session.leave(session.players[1].id, false)
+    session.leave(session.players[2].id, false)
     vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[3].master).toBeTruthy()
@@ -191,9 +191,9 @@ describe("leave", () => {
     session.join("2", 1)
     session.join("3", 1)
 
-    session.leave(session.players[3].id)
-    session.leave(session.players[4].id)
-    session.leave(session.players[5].id)
+    session.leave(session.players[3].id, false)
+    session.leave(session.players[4].id, false)
+    session.leave(session.players[5].id, false)
     vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     vi.useRealTimers()
