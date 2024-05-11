@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 
 import cn from "@/lib/functions/cn"
 import getScoreLabel from "@/lib/functions/get-score-label"
@@ -21,9 +21,15 @@ const PlayerList: React.FC<{
   variant: "game" | "waiting"
   onKick?: (player: Player) => void
 }> = ({ className, withKick, players, variant, onKick }) => {
-  const filteredPlayers = players.filter(
-    (player) => player.disconnected == false
-  )
+  const playersToRender = useMemo(() => {
+    const p = players.filter((player) => !player.disconnected)
+
+    if (variant == "game") {
+      p.sort((a, b) => b.score - a.score)
+    }
+
+    return p
+  }, [players, variant])
 
   return (
     <div
@@ -33,7 +39,7 @@ const PlayerList: React.FC<{
       )}
       data-testid="player-list"
     >
-      {filteredPlayers.map((player) => (
+      {playersToRender.map((player) => (
         <React.Fragment key={player.id}>
           <DesktopPlayer
             player={player}
@@ -50,7 +56,7 @@ const PlayerList: React.FC<{
         </React.Fragment>
       ))}
       {variant == "waiting" &&
-        Array.from({ length: 10 - filteredPlayers.length }).map((_, index) => (
+        Array.from({ length: 10 - playersToRender.length }).map((_, index) => (
           <React.Fragment key={index}>
             <MobilePlayer variant={variant} />
             <DesktopPlayer variant={variant} />
