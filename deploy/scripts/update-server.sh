@@ -4,7 +4,7 @@ COMPOSE_PATH=$APP_PATH/$SOURCE_DIR/deploy/compose/docker-compose.$DEPLOY_ENV.yml
 
 $APP_PATH/$SOURCE_DIR/deploy/scripts/swap-envs.sh
 
-SECONDS_TO_REMOVE_CONTAINER=3600
+SECONDS_TO_REMOVE_CONTAINER=21600 # 6h
 CURRENT_RUNNING_SERVERS=()
 
 for CONTAINER in $(docker compose -f $COMPOSE_PATH ps server | tail -n +2 | awk '{ print $1 }'); do
