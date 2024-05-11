@@ -15,7 +15,6 @@ export type Subscriber = Awaited<
 >
 
 const hashKey = "session"
-const subkeyExpireSeconds = 6 * 60 * 60 // 6h
 
 const sessionSchema = z.object({
   id: z.string(),
@@ -40,30 +39,19 @@ export class SessionCache {
 
   public async set(session: CachedSession) {
     return fromPromise(
-      this.client
-        .multi()
-        .hSet(hashKey, session.id, JSON.stringify(session))
-        .addCommand([
-          "EXPIREMEMBER",
-          hashKey,
-          session.id,
-          subkeyExpireSeconds.toString()
-        ])
-        .exec(),
+      this.client.hSet(hashKey, session.id, JSON.stringify(session)),
       (err) => err
     ).match(
-      ([set, expire]) => {
+      (reply) => {
         log.info(
           {
-            sessionId: session.id,
             session,
-            set,
-            expire
+            reply
           },
           `Set cached session`
         )
 
-        return set == 1 && expire == 1
+        return reply == 1
       },
       (err) => {
         log.error(
