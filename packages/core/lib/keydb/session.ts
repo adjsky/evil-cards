@@ -15,7 +15,7 @@ export type Subscriber = Awaited<
 >
 
 const hashKey = "session"
-const subkeyExpireSeconds = 60 * 60 // 2h
+const subkeyExpireSeconds = 6 * 60 * 60 // 6h
 
 const sessionSchema = z.object({
   id: z.string(),
