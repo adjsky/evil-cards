@@ -215,7 +215,7 @@ class Session implements ISession {
           this._timeouts.voting = null
         }
 
-        this.startVoting()
+        this.startVoting(true)
       }
 
       this._events.emit("leave", player)
@@ -459,7 +459,7 @@ class Session implements ISession {
     return !this.isWaiting()
   }
 
-  private startVoting() {
+  private startVoting(isRepeat?: boolean) {
     if (!this._redDeck) {
       throw new GameError("DeckNotInitialized")
     }
@@ -470,7 +470,12 @@ class Session implements ISession {
     }
 
     this._votes.forEach((vote) => {
-      this._discardedWhiteCards.set(vote.card.id, vote.card.text)
+      if (isRepeat) {
+        const hand = this._players.find(({ id }) => vote.playerId == id)?.hand
+        hand?.set(vote.card.id, vote.card.text)
+      } else {
+        this._discardedWhiteCards.set(vote.card.id, vote.card.text)
+      }
     })
     this._votes = []
 
@@ -481,15 +486,17 @@ class Session implements ISession {
 
     this.passMaster()
 
-    const [id, redCard] = Array.from(this._redDeck.entries())[
-      getRandomInt(0, this._redDeck.size - 1)
-    ]
-    this._redCard = redCard
-    this._redDeck.delete(id)
-    this._discardedRedCards.set(id, redCard)
+    if (!isRepeat) {
+      const [id, redCard] = Array.from(this._redDeck.entries())[
+        getRandomInt(0, this._redDeck.size - 1)
+      ]
+      this._redCard = redCard
+      this._redDeck.delete(id)
+      this._discardedRedCards.set(id, redCard)
 
-    for (const player of this._players) {
-      this.fillPlayerDeck(player)
+      for (const player of this._players) {
+        this.fillPlayerDeck(player)
+      }
     }
 
     this._timeouts.voting = setDateTimeout(() => {
