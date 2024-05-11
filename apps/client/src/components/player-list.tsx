@@ -16,7 +16,7 @@ import type { Player } from "@evil-cards/server/src/ws/send"
 
 const PlayerList: React.FC<{
   className?: string
-  withKick?: boolean
+  withKick: boolean
   players: Player[]
   variant: "game" | "waiting"
   onKick?: (player: Player) => void
@@ -72,7 +72,7 @@ const MobilePlayer: React.FC<{
     (variant == "waiting" && player?.host) ||
     (variant == "game" && player?.master)
   const displayMark = variant == "game" && player?.voted
-  const displayKick = withKick && variant == "waiting" && player && !player.host
+  const displayKick = withKick && player && !player.host
 
   return (
     <>
@@ -155,7 +155,7 @@ const DesktopPlayer: React.FC<{
     (variant == "waiting" && player?.host) ||
     (variant == "game" && player?.master)
   const displayCheckMark = variant == "game" && player?.voted
-  const displayKick = withKick && variant == "waiting" && player && !player.host
+  const displayKick = withKick && player && !player.host
 
   return (
     <>

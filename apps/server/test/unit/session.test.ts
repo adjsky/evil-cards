@@ -227,8 +227,8 @@ describe("regular gameplay", () => {
     session.startGame(session.players[0].id)
     vi.advanceTimersByTime(GAME_START_DELAY_MS)
 
-    session.leave(session.players[1].id)
-    session.leave(session.players[0].id)
+    session.leave(session.players[1].id, false)
+    session.leave(session.players[0].id, false)
     vi.advanceTimersByTime(LEAVE_TIMEOUT_MS)
 
     expect(session.players[1].master).toBeFalsy()
