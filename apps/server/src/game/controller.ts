@@ -1,6 +1,8 @@
 import Emittery from "emittery"
 import { nanoid } from "nanoid"
 import { omit } from "ramda"
+import semverMajor from "semver/functions/major.js"
+import semverMinor from "semver/functions/minor.js"
 import semverSatisfies from "semver/functions/satisfies.js"
 import { serializeError } from "serialize-error"
 
@@ -171,7 +173,7 @@ class Controller {
     avatarId,
     appVersion
   }: ServerEvent["createsession"]) {
-    if (!semverSatisfies(appVersion, `^${packageJson.version}`)) {
+    if (!this.isClientCompatible(appVersion)) {
       throw new GameError(
         "VersionMismatch",
         "Session and client version mismatch"
@@ -239,7 +241,7 @@ class Controller {
     sessionId,
     appVersion
   }: ServerEvent["joinsession"]) {
-    if (!semverSatisfies(appVersion, `^${packageJson.version}`)) {
+    if (!this.isClientCompatible(appVersion)) {
       throw new GameError(
         "VersionMismatch",
         "Session and client version mismatch"
@@ -774,6 +776,13 @@ class Controller {
           : "slow",
       public: session.configuration.public
     })
+  }
+
+  private isClientCompatible(version: string) {
+    return semverSatisfies(
+      version,
+      `^${semverMajor(packageJson.version)}.${semverMinor(packageJson.version)}`
+    )
   }
 
   public handleSessionEnd(session: ISession) {

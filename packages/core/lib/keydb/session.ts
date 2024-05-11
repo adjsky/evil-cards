@@ -29,6 +29,8 @@ const sessionSchema = z.object({
   public: z.boolean()
 })
 
+export type Session = z.infer<typeof sessionSchema>
+
 export class SessionCache {
   private client: RedisClient
 
@@ -81,7 +83,9 @@ export class SessionCache {
           return
         }
 
-        return fromThrowable(() => parseRawSession(rawSession)).match(
+        return fromThrowable(() =>
+          sessionSchema.parse(JSON.parse(rawSession))
+        ).match(
           (session) => session,
           (err) => {
             log.error({ err, sessionId: id }, "Failed to parse cached session")
@@ -109,36 +113,22 @@ export class SessionCache {
       )
   }
 
-  public async getAll() {
+  public async getAll(): Promise<Session[]> {
     return fromPromise(this.client.hGetAll(hashKey), (err) => err)
       .map((rawSessions) => {
-        return fromThrowable(() =>
-          Object.values(rawSessions).map(parseRawSession)
-        ).match(
-          (sessions) => sessions,
-          (err) => {
-            log.error(err, "Failed to parse all cached sessions")
+        const sessions: Session[] = []
 
-            return null
+        for (const rawSession of Object.values(rawSessions)) {
+          try {
+            sessions.push(sessionSchema.parse(JSON.parse(rawSession)))
+          } catch (err) {
+            log.error(err, "Failed to parse session")
           }
-        )
-      })
-      .match(
-        (sessions) => {
-          if (!sessions) {
-            return []
-          }
-
-          log.info({ sessions }, `Successfully got all cached sessions`)
-
-          return sessions
-        },
-        (err) => {
-          log.error(err, "Failed to get all cached sessions")
-
-          return []
         }
-      )
+
+        return sessions
+      })
+      .unwrapOr([])
   }
 
   public async del(id: string) {
@@ -181,8 +171,4 @@ export class SessionCache {
       }
     ] as const
   }
-}
-
-function parseRawSession(rawSession: string) {
-  return sessionSchema.parse(JSON.parse(rawSession))
 }
