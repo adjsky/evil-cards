@@ -48,16 +48,28 @@ dc_resource("keydb", labels="database")
 
 # ------------------------------------ test ------------------------------------
 
+dc_resource("pwserver", labels=["test"])
+
+docker_build(
+    ref="tilt/pwserver",
+    context=".",
+    dockerfile="./deploy/dockerfiles/Dockerfile.pwserver",
+)
+
 local_resource(
-    "vitest",
-    serve_cmd="pnpm test:watch",
+    "e2e",
+    cmd="HOST=127.0.0.1:3000 PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:6969 pnpm test:e2e",
     labels=["test"],
-    allow_parallel=True
+    allow_parallel=True,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False
 )
 
 local_resource(
     "tsc",
     cmd="pnpm ts-check",
     labels=["test"],
-    allow_parallel=True
+    allow_parallel=True,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False
 )

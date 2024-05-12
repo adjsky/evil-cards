@@ -1,0 +1,13 @@
+{
+  "name": "e2e",
+  "private": true,
+  "scripts": {
+    "typecheck": "typecheck",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.16",
+    "@playwright/test": "^1.44.0",
+    "playwright": "^1.44.0"
+  }
+}

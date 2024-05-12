@@ -10,30 +10,6 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    name: Test everything
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.16.0
-
-      - name: Enable corepack
-        run: |
-          corepack enable pnpm
-          pnpm --version
-
-      - name: Install deps
-        run: pnpm --frozen-lockfile install
-
-      - name: Run tests
-        run: pnpm test:ci
-
   lint:
     runs-on: ubuntu-latest
     name: Lint changed files

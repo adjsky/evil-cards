@@ -10,7 +10,7 @@
     },
     {
       "name": "e2e",
-      "path": "../apps/e2e"
+      "path": "../e2e"
     },
     {
       "name": "server",

@@ -163,6 +163,7 @@ export const Snackbar: React.FC<SnackbarProps> = ({
         borderStyle: "solid",
         borderColor: severityColor.fg
       }}
+      data-testid="snackbar"
       className="fixed left-1/2 top-3 z-50 flex w-11/12 min-w-0 max-w-full -translate-x-1/2 items-center rounded-xl px-3 py-3 sm:top-10 sm:px-5 sm:py-4 md:min-w-[350px] md:max-w-[440px]"
     >
       <span>{icon}</span>
@@ -172,6 +173,7 @@ export const Snackbar: React.FC<SnackbarProps> = ({
           "ml-2 text-sm font-bold leading-tight sm:ml-5 sm:text-base",
           !infinite && "mr-8 sm:mr-6"
         )}
+        data-testid="snackbar-message"
       >
         {message}
       </span>

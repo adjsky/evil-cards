@@ -24,6 +24,7 @@ export type GameErrorKind =
   | "InvalidSessionState"
   | "DeckNotInitialized"
   | "FailedToParseCustomDeck"
+  | "InvalidNickname"
 
 export class GameError extends Error {
   kind: GameErrorKind

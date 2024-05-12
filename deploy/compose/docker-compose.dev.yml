@@ -7,6 +7,10 @@ services:
       service: keydb
     restart: "no"
 
+  pwserver:
+    image: tilt/pwserver
+    network_mode: host
+
   server:
     extends:
       file: docker-compose.common.yml

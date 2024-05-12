@@ -14,8 +14,9 @@ const Card: React.FC<{
   disabled?: boolean
   lowerOpacity?: boolean
   flipable?: boolean
+  testId?: string
   onClick?: () => void
-}> = ({ author, text, disabled, lowerOpacity, flipable, onClick }) => {
+}> = ({ author, text, disabled, lowerOpacity, flipable, testId, onClick }) => {
   const flipableCardRef = useRef<HTMLSpanElement>(null)
 
   const prevText = usePrevious(text)
@@ -33,6 +34,7 @@ const Card: React.FC<{
 
   return (
     <button
+      data-testid={testId}
       onClick={onClick}
       className={cn(
         "flex aspect-[120/167] w-full text-left sm:w-[140px] sm:min-w-0 sm:max-w-full",

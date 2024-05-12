@@ -16,11 +16,12 @@ import type { Player } from "@evil-cards/server/src/ws/send"
 
 const PlayerList: React.FC<{
   className?: string
+  testIdPrefix?: string
   withKick: boolean
   players: Player[]
   variant: "game" | "waiting"
   onKick?: (player: Player) => void
-}> = ({ className, withKick, players, variant, onKick }) => {
+}> = ({ className, testIdPrefix, withKick, players, variant, onKick }) => {
   const playersToRender = useMemo(() => {
     const p = players.filter((player) => !player.disconnected)
 
@@ -37,7 +38,7 @@ const PlayerList: React.FC<{
         "sm:scrollable flex w-full touch-pan-x overflow-x-auto sm:h-full sm:w-auto sm:flex-col sm:gap-2",
         className
       )}
-      data-testid="player-list"
+      data-testid={testIdPrefix ? `player-list-${testIdPrefix}` : "player-list"}
     >
       {playersToRender.map((player) => (
         <React.Fragment key={player.id}>

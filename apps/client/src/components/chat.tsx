@@ -45,7 +45,10 @@ const Chat: React.FC<{
   }, [chat])
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col gap-2 text-[13px] text-gray-100">
+    <div
+      className="flex h-full min-h-0 w-full flex-col gap-2 text-[13px] text-gray-100"
+      data-testid="chat"
+    >
       {chat.length == 0 && (
         <div className="flex flex-auto flex-col items-center justify-center gap-2">
           <CatConfused />
@@ -54,6 +57,7 @@ const Chat: React.FC<{
       )}
       {chat.length != 0 && (
         <ul
+          data-testid="chat-messages"
           className="scrollable flex-auto text-left"
           ref={listRef}
           onScroll={(event) => {
@@ -93,6 +97,7 @@ const Chat: React.FC<{
         >
           {chat.map(({ nickname, message, id, read }) => (
             <li
+              data-testid="chat-message"
               key={id}
               className="py-0.5"
               data-id={id}
@@ -120,6 +125,7 @@ const Chat: React.FC<{
         <div className="flex items-center gap-2">
           <div className="flex w-full flex-col">
             <textarea
+              data-testid="chat-input"
               ref={textAreaRef}
               value={message}
               className={cn(
