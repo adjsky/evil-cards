@@ -12,8 +12,8 @@ import { avatarAtom, nicknameAtom } from "../atoms/game"
 import useSessionSocket from "./use-session-socket"
 
 const startErrors = {
-  nosession: "Комната не найдена",
-  fetcherror: "Не удалось получить доступные сервера"
+  nosession: "Комната не найдена.",
+  fetcherror: "Не удалось получить доступные сервера."
 }
 
 type Options = {

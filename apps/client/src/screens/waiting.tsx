@@ -80,14 +80,14 @@ const Waiting: React.FC = () => {
           if (data.details.ok) {
             notify({
               infinite: false,
-              message: "Набор карт успешно загружен",
+              message: "Набор карт успешно загружен.",
               severity: "information"
             })
           } else {
             notify({
               infinite: false,
               message:
-                "Не удалось загрузить набор карт. Детали ошибки можно посмотреть в консоли",
+                "Не удалось загрузить набор карт. Детали ошибки можно посмотреть в консоли.",
               severity: "error"
             })
 
