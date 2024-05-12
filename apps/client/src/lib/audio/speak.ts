@@ -38,7 +38,7 @@ export async function initSpeaker() {
       notify({
         infinite: false,
         message:
-          "Ваш браузер не поддерживает необходимые голоса озвучки. Озвучка текста будет недоступна",
+          "Ваш браузер не поддерживает необходимые голоса озвучки. Озвучка текста будет недоступна.",
         severity: "information"
       })
     }
@@ -46,7 +46,7 @@ export async function initSpeaker() {
     notify({
       infinite: false,
       message:
-        "Ваш браузер не поддерживает озвучку голосом. Озвучка текста будет недоступна",
+        "Ваш браузер не поддерживает озвучку голосом. Озвучка текста будет недоступна.",
       severity: "information"
     })
     console.error(error)

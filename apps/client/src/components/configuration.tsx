@@ -91,7 +91,7 @@ const Configuration: React.FC<{
 
         if (file.size > MAX_UPLOADED_FILE_SIZE_IN_BYTES) {
           notify({
-            message: "Файл слишком большой",
+            message: "Файл слишком большой.",
             infinite: false,
             severity: "error"
           })

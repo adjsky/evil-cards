@@ -31,7 +31,7 @@ const App = () => {
     if (shouldNotify) {
       notify({
         message:
-          "Похоже, что вы используете неподдерживаемый браузер. Вы не сможете начать игру",
+          "Похоже, что вы используете неподдерживаемый браузер. Вы не сможете начать игру.",
         severity: "information",
         infinite: true
       })
@@ -80,19 +80,20 @@ const useSocketEvents = () => {
 
         if (isKickCloseEvent(event)) {
           notify({
-            message: "Вас выгнали из комнаты",
+            message: "Вас выгнали из комнаты.",
             severity: "information",
             infinite: false
           })
         } else if (isInactiveCloseEvent(event)) {
           notify({
-            message: "Вы были отключены, так как долго не проявляли активность",
+            message:
+              "Вы были отключены, так как долго не проявляли активность.",
             severity: "information",
             infinite: false
           })
         } else {
           notify({
-            message: "Не удалось подключиться к серверу",
+            message: "Не удалось подключиться к серверу.",
             severity: "error",
             infinite: false
           })
