@@ -8,8 +8,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "jsx": "react-jsx",
-    "types": ["vitest/globals"]
+    "jsx": "react-jsx"
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs"]
 }

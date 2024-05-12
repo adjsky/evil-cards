@@ -100,6 +100,7 @@ const Game: React.FC = () => {
       >
         <div className="w-full sm:hidden">
           <PlayerList
+            testIdPrefix="mobile"
             players={players}
             variant="game"
             withKick={player.host}
@@ -145,6 +146,7 @@ const Game: React.FC = () => {
         <div className="flex w-full gap-4 px-2 pb-2 sm:px-0 sm:pb-0">
           <div className="hidden max-h-[420px] sm:block">
             <PlayerList
+              testIdPrefix="desktop"
               players={players}
               variant="game"
               withKick={player.host}
@@ -293,6 +295,7 @@ const Board: React.FC<
                   key={card.id}
                 >
                   <Card
+                    testId="voted-card"
                     text={visible ? card.text : undefined}
                     author={
                       winner
@@ -344,10 +347,10 @@ const Hand: React.FC<{
         "grid touch-pan-x grid-flow-col grid-rows-1 gap-1 overflow-auto sm:grid-flow-row sm:grid-rows-2 sm:gap-2 sm:overflow-visible",
         "auto-cols-[85px] sm:grid-cols-[repeat(5,1fr)]"
       )}
-      data-testid="deck"
     >
       {gameState.hand.map((card) => (
         <Card
+          testId="hand-card"
           key={card.id}
           text={card.text}
           onClick={() => onCardClick && onCardClick(card.id)}
@@ -368,6 +371,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
   return (
     <>
       <button
+        data-testid="discard-hand"
         className="absolute bottom-2 right-2 transition-transform duration-300 hover:-rotate-180 sm:bottom-0 sm:right-0"
         onClick={() => setOpen(true)}
       >
@@ -396,6 +400,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
             variant="outlined"
             className="flex-1 py-3 uppercase"
             onClick={() => setOpen(false)}
+            data-testid="abort-discard-hand"
           >
             Нет
           </Button>
@@ -407,6 +412,7 @@ const Discard: React.FC<{ score: number; onDiscard?: () => void }> = ({
               onDiscard && onDiscard()
             }}
             disabled={score == 0}
+            data-testid="confirm-discard-hand"
           >
             Да
           </Button>
@@ -433,6 +439,7 @@ const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
     <>
       <button
         className="absolute bottom-2 left-2 sm:bottom-0 sm:left-0"
+        data-testid="open-chat"
         onClick={() => setOpen(true)}
       >
         <ChatIcon />
@@ -448,6 +455,7 @@ const Chat: React.FC<Parameters<typeof BaseChat>[0]> = ({
         <button
           onClick={() => setOpen(false)}
           className="absolute right-4 top-4 p-1"
+          data-testid="close-chat"
         >
           <CloseIcon className="h-6 w-6" />
         </button>

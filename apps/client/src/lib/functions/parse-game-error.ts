@@ -6,7 +6,8 @@ const errorMessages: Partial<Record<NonNullable<Error["kind"]>, string>> = {
   GameAlreadyStarted: "Упс, игра уже началась.",
   NotEnoughPlayers: "Нельзя начать игру, пока не наберется хотя бы 3 игрока.",
   TooManyPlayers: "Комната заполнена.",
-  VersionMismatch: "Ваша версия клиента не поддерживается сервером."
+  VersionMismatch: "Ваша версия клиента не поддерживается сервером.",
+  InvalidNickname: "Пожалуйста, используйте другой никнейм."
 }
 
 function parseGameError(kind: NonNullable<Error["kind"]>) {

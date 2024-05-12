@@ -188,6 +188,10 @@ class Controller {
       throw new GameError("InSession")
     }
 
+    if (!this.isNicknameValid(nickname)) {
+      throw new GameError("InvalidNickname")
+    }
+
     const session = this.sessionManager.create()
     if (session.status != "waiting") {
       throw new GameError("InvalidSessionState")
@@ -254,6 +258,10 @@ class Controller {
 
     if (socket.session) {
       throw new GameError("InSession")
+    }
+
+    if (!this.isNicknameValid(nickname)) {
+      throw new GameError("InvalidNickname")
     }
 
     const session = this.sessionManager.get(sessionId)
@@ -753,7 +761,7 @@ class Controller {
     let hostNickname = host?.nickname
     let hostAvatarId = host?.avatarId
 
-    if (!hostNickname || !hostAvatarId) {
+    if (hostNickname == undefined || hostAvatarId == undefined) {
       const prevCachedSession = await this._sessionCache.get(session.id)
 
       if (!prevCachedSession) {
@@ -787,6 +795,14 @@ class Controller {
       version,
       `^${semverMajor(packageJson.version)}.${semverMinor(packageJson.version)}`
     )
+  }
+
+  private isNicknameValid(nickname: string) {
+    if (nickname.length < 1 || nickname.length > 12) {
+      return false
+    }
+
+    return true
   }
 
   public handleSessionEnd(session: ISession) {
