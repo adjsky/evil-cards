@@ -56,7 +56,7 @@ const router: FastifyPluginCallback<{
 
     const server = roundRobin.next()
 
-    res.send({ host: makeURLFromServer(server.value), message: "ok" })
+    return res.send({ host: makeURLFromServer(server.value), message: "ok" })
   })
 
   if (env.UPDATE_TOKEN) {
@@ -89,7 +89,7 @@ const router: FastifyPluginCallback<{
 
       await updateRoundRobin(docker, roundRobin, body.data.version)
 
-      res.send({ message: "ok" })
+      return res.send({ message: "ok" })
     })
   }
 

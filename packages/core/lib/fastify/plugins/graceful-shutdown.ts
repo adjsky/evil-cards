@@ -9,7 +9,7 @@ declare module "fastify" {
 }
 
 const signals = ["SIGTERM", "SIGINT"] as const
-type Signal = typeof signals[number]
+type Signal = (typeof signals)[number]
 
 let shuttingDown = false
 

@@ -36,7 +36,7 @@ const useAvailableSessions = () => {
 
   return {
     async connect() {
-      getWsHost().match(
+      await getWsHost().match(
         (wsHost) => setUrl(`${wsHost}/ws/available-sessions`),
         () =>
           setState({

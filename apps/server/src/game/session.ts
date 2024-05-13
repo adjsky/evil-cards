@@ -125,7 +125,7 @@ class Session implements ISession {
       existingPlayer.disconnected = false
       existingPlayer.avatarId = avatarId
 
-      this._events.emit("join", existingPlayer)
+      void this._events.emit("join", existingPlayer)
 
       return existingPlayer
     }
@@ -158,7 +158,7 @@ class Session implements ISession {
     }
 
     this._players.push(player)
-    this._events.emit("join", player)
+    void this._events.emit("join", player)
 
     return player
   }
@@ -184,13 +184,13 @@ class Session implements ISession {
 
       const remainingPlayers = this._players.filter((p) => !p.disconnected)
       if (remainingPlayers.length == 0) {
-        this._events.emit("leave", player)
+        void this._events.emit("leave", player)
 
         this._timeouts.endsesion = setDateTimeout(() => {
           this._timeouts.endsesion = null
 
           this.clearTimeouts()
-          this._events.emit("sessionend")
+          void this._events.emit("sessionend")
         }, dayjs().add(SESSION_END_TIMEOUT_MS, "ms").toDate())
 
         return
@@ -218,7 +218,7 @@ class Session implements ISession {
         this.startVoting(true)
       }
 
-      this._events.emit("leave", player)
+      void this._events.emit("leave", player)
 
       if (isPlaying && remainingPlayers.length < MIN_PLAYERS_TO_START_GAME) {
         this.endGame()
@@ -248,7 +248,7 @@ class Session implements ISession {
 
     this._configuration = configuration
 
-    this._events.emit("configurationchange", configuration)
+    void this._events.emit("configurationchange", configuration)
   }
 
   public addCustomDeck(playerId: string, deck: UploadedDeck) {
@@ -298,7 +298,7 @@ class Session implements ISession {
       this.startVoting()
     }, dayjs().add(GAME_START_DELAY_MS, "ms").toDate())
 
-    this._events.emit("statuschange", this._status)
+    void this._events.emit("statuschange", this._status)
   }
 
   public vote(playerId: string, cardId: string) {
@@ -332,7 +332,7 @@ class Session implements ISession {
     }
     this._votes.push(vote)
 
-    this._events.emit("vote", vote)
+    void this._events.emit("vote", vote)
 
     const nPlayersToVote = this._players.filter(
       (player) => !player.master && !player.disconnected
@@ -363,7 +363,7 @@ class Session implements ISession {
 
     choosedVote.visible = true
 
-    this._events.emit("choose", choosedVote)
+    void this._events.emit("choose", choosedVote)
 
     if (this._votes.every((vote) => vote.visible)) {
       this.startChoosingWinner()
@@ -393,7 +393,7 @@ class Session implements ISession {
     choosedPlayer.score += 1
     choosedVote.winner = true
 
-    this._events.emit("choosewinner", choosedVote)
+    void this._events.emit("choosewinner", choosedVote)
 
     const didPlayerWin = choosedPlayer.score >= this._configuration.maxScore
     this.startWinnerCardView(didPlayerWin)
@@ -422,7 +422,7 @@ class Session implements ISession {
 
     this.fillPlayerDeck(player)
 
-    this._events.emit("cardsdiscard", player)
+    void this._events.emit("cardsdiscard", player)
   }
 
   public endGame() {
@@ -444,7 +444,7 @@ class Session implements ISession {
       player.voted = false
     }
 
-    this._events.emit("statuschange", this._status)
+    void this._events.emit("statuschange", this._status)
   }
 
   public getTimeoutDate(name: keyof Timeouts) {
@@ -504,7 +504,7 @@ class Session implements ISession {
       this.startChoosing()
     }, dayjs().add(this._configuration.votingDurationSeconds, "s").toDate())
 
-    this._events.emit("statuschange", this._status)
+    void this._events.emit("statuschange", this._status)
   }
 
   private startChoosing() {
@@ -544,17 +544,17 @@ class Session implements ISession {
 
     this._votes = shuffleArray(this._votes)
 
-    this._events.emit("statuschange", this._status)
+    void this._events.emit("statuschange", this._status)
   }
 
   private startChoosingWinner() {
     this._status = "choosingwinner"
-    this._events.emit("statuschange", this._status)
+    void this._events.emit("statuschange", this._status)
   }
 
   private startWinnerCardView(didPlayerWin?: boolean) {
     this._status = "winnercardview"
-    this._events.emit("statuschange", this._status)
+    void this._events.emit("statuschange", this._status)
 
     this._timeouts.choosebest = setDateTimeout(() => {
       this._timeouts.choosebest = null

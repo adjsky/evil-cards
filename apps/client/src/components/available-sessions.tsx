@@ -22,7 +22,7 @@ const AvailableSessions: React.FC = () => {
 
   const handleOpen = () => {
     setIsOpen(true)
-    connect()
+    void connect()
   }
 
   const handleClose = () => {
@@ -55,13 +55,13 @@ const SessionsModal: React.FC<SessionModalProps> = ({ isOpen, onClose }) => {
   const { createOrJoinSession, connecting, sessionId } = useCreateOrJoinSession(
     {
       onFail() {
-        connect()
+        void connect()
       }
     }
   )
 
   const handleJoin = (id: string) => {
-    createOrJoinSession(id)
+    void createOrJoinSession(id)
     resetSocketUrl()
     closeSocket()
   }

@@ -168,7 +168,7 @@ const useSocketEvents = () => {
           processMessageAndSpeak(message)
         }
 
-        processMessageAndPlaySound(message)
+        void processMessageAndPlaySound(message)
       }
 
       // --------------------------- SYNC GAME STATE ---------------------------

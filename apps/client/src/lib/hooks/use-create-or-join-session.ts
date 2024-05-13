@@ -46,7 +46,7 @@ const useCreateOrJoinSession = (options?: Options) => {
           history.replaceState("", "", "/")
 
           preloadSounds()
-          initSpeaker()
+          void initSpeaker()
         }
       },
       onOpen() {
@@ -90,7 +90,7 @@ const useCreateOrJoinSession = (options?: Options) => {
 
     setSessionId(sessionId ?? null)
 
-    getWSHost(sessionId).match(
+    await getWSHost(sessionId).match(
       (wsHost) => {
         setUrl(`${wsHost}/ws/session`)
       },

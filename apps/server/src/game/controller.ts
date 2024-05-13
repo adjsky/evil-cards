@@ -223,7 +223,7 @@ class Controller {
     session.events.on("sessionend", () => this.handleSessionEnd(session))
 
     socket.on("close", (code, reason) => {
-      this.events.emit("close", { socket, code, reason })
+      void this.events.emit("close", { socket, code, reason })
     })
 
     socket.send(
@@ -277,7 +277,7 @@ class Controller {
     this.socketMap.set(player.id, socket)
 
     socket.on("close", (code, reason) => {
-      this.events.emit("close", { socket, code, reason })
+      void this.events.emit("close", { socket, code, reason })
     })
 
     if (
@@ -510,7 +510,7 @@ class Controller {
     const handleStatusChange = (status: Status) => {
       switch (status) {
         case "starting": {
-          this.syncSessionCache(session)
+          void this.syncSessionCache(session)
 
           this.broadcast(session, () => ({
             type: "gamestart",
@@ -598,7 +598,7 @@ class Controller {
         }
 
         case "end": {
-          this.syncSessionCache(session)
+          void this.syncSessionCache(session)
 
           this.broadcast(session, (players) => ({
             type: "gameend",
@@ -651,7 +651,7 @@ class Controller {
     }
 
     const handleConfigurationChange = (configuration: Configuration) => {
-      this.syncSessionCache(session)
+      void this.syncSessionCache(session)
 
       this.broadcast(session, () => ({
         type: "configurationchange",
@@ -665,7 +665,7 @@ class Controller {
 
     const handleJoin = (joinedPlayer: Player) => {
       if (session.isWaiting()) {
-        this.syncSessionCache(session)
+        void this.syncSessionCache(session)
       }
 
       this.broadcast(session, (players, player) => {
@@ -686,7 +686,7 @@ class Controller {
 
     const handleLeave = () => {
       if (session.isWaiting()) {
-        this.syncSessionCache(session)
+        void this.syncSessionCache(session)
       }
 
       this.broadcast(session, (players) => ({
@@ -810,7 +810,7 @@ class Controller {
 
     session.events.clearListeners()
 
-    this._sessionCache.del(session.id)
+    void this._sessionCache.del(session.id)
     this.sessionManager.delete(session.id)
   }
 
