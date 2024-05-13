@@ -3,8 +3,10 @@
   "private": true,
   "scripts": {
     "typecheck": "typecheck",
-    "test": "playwright test",
-    "test:update": "playwright test --update-snapshots"
+    "test": "playwright test --grep-invert=@slow",
+    "test:all": "playwright test",
+    "test:slow": "playwright test --grep=@slow",
+    "test:update-snapshots": "playwright test --update-snapshots"
   },
   "devDependencies": {
     "@types/node": "^18.16.16",

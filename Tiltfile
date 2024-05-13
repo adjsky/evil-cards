@@ -56,9 +56,11 @@ docker_build(
     dockerfile="./deploy/dockerfiles/Dockerfile.pwserver",
 )
 
+pw_test_envs = "HOST=127.0.0.1:3000 PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:6969"
+
 local_resource(
     "e2e",
-    cmd="HOST=127.0.0.1:3000 PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:6969 pnpm test:e2e",
+    cmd="{} pnpm test:e2e".format(pw_test_envs),
     labels=["test"],
     allow_parallel=True,
     trigger_mode=TRIGGER_MODE_MANUAL,
@@ -66,7 +68,25 @@ local_resource(
 )
 
 local_resource(
-    "tsc",
+    "e2e:slow",
+    cmd="{} pnpm test:e2e:slow".format(pw_test_envs),
+    labels=["test"],
+    allow_parallel=True,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False
+)
+
+local_resource(
+    "e2e:update-snapshots",
+    cmd="{} pnpm test:e2e:update-snapshots".format(pw_test_envs),
+    labels=["test"],
+    allow_parallel=True,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False
+)
+
+local_resource(
+    "ts-check",
     cmd="pnpm ts-check",
     labels=["test"],
     allow_parallel=True,
