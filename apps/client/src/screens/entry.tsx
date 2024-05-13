@@ -72,7 +72,7 @@ const UserCard: React.FC = () => {
   const [avatarId, setAvatarId] = useAtom(avatarAtom)
 
   return (
-    <div className="flex aspect-[0.71942446043] w-48 flex-col items-center justify-center gap-5 rounded-lg bg-gray-100 pt-3">
+    <div className="flex aspect-[65/90] w-48 flex-col items-center justify-center gap-5 rounded-lg bg-gray-100 pt-3">
       <div className="rounded-full border-[2px] border-gray-900 p-[2px]">
         <div className="relative">
           <button

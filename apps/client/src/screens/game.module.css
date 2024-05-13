@@ -8,7 +8,7 @@
   border-radius: 0.5rem;
   padding: 1rem;
   display: flex;
-  aspect-ratio: 174 / 241;
+  aspect-ratio: 65 / 90;
 }
 
 @media (max-width: 639px) {

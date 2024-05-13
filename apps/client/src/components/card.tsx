@@ -37,7 +37,7 @@ const Card: React.FC<{
       data-testid={testId}
       onClick={onClick}
       className={cn(
-        "flex aspect-[120/167] w-full text-left sm:w-[140px] sm:min-w-0 sm:max-w-full",
+        "flex aspect-[65/90] w-full text-left sm:w-[140px] sm:min-w-0 sm:max-w-full",
         "transition-transform enabled:hover:-translate-y-1",
         lowerOpacity && "opacity-60",
         !text && "items-center justify-center",
