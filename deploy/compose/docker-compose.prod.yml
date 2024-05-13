@@ -112,6 +112,10 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.44.0
+    # absolutely not the safest solution to access `docker.sock` (using a
+    # docker socket proxy is much safer), but i don't want to bother with this
+    # shit, so...
+    user: root
     restart: always
     command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
