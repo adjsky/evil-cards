@@ -52,3 +52,15 @@ test("Чат", async ({ page, browser }) => {
     expect(page2.getByTestId("chat")).toHaveScreenshot()
   ])
 })
+
+test.describe("Возвращение на главный экран", () => {
+  test("Через кнопку", async ({ page }) => {
+    await page.getByTestId("back-button").click()
+    await expect(page.getByTestId("connect-session")).toBeInViewport()
+  })
+
+  test("Через браузер", async ({ page }) => {
+    await page.goBack()
+    await expect(page.getByTestId("connect-session")).toBeInViewport()
+  })
+})
