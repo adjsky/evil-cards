@@ -43,7 +43,7 @@ const useCreateOrJoinSession = (options?: Options) => {
         }
 
         if (message.type == "join" || message.type == "create") {
-          history.replaceState("", "", "/")
+          history.pushState("", "", "/")
 
           preloadSounds()
           void initSpeaker()

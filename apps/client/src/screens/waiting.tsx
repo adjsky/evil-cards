@@ -171,7 +171,11 @@ const Waiting: React.FC = () => {
           className="flex h-full flex-col items-center justify-center gap-6 sm:h-auto sm:w-[1140px]"
         >
           <div className="relative hidden w-full items-end justify-between sm:flex">
-            <BackButton onClick={onBack} />
+            <BackButton
+              onClick={() => {
+                history.back()
+              }}
+            />
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <Logo />
             </div>
