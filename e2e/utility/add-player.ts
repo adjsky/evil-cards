@@ -1,5 +1,6 @@
 import { type Browser, expect } from "@playwright/test"
 
+import { useAvatar } from "./use-avatar"
 import { useNickname } from "./use-nickname"
 
 export async function addPlayer(
@@ -13,6 +14,7 @@ export async function addPlayer(
   await page.goto(inviteLink)
 
   await useNickname(page, nickname)
+  await useAvatar(page, 1)
 
   await page.getByTestId("connect-session").click()
 
