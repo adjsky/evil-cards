@@ -1,6 +1,7 @@
 import { test as base, expect, type Page } from "@playwright/test"
 import { addPlayer } from "utility/add-player"
 import { readFromClipboard } from "utility/read-from-clipboard"
+import { useAvatar } from "utility/use-avatar"
 import { useNickname } from "utility/use-nickname"
 
 export const test = base.extend<{
@@ -15,6 +16,7 @@ export const test = base.extend<{
     await page.goto("/")
 
     await useNickname(page, "Игрок 1")
+    await useAvatar(page, 1)
     await page.getByTestId("connect-session").click()
 
     await page.getByTestId("invite-player").click()

@@ -93,6 +93,7 @@ const UserCard: React.FC = () => {
               backgroundSize: "cover"
             }}
             data-testid="avatar"
+            data-test-avatar-id={avatarId}
           />
           <button
             onClick={() =>

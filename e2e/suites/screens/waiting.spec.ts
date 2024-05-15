@@ -61,6 +61,7 @@ test.describe("Возвращение на главный экран", () => {
 
   test("Через браузер", async ({ page }) => {
     await page.goBack()
+
     await expect(page.getByTestId("connect-session")).toBeInViewport()
   })
 })
