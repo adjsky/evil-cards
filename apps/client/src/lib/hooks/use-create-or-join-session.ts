@@ -46,7 +46,7 @@ const useCreateOrJoinSession = (options?: Options) => {
           history.pushState("", "", "/")
 
           preloadSounds()
-          initSpeaker()
+          void initSpeaker()
         }
       },
       onOpen() {
