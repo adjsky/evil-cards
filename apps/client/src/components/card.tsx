@@ -48,7 +48,7 @@ const Card: React.FC<{
       <span
         ref={flipableCardRef}
         className={cn(
-          "flex h-full w-full whitespace-pre-line break-words rounded-[0.25rem] bg-gray-100 p-2 text-[0.5rem] font-medium sm:rounded-lg sm:p-3 sm:text-xs sm:leading-normal",
+          "flex h-full w-full whitespace-pre-line break-words rounded-[0.25rem] bg-gray-100 px-1.5 py-2 text-[0.5rem] font-medium sm:rounded-lg sm:px-2.5 sm:py-3 sm:text-xs sm:leading-normal",
           text && "flex-col justify-between",
           !text && "items-center justify-center",
           flipable && styles["flipable-card"]

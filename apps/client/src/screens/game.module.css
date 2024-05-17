@@ -6,7 +6,7 @@
 .red-card {
   width: 180px;
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: 1rem 0.75rem;
   display: flex;
   aspect-ratio: 65 / 90;
 }
@@ -19,7 +19,7 @@
 
   .red-card {
     width: 115px;
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem;
     border-radius: 0.375rem;
   }
 
