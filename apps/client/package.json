@@ -16,7 +16,6 @@
     "@headlessui/tailwindcss": "^0.2.0",
     "@sentry/browser": "^7.81.1",
     "clsx": "^1.2.1",
-    "easy-speech": "^2.0.0",
     "interweave": "^13.0.0",
     "jotai": "^1.9.1",
     "ky": "^1.1.3",

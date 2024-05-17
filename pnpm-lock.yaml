@@ -59,9 +59,6 @@ importers:
       clsx:
         specifier: ^1.2.1
         version: 1.2.1
-      easy-speech:
-        specifier: ^2.0.0
-        version: 2.0.0
       interweave:
         specifier: ^13.0.0
         version: 13.0.0(react@18.2.0)
@@ -4790,11 +4787,6 @@ packages:
       stream-shift: 1.0.1
     dev: false
 
-  /easy-speech@2.0.0:
-    resolution: {integrity: sha512-QTQ4jt9T20iAo7HZBLwuZn0FYBczq54Ti/lHJlPMxFVbDVbMhlSaIe1Q0Ku3H03VxPGuPmxhWABiQONTYqlxfw==}
-    engines: {node: '>= 14.x'}
-    dev: false
-
   /ejs@3.1.9:
     resolution: {integrity: sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==}
     engines: {node: '>=0.10.0'}
@@ -9343,6 +9335,7 @@ packages:
 
   /workbox-google-analytics@7.0.0:
     resolution: {integrity: sha512-MEYM1JTn/qiC3DbpvP2BVhyIH+dV/5BjHk756u9VbwuAhu0QHyKscTnisQuz21lfRpOwiS9z4XdqeVAKol0bzg==}
+    deprecated: It is not compatible with newer versions of GA starting with v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
     dependencies:
       workbox-background-sync: 7.0.0
       workbox-core: 7.0.0
