@@ -167,7 +167,7 @@ const DesktopPlayer: React.FC<{
   return (
     <>
       <div
-        className="hidden w-[194px] items-center gap-2 rounded-xl border-2 border-gray-200 px-2 py-1 sm:flex"
+        className="hidden w-[198px] items-center gap-2 rounded-xl border-2 border-gray-200 px-2 py-1 sm:flex"
         data-testid="player-desktop"
       >
         {(displayCheckMark || displayCrown) && (
