@@ -4,7 +4,7 @@
   "scripts": {
     "ts-check": "turbo ts-check",
     "test:e2e:slow": "pnpm --filter=e2e test:slow",
-    "test:e2e:update-snapshots": "pnpm --filter=e2e test:update",
+    "test:e2e:update-snapshots": "pnpm --filter=e2e test:update-snapshots",
     "test:e2e": "pnpm --filter=e2e test",
     "dev:client": "turbo dev --filter=client",
     "dev:server": "turbo dev --filter=server",

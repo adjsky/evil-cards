@@ -9,7 +9,7 @@ const BackButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
     <Button
       variant="outlined"
       onClick={onClick}
-      className="px-4 py-3 text-base uppercase"
+      className="text-base uppercase"
       data-testid="back-button"
       icon={<ArrowLeft />}
     >

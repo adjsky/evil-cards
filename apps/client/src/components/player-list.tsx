@@ -249,7 +249,7 @@ const KickModal: React.FC<{
       <div className="mt-4 flex w-full gap-2">
         <Button
           variant="outlined"
-          className="flex-1 py-3 uppercase"
+          className="flex-1 uppercase"
           onClick={onClose}
         >
           Нет

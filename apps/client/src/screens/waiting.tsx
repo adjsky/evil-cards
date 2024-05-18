@@ -311,7 +311,7 @@ const Waiting: React.FC = () => {
                   </>
                 )}
               </div>
-              <div className="flex w-full justify-center gap-2">
+              <div className="mx-auto flex gap-2 ">
                 <InviteButton id={id} />
                 <StartButton
                   onClick={onStart}
@@ -365,7 +365,7 @@ const StartButton: React.FC<{
     <Button
       variant="filled"
       onClick={onClick}
-      className={cn("w-28 uppercase sm:w-32", disabled && "opacity-50")}
+      className={cn("uppercase", disabled && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
@@ -388,10 +388,10 @@ const InviteButton: React.FC<{ id: string }> = ({ id }) => {
   }, [copied, toggleCopied])
 
   return (
-    <div className="relative">
+    <div className="relative flex">
       <Button
         variant="outlined"
-        className="px-4 py-4 uppercase sm:px-5"
+        className="uppercase"
         onClick={async () => {
           const url = `${window.location.origin}?s=${id}`
 

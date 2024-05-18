@@ -37,7 +37,7 @@ const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
   return (
     <button
       className={cn(
-        "flex items-center justify-center",
+        "flex items-center justify-center p-4",
         "rounded-lg text-xl leading-none transition-colors sm:leading-none",
         variantClasses[variant],
         icon && "group gap-2",
