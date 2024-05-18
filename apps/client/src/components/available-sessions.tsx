@@ -33,7 +33,11 @@ const AvailableSessions: React.FC = () => {
 
   return (
     <>
-      <Button variant="outlined" className="uppercase" onClick={handleOpen}>
+      <Button
+        variant="outlined"
+        className="w-36 uppercase"
+        onClick={handleOpen}
+      >
         Комнаты
       </Button>
       <SessionsModal isOpen={isOpen} onClose={handleClose} />
