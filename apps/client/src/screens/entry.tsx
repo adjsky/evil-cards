@@ -47,7 +47,7 @@ const Entry: React.FC = () => {
           <Button
             variant="filled"
             onClick={() => createOrJoinSession(sessionId ?? undefined)}
-            className="h-12 w-32 uppercase"
+            className="w-32 uppercase"
             disabled={disabled}
             data-testid="connect-session"
           >

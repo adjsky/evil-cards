@@ -88,7 +88,7 @@ tilt up
 есть возможность запустить их вручную через консоль.
 
 ```bash
-pnpm test:watch
+pnpm test:e2e
 ```
 
 ## Открытие Pull Request'а
