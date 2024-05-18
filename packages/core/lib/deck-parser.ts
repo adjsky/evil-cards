@@ -102,6 +102,10 @@ function parseData(data: Record<string, string>[]) {
       )
     }
 
+    if (text.length == 0) {
+      throw new Error(`Card text can't be empty`)
+    }
+
     if (text.length > MAX_CARD_TEXT_SIZE) {
       throw new Error(
         `Card text can't be larger than ${MAX_CARD_TEXT_SIZE} characters`
