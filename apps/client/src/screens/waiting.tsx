@@ -365,7 +365,7 @@ const StartButton: React.FC<{
     <Button
       variant="filled"
       onClick={onClick}
-      className={cn("uppercase", disabled && "opacity-50")}
+      className={cn("w-28 uppercase", disabled && "opacity-50")}
       disabled={disabled}
       data-testid="start-game"
     >
