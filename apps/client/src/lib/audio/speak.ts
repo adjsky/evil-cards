@@ -69,7 +69,7 @@ export async function initSpeaker() {
 export function speak(text: string) {
   const utt = new SpeechSynthesisUtterance()
   utt.text = text
-  utt.rate = 1
+  utt.rate = 1.1
   utt.lang = LANG
   utt.voice = prioritizedVoice ?? null
 
