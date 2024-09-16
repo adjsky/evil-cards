@@ -32,3 +32,6 @@ schema_config:
       index:
         prefix: index_
         period: 24h
+
+limits_config:
+  retention_period: 24h
